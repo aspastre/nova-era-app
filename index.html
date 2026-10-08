@@ -11,6 +11,82 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 5rem); }
+        
+        /* Visão de Calendário tipo 'Folhinha' (Mês todo) */
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background-color: #f3f4f6; /* gray-100 borders */
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .month-header {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            padding: 8px 0;
+            background-color: #f9fafb;
+        }
+        .month-cell {
+            background-color: white;
+            aspect-ratio: 1 / 1.1;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        .month-cell.empty {
+            background-color: #f9fafb;
+            cursor: default;
+        }
+        .month-cell:not(.empty):hover {
+            background-color: #fff7ed; /* orange-50 */
+        }
+        .month-cell.selected {
+            background-color: #fff7ed;
+            box-shadow: inset 0 0 0 2px #f97316; /* border orange */
+        }
+        .month-cell.today {
+            background-color: #fff7ed;
+        }
+        .month-cell.today .day-num {
+            background-color: #f97316;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -2px 0 0 -2px;
+        }
+        .day-num {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            align-self: flex-start;
+        }
+        .task-dots {
+            margin-top: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            justify-content: flex-start;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .dot-pending { background-color: #3b82f6; } /* blue */
+        .dot-progress { background-color: #f59e0b; } /* amber */
+        .dot-done { background-color: #22c55e; } /* green */
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 relative min-h-screen">
@@ -32,7 +108,7 @@
                 <h1 class="font-bold text-lg tracking-tight text-gray-900">Nova Era</h1>
             </div>
             
-            <!-- Seleção de Equipe Múltipla -->
+            <!-- Seleção de Equipe -->
             <button onclick="openTeamModal()" class="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-sm font-medium rounded-full py-1.5 px-3 transition-colors">
                 <i data-lucide="users" class="w-4 h-4"></i>
                 <span id="header-team-text">Adriano</span>
@@ -41,104 +117,163 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="max-w-md mx-auto pb-safe pt-4 px-4">
+    <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
         
-        <!-- Welcome Section -->
-        <div class="mb-6 flex justify-between items-end">
+        <!-- View Title -->
+        <div class="mb-4 flex justify-between items-end">
             <div>
                 <h2 class="text-xs font-semibold text-orange-500 uppercase tracking-wider mb-1">Edifício Miss Silvia</h2>
-                <p class="text-2xl font-bold text-gray-900">Tarefas de Hoje</p>
+                <p class="text-2xl font-bold text-gray-900" id="view-title">Tarefas de Hoje</p>
                 <p class="text-sm text-gray-500 mt-1" id="current-date">Carregando data...</p>
+            </div>
+            
+            <div id="view-actions" class="hidden">
+                <button class="text-sm text-orange-600 font-medium bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100 flex items-center gap-1 hover:bg-orange-100 transition-colors">
+                    <i data-lucide="list-filter" class="w-4 h-4"></i> Filtros
+                </button>
             </div>
         </div>
 
-        <!-- Task List -->
-        <div class="space-y-4" id="task-container">
+        <!-- VISÃO 1: LISTA (HOJE / AMANHÃ) -->
+        <div id="tasks-view">
+            <div class="space-y-4" id="task-container">
+                <!-- Task 1: Pendente -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-1">
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800" id="setor-1">Área do Totem</span>
+                                <span class="text-xs text-gray-500 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Externo</span>
+                            </div>
+                            <span id="badge-1" class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded">Pendente</span>
+                        </div>
+                        <h3 class="text-gray-900 font-semibold mb-3">Remoção de Folhas Secas</h3>
+                        
+                        <div class="flex gap-2" id="actions-1">
+                            <button onclick="iniciarTarefa(1)" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                                <i data-lucide="camera" class="w-4 h-4"></i> Iniciar (Foto Antes)
+                            </button>
+                        </div>
+
+                        <div id="photos-1" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3">
+                            <div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden" id="photo-antes-1">
+                                <span class="text-[9px] text-gray-400 font-medium absolute bottom-1">ANTES</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 2: Em Andamento -->
+                <div class="bg-orange-50 rounded-xl shadow-sm border border-orange-200 overflow-hidden task-card" id="task-2">
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800" id="setor-2">Fumódromo</span>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wide bg-orange-200 text-orange-800 py-1 px-2 rounded">Em Andamento</span>
+                        </div>
+                        <h3 class="text-gray-900 font-semibold mb-3">Irrigação</h3>
+                        
+                        <div class="mb-3 flex gap-3">
+                            <div class="w-16 h-16 bg-gray-200 rounded-lg relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=150&q=80')">
+                                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+                                <span class="text-[9px] text-white font-bold absolute bottom-1 left-1 drop-shadow-md">ANTES</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2" id="actions-2">
+                            <button onclick="abrirModalConclusao(2, 'Irrigação')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm shadow-orange-200">
+                                <i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <!-- Task 1: Pendente -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" id="task-1">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Área do Totem</span>
-                            <span class="text-xs text-gray-500 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Externo</span>
-                        </div>
-                        <span id="badge-1" class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded">Pendente</span>
-                    </div>
-                    <h3 class="text-gray-900 font-semibold mb-3">Remoção de Folhas Secas</h3>
-                    
-                    <!-- Action Area -->
-                    <div class="flex gap-2" id="actions-1">
-                        <button onclick="iniciarTarefa(1)" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                            <i data-lucide="camera" class="w-4 h-4"></i> Iniciar (Foto Antes)
-                        </button>
-                    </div>
+            <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400 shadow-inner">
+                    <i data-lucide="coffee" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">Tudo limpo!</h3>
+                <p class="text-sm text-gray-500">Não há tarefas agendadas para esta data.</p>
+            </div>
+        </div>
 
-                    <!-- Photos Preview Area (Hidden initially) -->
-                    <div id="photos-1" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3">
-                        <div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden" id="photo-antes-1">
-                            <span class="text-[9px] text-gray-400 font-medium absolute bottom-1">ANTES</span>
-                        </div>
+        <!-- VISÃO 2: CALENDÁRIO (MÊS INTEIRO - FOLHINHA) -->
+        <div id="calendar-view" class="hidden">
+            <!-- Calendário HTML Mantido (Omitido visualmente aqui para foco) -->
+            <div class="flex justify-between items-center mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
+                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                <div class="text-center">
+                    <h3 class="font-bold text-lg text-gray-800 leading-tight">Outubro</h3>
+                    <p class="text-xs font-medium text-gray-500">2026</p>
+                </div>
+                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+            </div>
+            <div class="month-grid mb-6 shadow-sm">
+                <div class="month-header">Dom</div><div class="month-header">Seg</div><div class="month-header">Ter</div><div class="month-header">Qua</div><div class="month-header">Qui</div><div class="month-header">Sex</div><div class="month-header">Sáb</div>
+                <div id="month-days-container" class="contents"></div>
+            </div>
+            <div class="flex justify-center gap-4 mb-6">
+                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-blue-500"></div><span class="text-[10px] text-gray-600 font-medium">Pendentes</span></div>
+                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-amber-500"></div><span class="text-[10px] text-gray-600 font-medium">Em Andamento</span></div>
+                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-green-500"></div><span class="text-[10px] text-gray-600 font-medium">Concluídas</span></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-orange-500"></i>
+                        <span id="selected-day-title">Dia 7 de Outubro</span>
+                    </h3>
+                    <span class="bg-white border border-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full" id="selected-day-count">4 itens</span>
+                </div>
+                
+                <div class="p-3 space-y-2">
+                    <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
+                        <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-500"></div><div><p class="text-sm font-medium text-gray-900 leading-tight">Remoção de Folhas Secas</p><p class="text-[10px] text-gray-500">Área do Totem • Externo</p></div></div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
+                        <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-amber-500"></div><div><p class="text-sm font-medium text-gray-900 leading-tight">Irrigação</p><p class="text-[10px] text-gray-500">Fumódromo • Externo</p></div></div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded bg-green-50/50 border border-green-100">
+                        <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-green-500"></div><div><p class="text-sm font-medium text-gray-600 line-through leading-tight">Limpeza das Clúsias</p><p class="text-[10px] text-gray-400">Espelho d'Água • Externo</p></div></div>
+                        <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
                     </div>
                 </div>
             </div>
-
-            <!-- Task 2: Em Andamento -->
-            <div class="bg-orange-50 rounded-xl shadow-sm border border-orange-200 overflow-hidden" id="task-2">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Fumódromo</span>
-                        </div>
-                        <span class="text-[10px] font-bold uppercase tracking-wide bg-orange-200 text-orange-800 py-1 px-2 rounded">Em Andamento</span>
-                    </div>
-                    <h3 class="text-gray-900 font-semibold mb-3">Irrigação</h3>
-                    
-                    <div class="mb-3 flex gap-3">
-                        <div class="w-16 h-16 bg-gray-200 rounded-lg relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=150&q=80')">
-                            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-                            <span class="text-[9px] text-white font-bold absolute bottom-1 left-1 drop-shadow-md">ANTES</span>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2" id="actions-2">
-                        <!-- Abre o Modal de Conclusão -->
-                        <button onclick="abrirModalConclusao(2, 'Irrigação')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm shadow-orange-200">
-                            <i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade
-                        </button>
-                    </div>
-                </div>
-            </div>
-
+            <div class="pb-8"></div>
         </div>
     </main>
 
-    <!-- Floating Action Button -->
-    <button onclick="openExtraModal()" class="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-r from-orange-400 to-red-500 rounded-full shadow-lg shadow-orange-200 flex items-center justify-center text-white hover:scale-105 transition-transform z-30">
+    <!-- FAB Add -->
+    <button id="fab-add" onclick="openExtraModal()" class="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-r from-orange-400 to-red-500 rounded-full shadow-lg shadow-orange-200 flex items-center justify-center text-white hover:scale-105 transition-transform z-30">
         <i data-lucide="plus" class="w-7 h-7"></i>
     </button>
 
     <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-20">
         <div class="max-w-md mx-auto flex justify-around p-2 pb-6">
-            <button class="flex flex-col items-center p-2 text-orange-500 w-1/3">
+            <button onclick="switchTab('hoje')" id="tab-hoje" class="flex flex-col items-center p-2 text-orange-500 w-1/3 transition-colors">
                 <i data-lucide="calendar-check" class="w-6 h-6 mb-1"></i>
                 <span class="text-[10px] font-medium">Hoje (D0)</span>
             </button>
-            <button class="flex flex-col items-center p-2 text-gray-400 hover:text-gray-600 transition-colors w-1/3">
+            <button onclick="switchTab('amanha')" id="tab-amanha" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-400 transition-colors w-1/3">
                 <i data-lucide="calendar-clock" class="w-6 h-6 mb-1"></i>
                 <span class="text-[10px] font-medium">Amanhã</span>
             </button>
-            <button class="flex flex-col items-center p-2 text-gray-400 hover:text-gray-600 transition-colors w-1/3">
-                <i data-lucide="bar-chart-3" class="w-6 h-6 mb-1"></i>
-                <span class="text-[10px] font-medium">Histórico</span>
+            <button onclick="switchTab('calendario')" id="tab-calendario" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-400 transition-colors w-1/3">
+                <i data-lucide="calendar-days" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-medium">Calendário</span>
             </button>
         </div>
     </nav>
 
-    <!-- Camera Input -->
     <input type="file" id="camera-simulator" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoCapture(event)">
 
+    <!-- MODAIS DE EQUIPE, EXTRA E CONCLUSAO (Estruturas mantidas) -->
+    
     <!-- MODAL: Equipe Múltipla -->
     <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
@@ -148,34 +283,18 @@
                     <button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
                 <div class="space-y-3 mb-5" id="team-checkboxes">
-                    <!-- Checkboxes de equipe -->
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-                        <input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500" checked>
-                        <span class="font-medium text-gray-800">Adriano</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500">
-                        <span class="font-medium text-gray-800">Glauco</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" value="Edinei" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500">
-                        <span class="font-medium text-gray-800">Edinei</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" value="Jorge" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500">
-                        <span class="font-medium text-gray-800">Jorge</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" value="Leandro" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500">
-                        <span class="font-medium text-gray-800">Leandro</span>
-                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500" checked><span class="font-medium text-gray-800">Adriano</span></label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500"><span class="font-medium text-gray-800">Glauco</span></label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"><input type="checkbox" value="Edinei" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500"><span class="font-medium text-gray-800">Edinei</span></label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"><input type="checkbox" value="Jorge" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500"><span class="font-medium text-gray-800">Jorge</span></label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"><input type="checkbox" value="Leandro" class="w-5 h-5 text-orange-500 rounded border-gray-300 focus:ring-orange-500"><span class="font-medium text-gray-800">Leandro</span></label>
                 </div>
                 <button onclick="updateTeam()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl">Confirmar Equipe</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: Conclusão de Tarefa (Foto + Texto) -->
+    <!-- MODAL: Conclusão -->
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
             <div class="p-5">
@@ -183,37 +302,28 @@
                     <h3 class="text-lg font-bold text-gray-900">Finalizar Atividade</h3>
                     <button onclick="closeConclusionModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
-                
                 <p class="text-sm font-medium text-orange-600 mb-4" id="modal-task-title">Nome da Tarefa</p>
-
                 <div class="space-y-4">
-                    <!-- Área da Foto -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">1. Foto do Resultado (Depois) <span class="text-red-500">*</span></label>
-                        <div id="conclusion-photo-preview" class="hidden mb-2 w-full h-32 bg-gray-100 rounded-lg bg-cover bg-center border border-gray-200 relative">
-                            <span class="text-[10px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span>
-                        </div>
-                        <button onclick="triggerConclusionCamera()" class="w-full bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                            <i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto
-                        </button>
+                        <div id="conclusion-photo-preview" class="hidden mb-2 w-full h-32 bg-gray-100 rounded-lg bg-cover bg-center border border-gray-200 relative"><span class="text-[10px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div>
+                        <button onclick="triggerConclusionCamera()" class="w-full bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button>
                     </div>
-
-                    <!-- Área do Texto -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">2. Descrição / Observações <span class="text-red-500">*</span></label>
-                        <textarea id="conclusion-text" rows="3" placeholder="Ex: Grama aparada, cantos finalizados e área varrida." class="w-full border border-gray-300 rounded-lg p-3 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"></textarea>
+                        <textarea id="conclusion-text" rows="3" placeholder="Ex: Grama aparada, cantos finalizados e área varrida." class="w-full border border-gray-300 rounded-lg p-3 text-sm outline-none focus:border-orange-500 transition-colors"></textarea>
                         <p id="text-error" class="text-xs text-red-500 mt-1 hidden font-medium">A descrição deve ter mais de 10 letras e conter palavras reais.</p>
                     </div>
-
-                    <button onclick="finalizarProcesso()" id="btn-save-conclusion" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-2 shadow-md shadow-orange-200 transition-colors">
+                    <!-- Spinner Button added here -->
+                    <button onclick="finalizarProcesso()" id="btn-save-conclusion" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-2 shadow-md shadow-orange-200 flex items-center justify-center gap-2 transition-colors">
                         Salvar e Concluir
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- MODAL: Atividade Extra -->
+    
+    <!-- MODAL: Extra -->
     <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
             <div class="p-5">
@@ -221,178 +331,180 @@
                     <h3 class="text-lg font-bold text-gray-900">Adicionar Atividade</h3>
                     <button onclick="closeExtraModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
-                
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Registro</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button class="border border-orange-500 bg-orange-50 text-orange-700 text-sm font-medium py-2 rounded-lg">Antecipação</button>
-                            <button class="border border-gray-200 text-gray-600 text-sm font-medium py-2 rounded-lg hover:bg-gray-50">Extraordinária</button>
-                        </div>
+                        <div class="grid grid-cols-2 gap-2"><button class="border border-orange-500 bg-orange-50 text-orange-700 text-sm font-medium py-2 rounded-lg">Antecipação</button><button class="border border-gray-200 text-gray-600 text-sm font-medium py-2 rounded-lg hover:bg-gray-50">Extraordinária</button></div>
                     </div>
-                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Setor / Local</label>
-                        <select class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
-                            <option>Selecione um setor...</option>
-                            <option>Área do Totem (Externo)</option>
-                            <option>Entrada 2 Frente (Externo)</option>
-                            <option>Área do Pomar (Externo)</option>
-                            <option>Jardim Novo (Não tabelado)</option>
-                        </select>
+                        <select class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"><option>Selecione um setor...</option><option>Área do Totem (Externo)</option><option>Jardim Novo (Não tabelado)</option></select>
                     </div>
-
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrição da Atividade</label>
-                        <input type="text" placeholder="Ex: Plantio de novas mudas, poda de emergência..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                        <input type="text" placeholder="Ex: Plantio de novas mudas" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:border-orange-500">
                     </div>
-
-                    <button onclick="closeExtraModal()" class="w-full bg-gradient-to-r from-orange-400 to-red-500 text-white font-medium py-3 rounded-xl mt-2 shadow-md shadow-orange-200">
-                        Adicionar à Lista de Hoje
-                    </button>
+                    <button onclick="closeExtraModal()" class="w-full bg-gradient-to-r from-orange-400 to-red-500 text-white font-medium py-3 rounded-xl mt-2 shadow-md shadow-orange-200">Adicionar à Lista</button>
                 </div>
             </div>
         </div>
     </div>
 
+
+    <!-- ---------------------------------------------------- -->
+    <!-- JAVASCRIPT: LÓGICA E INTEGRAÇÃO DO WEBHOOK           -->
+    <!-- ---------------------------------------------------- -->
     <script>
         lucide.createIcons();
-
-        // Data de hoje
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', options);
+        
+        // URL DO WEBHOOK DO MAKE.COM
+        const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/xud1bcw128vebpl9jibour3corn6x4ha";
 
-        // --- LÓGICA DE EQUIPE ---
-        function openTeamModal() {
-            const modal = document.getElementById('team-modal');
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            modal.children[0].classList.remove('translate-y-full');
-        }
+        // Tab Navigation
+        function switchTab(tabId) {
+            const tabs = ['hoje', 'amanha', 'calendario'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabId) {
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add('text-orange-500');
+                } else {
+                    btn.classList.remove('text-orange-500');
+                    btn.classList.add('text-gray-400');
+                }
+            });
 
-        function closeTeamModal() {
-            const modal = document.getElementById('team-modal');
-            modal.classList.add('opacity-0');
-            modal.children[0].classList.add('translate-y-full');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
+            const tasksView = document.getElementById('tasks-view');
+            const calendarView = document.getElementById('calendar-view');
+            const fabAdd = document.getElementById('fab-add');
+            const titleEl = document.getElementById('view-title');
+            const dateEl = document.getElementById('current-date');
+            const actionsEl = document.getElementById('view-actions');
+            const today = new Date();
 
-        function updateTeam() {
-            const checkboxes = document.querySelectorAll('#team-checkboxes input[type="checkbox"]:checked');
-            const selected = Array.from(checkboxes).map(cb => cb.value);
-            
-            let headerText = "Equipe";
-            if(selected.length === 1) {
-                headerText = selected[0];
-            } else if (selected.length > 1) {
-                headerText = `${selected[0]} + ${selected.length - 1}`;
-            } else {
-                headerText = "Selecione...";
+            if (tabId === 'hoje' || tabId === 'amanha') {
+                calendarView.classList.add('hidden');
+                tasksView.classList.remove('hidden');
+                fabAdd.classList.remove('hidden');
+                actionsEl.classList.add('hidden');
+                
+                document.getElementById('task-1').classList.remove('hidden');
+                document.getElementById('task-2').classList.remove('hidden');
+                document.getElementById('empty-state-tasks').classList.add('hidden');
+
+                if (tabId === 'hoje') {
+                    titleEl.textContent = 'Tarefas de Hoje';
+                    dateEl.textContent = today.toLocaleDateString('pt-BR', options);
+                } else {
+                    titleEl.textContent = 'Tarefas de Amanhã';
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    dateEl.textContent = tomorrow.toLocaleDateString('pt-BR', options);
+                    document.getElementById('task-1').classList.add('hidden');
+                    document.getElementById('task-2').classList.add('hidden');
+                    document.getElementById('empty-state-tasks').classList.remove('hidden');
+                }
+            } else if (tabId === 'calendario') {
+                tasksView.classList.add('hidden');
+                calendarView.classList.remove('hidden');
+                fabAdd.classList.add('hidden'); 
+                titleEl.textContent = 'Planejamento Mestre';
+                dateEl.textContent = 'Mês atual e Histórico';
+                actionsEl.classList.remove('hidden'); 
+                renderFullMonthCalendar();
             }
-            
-            document.getElementById('header-team-text').textContent = headerText;
-            closeTeamModal();
         }
 
-        // --- MÁQUINA DE ESTADOS (CÂMERA E TEXTO) ---
-        let currentActiveTask = null;
-        let currentCaptureType = null;
-        let imgTempDepois = null;
-
-        function iniciarTarefa(taskId) {
-            currentActiveTask = taskId;
-            currentCaptureType = 'antes';
-            document.getElementById('camera-simulator').click();
+        // Calendar Render
+        function renderFullMonthCalendar() {
+            const container = document.getElementById('month-days-container');
+            if(container.innerHTML.trim() !== "") return;
+            let html = '';
+            for(let i=0; i<4; i++) { html += `<div class="month-cell empty"></div>`; }
+            for(let day=1; day<=31; day++) {
+                let classes = "month-cell";
+                let dotsHtml = '';
+                if(day === 7) {
+                    classes += " today selected";
+                    dotsHtml = `<div class="dot dot-pending"></div><div class="dot dot-progress"></div>`;
+                } else if (day < 7 && day % 2 !== 0) {
+                    dotsHtml = `<div class="dot dot-done"></div><div class="dot dot-done"></div><div class="dot dot-done"></div>`;
+                } else if (day > 7 && (day % 3 === 0 || day === 15)) {
+                    dotsHtml = `<div class="dot dot-pending"></div><div class="dot dot-pending"></div>`;
+                }
+                html += `<div class="${classes}" onclick="selectMonthDate(${day}, this)"><span class="day-num">${day}</span><div class="task-dots">${dotsHtml}</div></div>`;
+            }
+            container.innerHTML = html;
         }
 
-        function abrirModalConclusao(taskId, taskName) {
-            currentActiveTask = taskId;
-            document.getElementById('modal-task-title').textContent = taskName;
-            
-            // Reset do modal
-            imgTempDepois = null;
-            document.getElementById('conclusion-photo-preview').classList.add('hidden');
+        function selectMonthDate(day, element) {
+            document.querySelectorAll('.month-cell.selected').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selected-day-title').textContent = `Dia ${day} de Outubro`;
+            if(day < 7) document.getElementById('selected-day-count').textContent = '2 Concluídas';
+            else if (day > 7) document.getElementById('selected-day-count').textContent = '3 Planejadas';
+            else document.getElementById('selected-day-count').textContent = '4 Atividades';
+        }
+
+        // Team Logic
+        function openTeamModal() { document.getElementById('team-modal').classList.remove('hidden'); document.getElementById('team-modal').classList.remove('opacity-0'); document.getElementById('team-modal').children[0].classList.remove('translate-y-full'); }
+        function closeTeamModal() { document.getElementById('team-modal').classList.add('opacity-0'); document.getElementById('team-modal').children[0].classList.add('translate-y-full'); setTimeout(() => document.getElementById('team-modal').classList.add('hidden'), 300); }
+        function updateTeam() { const c = document.querySelectorAll('#team-checkboxes input:checked'); document.getElementById('header-team-text').textContent = c.length===1?c[0].value:`${c[0].value} +${c.length-1}`; closeTeamModal(); }
+        
+        // Task State Machine
+        let currentActiveTask=null, currentCaptureType=null, imgTempDepois=null;
+        
+        function iniciarTarefa(t) { currentActiveTask=t; currentCaptureType='antes'; document.getElementById('camera-simulator').click(); }
+        
+        function abrirModalConclusao(t,n) { 
+            currentActiveTask=t; 
+            document.getElementById('modal-task-title').textContent=n; 
+            imgTempDepois=null; 
+            document.getElementById('conclusion-photo-preview').classList.add('hidden'); 
             const textArea = document.getElementById('conclusion-text');
-            textArea.value = '';
+            textArea.value=''; 
             textArea.classList.remove('border-red-500', 'bg-red-50');
             document.getElementById('text-error').classList.add('hidden');
             
-            const modal = document.getElementById('conclusion-modal');
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            modal.children[0].classList.remove('translate-y-full');
+            document.getElementById('conclusion-modal').classList.remove('hidden'); 
+            document.getElementById('conclusion-modal').classList.remove('opacity-0'); 
+            document.getElementById('conclusion-modal').children[0].classList.remove('translate-y-full'); 
         }
-
-        function closeConclusionModal() {
-            const modal = document.getElementById('conclusion-modal');
-            modal.classList.add('opacity-0');
-            modal.children[0].classList.add('translate-y-full');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+        
+        function closeConclusionModal() { 
+            document.getElementById('conclusion-modal').classList.add('opacity-0'); 
+            document.getElementById('conclusion-modal').children[0].classList.add('translate-y-full'); 
+            setTimeout(() => document.getElementById('conclusion-modal').classList.add('hidden'), 300); 
         }
-
-        function triggerConclusionCamera() {
-            currentCaptureType = 'depois_modal';
-            document.getElementById('camera-simulator').click();
-        }
-
-        function handlePhotoCapture(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgUrl = e.target.result;
-                
-                if (currentCaptureType === 'antes') {
-                    // Transição PENDENTE -> EM ANDAMENTO
+        
+        function triggerConclusionCamera() { currentCaptureType='depois_modal'; document.getElementById('camera-simulator').click(); }
+        
+        function handlePhotoCapture(e) { 
+            const r=new FileReader(); r.onload=f=>{
+                if(currentCaptureType==='antes') {
                     document.getElementById(`photos-${currentActiveTask}`).classList.remove('hidden');
-                    const boxAntes = document.getElementById(`photo-antes-${currentActiveTask}`);
-                    boxAntes.style.backgroundImage = `url(${imgUrl})`;
-                    boxAntes.style.backgroundSize = 'cover';
-                    boxAntes.style.backgroundPosition = 'center';
-                    boxAntes.innerHTML = '<div class="absolute inset-0 bg-black bg-opacity-20"></div><span class="text-[9px] text-white font-bold absolute bottom-1 drop-shadow-md">ANTES</span>';
-                    
-                    const btnArea = document.getElementById(`actions-${currentActiveTask}`);
-                    btnArea.innerHTML = `
-                        <button onclick="abrirModalConclusao(${currentActiveTask}, 'Remoção de Folhas Secas')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm shadow-orange-200">
-                            <i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade
-                        </button>
-                    `;
+                    const b=document.getElementById(`photo-antes-${currentActiveTask}`);
+                    b.style.backgroundImage=`url(${f.target.result})`; b.style.backgroundSize='cover';
+                    b.innerHTML='<div class="absolute inset-0 bg-black bg-opacity-20"></div><span class="text-[9px] text-white font-bold absolute bottom-1">ANTES</span>';
+                    document.getElementById(`actions-${currentActiveTask}`).innerHTML=`<button onclick="abrirModalConclusao(${currentActiveTask}, 'Remoção de Folhas Secas')" class="flex-1 bg-orange-500 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 shadow-sm"><i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade</button>`;
                     lucide.createIcons();
-
-                    const taskCard = document.getElementById(`task-${currentActiveTask}`);
-                    taskCard.classList.replace('bg-white', 'bg-orange-50');
-                    taskCard.classList.replace('border-gray-200', 'border-orange-200');
-                    
-                    const badge = document.getElementById(`badge-${currentActiveTask}`);
-                    badge.textContent = "Em Andamento";
-                    badge.className = "text-[10px] font-bold uppercase tracking-wide bg-orange-200 text-orange-800 py-1 px-2 rounded";
-
-                } else if (currentCaptureType === 'depois_modal') {
-                    // Armazena a imagem no modal de conclusão
-                    imgTempDepois = imgUrl;
-                    const preview = document.getElementById('conclusion-photo-preview');
-                    preview.classList.remove('hidden');
-                    preview.style.backgroundImage = `url(${imgUrl})`;
-                }
-            }
-            reader.readAsDataURL(file);
+                    const c=document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-white','bg-orange-50'); c.classList.replace('border-gray-200','border-orange-200');
+                    const bd=document.getElementById(`badge-${currentActiveTask}`); bd.textContent="Em Andamento"; bd.className="text-[10px] font-bold uppercase tracking-wide bg-orange-200 text-orange-800 py-1 px-2 rounded";
+                } else { imgTempDepois=f.target.result; const p=document.getElementById('conclusion-photo-preview'); p.classList.remove('hidden'); p.style.backgroundImage=`url(${f.target.result})`; }
+            }; r.readAsDataURL(e.target.files[0]);
         }
-
-        function finalizarProcesso() {
+        
+        // --- INTEGRAÇÃO COM MAKE.COM ---
+        async function finalizarProcesso() {
             const textArea = document.getElementById('conclusion-text');
             const obsText = textArea.value.trim();
             const textError = document.getElementById('text-error');
+            const btnSave = document.getElementById('btn-save-conclusion');
             
-            // 1. Validação da Foto
-            if (!imgTempDepois) {
-                alert("Por favor, tire a foto do resultado final.");
-                return;
-            }
-
-            // 2. Validação RIGOROSA do Texto
+            if(!imgTempDepois){ alert("Por favor, tire a foto do resultado final."); return;}
+            
             const hasMinLength = obsText.length >= 10;
             const hasMultipleWords = obsText.split(/\s+/).length >= 2;
             const hasVowels = /[aeiouáéíóúãõâêîôû]/i.test(obsText);
@@ -400,11 +512,8 @@
             if (!hasMinLength || !hasMultipleWords || !hasVowels) {
                 textArea.classList.add('border-red-500', 'bg-red-50');
                 textError.classList.remove('hidden');
-                
-                // Animação de erro (tremida leve)
                 textArea.classList.add('animate-pulse');
                 setTimeout(() => textArea.classList.remove('animate-pulse'), 500);
-                
                 textArea.focus();
                 return;
             } else {
@@ -412,58 +521,60 @@
                 textError.classList.add('hidden');
             }
 
-            // 3. Transição EM ANDAMENTO -> CONCLUÍDO se tudo estiver certo
-            const taskCard = document.getElementById(`task-${currentActiveTask}`);
-            taskCard.classList.replace('bg-orange-50', 'bg-green-50');
-            taskCard.classList.replace('border-orange-200', 'border-green-200');
-            taskCard.classList.add('opacity-75');
-            
-            // Oculta a área de botões
-            document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
-            
-            // Mockup da foto do 'Antes'
-            const fotoAntesMock = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=150&q=80";
-
-            taskCard.innerHTML = `
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">Concluído Hoje</span>
-                        <span class="text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-800 py-1 px-2 rounded flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> Concluído</span>
-                    </div>
-                    <h3 class="text-gray-600 font-semibold mb-3 line-through">${document.getElementById('modal-task-title').textContent}</h3>
-                    
-                    <div class="flex gap-3 mb-3">
-                        <div class="w-16 h-16 bg-gray-200 rounded-lg relative overflow-hidden bg-cover bg-center" style="background-image: url('${fotoAntesMock}')">
-                            <span class="text-[8px] text-white font-bold absolute bottom-1 left-1 drop-shadow-md bg-black bg-opacity-40 px-1 rounded">ANTES</span>
-                        </div>
-                        <div class="w-16 h-16 bg-gray-200 rounded-lg relative overflow-hidden bg-cover bg-center border-2 border-green-400" style="background-image: url('${imgTempDepois}')">
-                            <span class="text-[8px] text-white font-bold absolute bottom-1 left-1 drop-shadow-md bg-black bg-opacity-40 px-1 rounded">DEPOIS</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white bg-opacity-50 border border-green-100 rounded-lg p-2.5">
-                        <p class="text-xs text-gray-600 italic">"${obsText}"</p>
-                    </div>
-                </div>
-            `;
+            // Ativar estado de carregamento no botão
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> A enviar...';
             lucide.createIcons();
-            closeConclusionModal();
+
+            // Preparar pacote de dados (JSON)
+            const payload = {
+                data_hora: new Date().toISOString(),
+                equipa: document.getElementById('header-team-text').textContent,
+                setor: document.getElementById(`setor-${currentActiveTask}`).textContent,
+                tarefa: document.getElementById('modal-task-title').textContent,
+                observacao: obsText,
+                foto_base64: imgTempDepois
+            };
+
+            try {
+                // Enviar para a URL do Webhook do Make.com
+                const response = await fetch(MAKE_WEBHOOK_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if(!response.ok) throw new Error("Erro de comunicação com o servidor.");
+
+                // Transição EM ANDAMENTO -> CONCLUÍDO
+                const c=document.getElementById(`task-${currentActiveTask}`); 
+                c.classList.replace('bg-orange-50','bg-green-50'); 
+                c.classList.replace('border-orange-200','border-green-200'); 
+                c.classList.add('opacity-75');
+                document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
+                
+                const fotoAntesMock = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=150&q=80";
+
+                c.innerHTML=`<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">Concluído Hoje</span><span class="text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-800 py-1 px-2 rounded flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> Concluído</span></div><h3 class="text-gray-600 font-semibold mb-3 line-through">${document.getElementById('modal-task-title').textContent}</h3><div class="flex gap-3 mb-3"><div class="w-16 h-16 bg-gray-200 rounded-lg relative overflow-hidden bg-cover bg-center border-2 border-green-400" style="background-image: url('${imgTempDepois}')"><span class="text-[8px] text-white font-bold absolute bottom-1 left-1 drop-shadow-md bg-black bg-opacity-40 px-1 rounded">DEPOIS</span></div></div><div class="bg-white bg-opacity-50 border border-green-100 rounded-lg p-2.5"><p class="text-xs text-gray-600 italic">"${obsText}"</p></div></div>`;
+                
+                lucide.createIcons(); 
+                closeConclusionModal();
+
+            } catch (error) {
+                console.error("Erro no envio:", error);
+                alert("Erro ao enviar dados. Verifique a sua ligação à internet e tente novamente.");
+            } finally {
+                // Restaurar botão caso haja erro ou na conclusão
+                btnSave.disabled = false;
+                btnSave.innerHTML = 'Salvar e Concluir';
+            }
         }
 
-        // Modal Extras
-        function openExtraModal() {
-            const m = document.getElementById('extra-modal');
-            m.classList.remove('hidden');
-            void m.offsetWidth;
-            m.classList.remove('opacity-0');
-            document.getElementById('extra-modal-content').classList.remove('translate-y-full');
-        }
-        function closeExtraModal() {
-            const m = document.getElementById('extra-modal');
-            m.classList.add('opacity-0');
-            document.getElementById('extra-modal-content').classList.add('translate-y-full');
-            setTimeout(() => m.classList.add('hidden'), 300);
-        }
+        // Extras
+        function openExtraModal() { document.getElementById('extra-modal').classList.remove('hidden'); document.getElementById('extra-modal').classList.remove('opacity-0'); document.getElementById('extra-modal-content').classList.remove('translate-y-full'); }
+        function closeExtraModal() { document.getElementById('extra-modal').classList.add('opacity-0'); document.getElementById('extra-modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('extra-modal').classList.add('hidden'), 300); }
     </script>
 </body>
 </html>
