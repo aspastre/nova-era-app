@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nova Era - App de Campo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Servidor mais robusto para os ícones -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -84,6 +83,7 @@
 
     <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
         
+        <!-- Cabeçalho Principal Estático para não pular o layout -->
         <div class="mb-4 flex justify-between items-end">
             <div>
                 <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
@@ -94,16 +94,15 @@
                 <p class="text-2xl font-bold text-gray-900" id="view-title">Tarefas de Hoje</p>
                 <p class="text-sm text-gray-500 mt-1" id="current-date">Carregando data...</p>
             </div>
-            <!-- O botão que parecia um toggle switch agora tem texto fixo garantido caso o ícone falhe -->
             <div class="flex gap-2 bg-gray-200 p-1 rounded-lg">
-                <button onclick="toggleView('tasks')" id="btn-tasks" class="bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px]"><i data-lucide="list-todo" class="w-5 h-5"></i></button>
-                <button onclick="toggleView('calendar')" id="btn-calendar" class="px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px]"><i data-lucide="calendar-days" class="w-5 h-5"></i></button>
+                <button onclick="toggleView('tasks')" id="btn-tasks" class="bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all"><i data-lucide="list-todo" class="w-5 h-5"></i></button>
+                <button onclick="toggleView('calendar')" id="btn-calendar" class="px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all"><i data-lucide="calendar-days" class="w-5 h-5"></i></button>
             </div>
         </div>
 
+        <!-- VISÃO DE LISTA -->
         <div id="tasks-view">
             <div class="space-y-4" id="task-container">
-                
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-1">
                     <div class="p-4">
                         <div class="flex justify-between items-start mb-2">
@@ -142,10 +141,10 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
+        <!-- VISÃO DE CALENDÁRIO -->
         <div id="calendar-view" class="hidden">
             <div class="flex justify-between items-center mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
                 <button class="p-2 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
@@ -175,8 +174,7 @@
                     </h3>
                     <span class="bg-white border border-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full" id="selected-day-count">Verificando...</span>
                 </div>
-                <div class="p-3 space-y-2" id="selected-day-list">
-                </div>
+                <div class="p-3 space-y-2" id="selected-day-list"></div>
             </div>
         </div>
     </main>
@@ -225,7 +223,6 @@
                 <h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3>
                 <button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button>
             </div>
-            
             <p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p>
             <p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p>
             
@@ -275,15 +272,9 @@
         </div>
     </div>
 
-    <!-- SCRIPT GERAL BLINDADO -->
     <script>
-        // Função para tentar desenhar ícones sem travar tudo
-        function initIcons() {
-            try { if(typeof lucide !== 'undefined') { lucide.createIcons(); } } 
-            catch(e) { console.log('Erro de ícone ignorado'); }
-        }
+        function initIcons() { try { if(typeof lucide !== 'undefined') { lucide.createIcons(); } } catch(e) {} }
 
-        // Executa a carga da data de imediato
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
@@ -301,6 +292,7 @@
         }
 
         function switchTab(tabId) {
+            // Atualiza barra inferior
             const tabs = ['hoje', 'amanha', 'calendario'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
@@ -308,11 +300,17 @@
                 else { btn.classList.replace('text-orange-500', 'text-gray-400'); }
             });
 
+            const btnTasks = document.getElementById('btn-tasks');
+            const btnCalendar = document.getElementById('btn-calendar');
+
             if (tabId === 'hoje' || tabId === 'amanha') {
                 document.getElementById('calendar-view').classList.add('hidden');
                 document.getElementById('tasks-view').classList.remove('hidden');
-                document.getElementById('posto-trabalho').parentElement.classList.remove('hidden');
                 document.getElementById('fab-add').classList.remove('hidden');
+                
+                // Anima a chavinha para a esquerda
+                btnTasks.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
+                btnCalendar.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
                 
                 if (tabId === 'hoje') {
                     document.getElementById('view-title').textContent = 'Tarefas de Hoje';
@@ -325,8 +323,12 @@
             } else if (tabId === 'calendario') {
                 document.getElementById('tasks-view').classList.add('hidden');
                 document.getElementById('calendar-view').classList.remove('hidden');
-                document.getElementById('posto-trabalho').parentElement.classList.add('hidden');
                 document.getElementById('fab-add').classList.add('hidden'); 
+                
+                // Anima a chavinha para a direita
+                btnTasks.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
+                btnCalendar.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
+                
                 document.getElementById('view-title').textContent = 'Planejamento Mestre';
                 document.getElementById('current-date').textContent = 'Mês atual e Histórico';
                 renderFullMonthCalendar();
@@ -342,9 +344,7 @@
             let html = '';
             const hoje = new Date(); const ano = hoje.getFullYear(); const mes = hoje.getMonth(); const diaAtual = hoje.getDate();
             const mesesStr = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            
-            document.getElementById('mes-titulo').textContent = mesesStr[mes];
-            document.getElementById('ano-titulo').textContent = ano;
+            document.getElementById('mes-titulo').textContent = mesesStr[mes]; document.getElementById('ano-titulo').textContent = ano;
 
             const diasSemanaH = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
             diasSemanaH.forEach(d => html += `<div class="month-header">${d}</div>`);
@@ -359,9 +359,7 @@
 
             for(let day = 1; day <= totalDiasMes; day++) {
                 let classes = "month-cell"; let dotsHtml = '';
-                const dataIteracao = new Date(ano, mes, day);
-                const diaSemana = dataIteracao.getDay();
-                const feriado = ehFeriado(dataIteracao);
+                const dataIteracao = new Date(ano, mes, day); const diaSemana = dataIteracao.getDay(); const feriado = ehFeriado(dataIteracao);
 
                 if(day === diaAtual) { classes += " today selected"; } 
                 if(feriado || diaSemana === 0 || diaSemana === 6) { classes += " bg-gray-50 opacity-75"; }
@@ -481,10 +479,7 @@
             .catch(error => { alert("Erro de conexão."); btn.innerHTML = `Salvar e Sincronizar`; });
         }
 
-        // Tenta desenhar os ícones no final de forma segura
-        window.onload = function() {
-            initIcons();
-        };
+        window.onload = function() { initIcons(); };
     </script>
 </body>
 </html>
