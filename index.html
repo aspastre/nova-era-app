@@ -1,89 +1,273 @@
-// BANCO DE FERIADOS (Formato: Mês-Dia)
-const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
-
-function ehFeriado(data) {
-    const mes = String(data.getMonth() + 1).padStart(2, '0');
-    const dia = String(data.getDate()).padStart(2, '0');
-    return feriadosNacionais.includes(`${mes}-${dia}`);
-}
-
-function proximoDiaUtil(dataBase) {
-    let novaData = new Date(dataBase);
-    // Avança 1 dia até achar um que não seja Sábado(6), Domingo(0) ou Feriado
-    while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) {
-        novaData.setDate(novaData.getDate() + 1);
-    }
-    return novaData.getDate();
-}
-
-function renderFullMonthCalendar() {
-    const container = document.getElementById('month-days-container');
-    if(container.innerHTML.trim() !== "") return;
-    
-    let html = '';
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = hoje.getMonth();
-    const diaAtual = hoje.getDate();
-    
-    // Descobre em qual dia da semana o mês começa
-    const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
-    const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
-
-    // Espaços vazios antes do dia 1
-    for(let i = 0; i < primeiroDiaSemana; i++) { 
-        html += `<div class="month-cell empty"></div>`; 
-    }
-    
-    // Mapeamento Dinâmico de Tarefas Críticas (Exemplo: Roçagem 1x/mês caindo no dia 7)
-    // Se dia 7 for feriado ou fds, empurramos pro próximo dia útil.
-    let dataPrevistaRocagem = new Date(ano, mes, 7);
-    let diaRealRocagem = proximoDiaUtil(dataPrevistaRocagem);
-
-    let dataPrevistaAdubacao = new Date(ano, mes, 15);
-    let diaRealAdubacao = proximoDiaUtil(dataPrevistaAdubacao);
-
-    // Gerador de Dias
-    for(let day = 1; day <= totalDiasMes; day++) {
-        let classes = "month-cell"; 
-        let dotsHtml = '';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Era - App de Campo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 5rem); }
         
-        const dataIteracao = new Date(ano, mes, day);
-        const diaSemana = dataIteracao.getDay();
-        const feriado = ehFeriado(dataIteracao);
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background-color: #e5e7eb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .month-header {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            padding: 8px 0;
+            background-color: #f9fafb;
+        }
+        .month-cell {
+            background-color: white;
+            aspect-ratio: 1 / 1.1;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .month-cell.empty { background-color: #f9fafb; cursor: default; }
+        .month-cell:not(.empty):hover { background-color: #fff7ed; }
+        .month-cell.today .day-num {
+            background-color: #f97316;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -2px 0 0 -2px;
+        }
+        .month-cell.selected { background-color: #fff7ed; box-shadow: inset 0 0 0 2px #f97316; }
+        .day-num { font-size: 12px; font-weight: 600; color: #374151; align-self: flex-start; }
+        .task-dots { margin-top: auto; display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-start; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 relative min-h-screen">
 
-        // Se for dia de hoje, destaca o quadrado
-        if(day === diaAtual) { classes += " today selected"; } 
-        // Se for Feriado ou Fim de Semana, deixa o fundo cinza claro para visualização
-        if(feriado || diaSemana === 0 || diaSemana === 6) { classes += " bg-gray-50 opacity-75"; }
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+        <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 20 L20 80 L35 80 L35 45 L70 70 L80 60 L45 35 Z" fill="url(#grad1)"/>
+                    <path d="M55 25 L85 45 L95 35 L65 15 Z" fill="url(#grad1)"/>
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF9A44;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FC6076;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1 class="font-bold text-lg tracking-tight text-gray-900">Nova Era</h1>
+            </div>
+            <button onclick="openTeamModal()" class="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-sm font-medium rounded-full py-1.5 px-3 transition-colors">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span id="header-team-text">Adriano & Glauco</span>
+            </button>
+        </div>
+    </header>
 
-        // DISTRIBUIÇÃO LÓGICA DAS TAREFAS
-        if (!feriado && diaSemana >= 1 && diaSemana <= 5) {
-            // 5x/Semana (Diárias úteis): Remoção de folhas
-            dotsHtml += `<div class="dot bg-green-500" title="Rotina Diária"></div>`;
+    <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
+        
+        <div class="mb-4 flex justify-between items-end">
+            <div>
+                <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
+                    <option value="Miss Silvia" selected>📍 Edifício Miss Silvia</option>
+                    <option value="Shopping Tietê">📍 Shopping Tietê</option>
+                    <option value="Base Oficina">📍 Base Nova Era</option>
+                </select>
+                <p class="text-2xl font-bold text-gray-900" id="view-title">Tarefas de Hoje</p>
+                <p class="text-sm text-gray-500 mt-1" id="current-date">Carregando data...</p>
+            </div>
+            <div class="flex gap-2 bg-gray-200 p-1 rounded-lg">
+                <button onclick="toggleView('tasks')" id="btn-tasks" class="bg-white shadow-sm p-1.5 rounded text-gray-800"><i data-lucide="list-todo" class="w-5 h-5"></i></button>
+                <button onclick="toggleView('calendar')" id="btn-calendar" class="p-1.5 rounded text-gray-500 hover:text-gray-800"><i data-lucide="calendar-days" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+
+        <div id="tasks-view">
+            <div class="space-y-4" id="task-container">
+                
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-1">
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Área do Totem</span>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded" id="status-1">Pendente</span>
+                        </div>
+                        <h3 class="text-gray-900 font-semibold mb-3">Remoção de Folhas Secas</h3>
+                        <div class="flex gap-2" id="actions-1">
+                            <button onclick="iniciarTarefa(1)" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2">
+                                <i data-lucide="play" class="w-4 h-4"></i> Iniciar
+                            </button>
+                        </div>
+                        <div id="photos-1" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3">
+                            <div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden" id="photo-antes-1">
+                                <span class="text-[9px] text-gray-400 font-medium absolute bottom-1">ANTES</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 rounded-xl shadow-sm border border-blue-200 overflow-hidden task-card" id="task-2">
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Base / Oficina</span>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase tracking-wide bg-blue-200 text-blue-800 py-1 px-2 rounded" id="status-2">Em Andamento</span>
+                        </div>
+                        <h3 class="text-gray-900 font-semibold mb-3">⚙️ Preventiva Leve</h3>
+                        <div class="flex gap-2" id="actions-2">
+                            <button onclick="abrirModalConclusao(2, 'Base / Oficina', 'Preventiva Leve')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 shadow-sm">
+                                <i data-lucide="camera" class="w-4 h-4"></i> Tirar Foto e Concluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="calendar-view" class="hidden">
+            <div class="flex justify-between items-center mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
+                <button class="p-2 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                <div class="text-center">
+                    <h3 class="font-bold text-lg text-gray-800 leading-tight" id="mes-titulo">Outubro</h3>
+                    <p class="text-xs font-medium text-gray-500" id="ano-titulo">2026</p>
+                </div>
+                <button class="p-2 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+            </div>
             
-            // 3x/Semana: Seg(1), Qua(3), Sex(5)
-            if(diaSemana === 1 || diaSemana === 3 || diaSemana === 5) {
-                dotsHtml += `<div class="dot bg-blue-400" title="Irrigação"></div>`;
-            }
-            // 2x/Semana: Ter(2), Qui(4)
-            if(diaSemana === 2 || diaSemana === 4) {
-                dotsHtml += `<div class="dot bg-purple-400" title="Orquídeas e Supervisão"></div>`;
-            }
-        }
+            <div class="month-grid mb-6 shadow-sm" id="month-days-container"></div>
+            
+            <!-- Legenda -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
+                <p class="font-bold mb-2 uppercase tracking-wide">Legenda do Cronograma:</p>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Diária (Ex: Limpeza)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Roçagem / Mata-Mato (Crítico)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-red-600"></div> Adubação Quadrimestral</div>
+                <div class="flex items-center gap-2"><div class="dot bg-purple-400"></div> Orquídeas / Supervisão</div>
+            </div>
 
-        // TAREFAS CRÍTICAS (Realocadas via Algoritmo de Feriado)
-        if (day === diaRealRocagem) {
-            dotsHtml += `<div class="dot bg-orange-500" title="Roçagem / Mata-Mato"></div>`;
-        }
-        // Exemplo: Mês 2 (Março), 6 (Julho) e 10 (Novembro) para Adubação Quadrimestral
-        if ((mes === 2 || mes === 6 || mes === 10) && day === diaRealAdubacao) {
-            dotsHtml += `<div class="dot bg-red-600" title="Adubação Quadrimestral"></div>`;
-        }
+            <!-- Lista de Tarefas do Dia Selecionado -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar-search" class="w-4 h-4 text-orange-500"></i>
+                        <span id="selected-day-title">Dia Selecionado</span>
+                    </h3>
+                    <span class="bg-white border border-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full" id="selected-day-count">Verificando...</span>
+                </div>
+                <div class="p-3 space-y-2" id="selected-day-list">
+                    <!-- Preenchido via JS baseado nos cliques -->
+                </div>
+            </div>
+        </div>
+    </main>
 
-        html += `<div class="${classes}" onclick="selectMonthDate(${day}, this)"><span class="day-num">${day}</span><div class="task-dots">${dotsHtml}</div></div>`;
-    }
-    
-    container.innerHTML = html;
-    selectMonthDate(diaAtual, document.querySelector('.month-cell.today'));
-}
+    <button id="fab-add" onclick="openExtraModal()" class="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-r from-orange-400 to-red-500 rounded-full shadow-lg shadow-orange-200 flex items-center justify-center text-white hover:scale-105 transition-transform z-30">
+        <i data-lucide="plus" class="w-7 h-7"></i>
+    </button>
+
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-20">
+        <div class="max-w-md mx-auto flex justify-around p-2 pb-6">
+            <button onclick="switchTab('hoje')" id="tab-hoje" class="flex flex-col items-center p-2 text-orange-500 w-1/3 transition-colors">
+                <i data-lucide="calendar-check" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-medium">Hoje (D0)</span>
+            </button>
+            <button onclick="switchTab('amanha')" id="tab-amanha" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-400 transition-colors w-1/3">
+                <i data-lucide="calendar-clock" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-medium">Amanhã</span>
+            </button>
+            <button onclick="switchTab('calendario')" id="tab-calendario" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-400 transition-colors w-1/3">
+                <i data-lucide="calendar-days" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-medium">Calendário</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Modais (Equipe, Extra, Conclusão) -->
+    <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
+            <div class="p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">Filtrar Agenda (Visão)</h3>
+                    <button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div class="space-y-3 mb-5" id="team-checkboxes-view">
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500 rounded border-gray-300" checked><span class="font-medium text-gray-800">Adriano</span></label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500 rounded border-gray-300" checked><span class="font-medium text-gray-800">Glauco</span></label>
+                </div>
+                <button onclick="updateTeamView()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl">Atualizar Visão</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3>
+                <button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button>
+            </div>
+            
+            <p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p>
+            <p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p>
+            
+            <div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label>
+                    <input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden">
+                    <div id="preview-container" class="hidden mb-2 relative">
+                        <img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                        <span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span>
+                    </div>
+                    <button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm">
+                        <i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto
+                    </button>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Equipe Executora <span class="text-red-500">*</span></label>
+                    <div class="flex flex-wrap gap-2" id="executors-checkboxes">
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500 rounded border-gray-300" checked><span class="text-xs font-semibold text-gray-700">Adriano</span></label>
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500 rounded border-gray-300"><span class="text-xs font-semibold text-gray-700">Glauco</span></label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label>
+                    <textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes..."></textarea>
+                </div>
+            </div>
+            
+            <button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar
+            </button>
+        </div>
+    </div>
+
+    <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
+            <div class="p-5">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Agendar Atividade</h3><button onclick="closeExtraModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div>
+                <div class="space-y-4">
+                    <div><label class="block text-xs font-semibold text-gray-600 mb-1">Setor</label><select class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5"><option>Área do Totem</option><option>Base / Oficina</option></select></div>
+                    <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tarefa</label><select class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5"><option>Remoção de Folhas Secas</option><option>Preventiva Leve</option></select></div>
+                    <button onclick="closeExtraModal()" class="w-full bg-gray-900 text-white font-medium py-3 rounded
