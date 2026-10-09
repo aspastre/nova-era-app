@@ -83,7 +83,6 @@
 
     <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
         
-        <!-- Cabeçalho Principal Estático para não pular o layout -->
         <div class="mb-4 flex justify-between items-end">
             <div>
                 <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
@@ -100,7 +99,6 @@
             </div>
         </div>
 
-        <!-- VISÃO DE LISTA -->
         <div id="tasks-view">
             <div class="space-y-4" id="task-container">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-1">
@@ -144,7 +142,6 @@
             </div>
         </div>
 
-        <!-- VISÃO DE CALENDÁRIO -->
         <div id="calendar-view" class="hidden">
             <div class="flex justify-between items-center mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
                 <button class="p-2 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
@@ -157,15 +154,7 @@
             
             <div class="month-grid mb-6 shadow-sm" id="month-days-container"></div>
             
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
-                <p class="font-bold mb-2 uppercase tracking-wide">Legenda do Cronograma:</p>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Diária (Ex: Limpeza)</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Roçagem / Mata-Mato (Crítico)</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-red-600"></div> Adubação Quadrimestral</div>
-                <div class="flex items-center gap-2"><div class="dot bg-purple-400"></div> Orquídeas / Supervisão</div>
-            </div>
-
+            <!-- LISTA AGORA VEM ANTES DA LEGENDA -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
                 <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
                     <h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2">
@@ -176,6 +165,17 @@
                 </div>
                 <div class="p-3 space-y-2" id="selected-day-list"></div>
             </div>
+
+            <!-- LEGENDA REBAIXADA -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
+                <p class="font-bold mb-2 uppercase tracking-wide">Legenda do Cronograma:</p>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Diária (Ex: Limpeza)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Roçagem / Mata-Mato (Crítico)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-red-600"></div> Adubação Quadrimestral</div>
+                <div class="flex items-center gap-2"><div class="dot bg-purple-400"></div> Orquídeas / Supervisão</div>
+            </div>
+
         </div>
     </main>
 
@@ -292,7 +292,6 @@
         }
 
         function switchTab(tabId) {
-            // Atualiza barra inferior
             const tabs = ['hoje', 'amanha', 'calendario'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
@@ -308,7 +307,6 @@
                 document.getElementById('tasks-view').classList.remove('hidden');
                 document.getElementById('fab-add').classList.remove('hidden');
                 
-                // Anima a chavinha para a esquerda
                 btnTasks.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
                 btnCalendar.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
                 
@@ -325,7 +323,6 @@
                 document.getElementById('calendar-view').classList.remove('hidden');
                 document.getElementById('fab-add').classList.add('hidden'); 
                 
-                // Anima a chavinha para a direita
                 btnTasks.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
                 btnCalendar.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
                 
