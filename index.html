@@ -100,15 +100,13 @@
         </div>
 
         <div id="tasks-view">
-            <!-- Novo Loader de Sincronização do CSV -->
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
                 <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
-                <h3 class="text-sm font-medium text-gray-700">Sincronizando cronograma...</h3>
-                <p class="text-xs text-gray-500 mt-1">Conectando ao banco de dados</p>
+                <h3 class="text-sm font-medium text-gray-700">Calculando matriz de operações...</h3>
+                <p class="text-xs text-gray-500 mt-1">Lendo regras de repetição e feriados</p>
             </div>
 
             <div class="space-y-4 hidden" id="task-container">
-                <!-- Os cards reais gerados pelo Javascript entrarão aqui -->
             </div>
             
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
@@ -153,21 +151,19 @@
         </div>
     </main>
 
-    <!-- BARRA INFERIOR (Estilo Ifood/SaaS) -->
+    <!-- BARRA INFERIOR -->
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div class="max-w-md mx-auto flex justify-between items-end px-6 pb-4 pt-2">
             <button onclick="switchTab('hoje')" id="tab-hoje" class="flex flex-col items-center p-2 text-orange-500 w-1/3 transition-colors">
                 <i data-lucide="calendar-check" class="w-6 h-6 mb-1"></i>
                 <span class="text-[10px] font-medium">Hoje</span>
             </button>
-            
             <div class="relative w-1/3 flex flex-col items-center">
                 <button onclick="openExtraModal()" class="absolute -top-10 w-14 h-14 bg-gradient-to-r from-orange-400 to-red-500 rounded-full shadow-lg shadow-orange-200 flex items-center justify-center text-white hover:scale-105 transition-transform z-30 ring-4 ring-white">
                     <i data-lucide="plus" class="w-7 h-7"></i>
                 </button>
                 <span class="text-[10px] font-bold text-gray-500 mt-5">Nova Tarefa</span>
             </div>
-
             <button onclick="switchTab('calendario')" id="tab-calendario" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-500 transition-colors w-1/3">
                 <i data-lucide="calendar-days" class="w-6 h-6 mb-1"></i>
                 <span class="text-[10px] font-medium">Calendário</span>
@@ -179,11 +175,7 @@
     <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
             <div class="p-5">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3>
-                    <button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
-                </div>
-                <p class="text-xs text-gray-500 mb-4">Identifique quem está trabalhando neste posto de trabalho hoje.</p>
+                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3><button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div>
                 <div class="space-y-3 mb-5" id="team-checkboxes-view">
                     <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Adriano</span></label>
                     <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Glauco</span></label>
@@ -195,26 +187,15 @@
 
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300">
-            <div class="flex justify-between items-start mb-2">
-                <h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3>
-                <button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button>
-            </div>
-            <p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p>
-            <p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p>
-            
+            <div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div>
+            <p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p>
             <div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label>
                     <input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden">
-                    <div id="preview-container" class="hidden mb-2 relative">
-                        <img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200">
-                        <span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span>
-                    </div>
-                    <button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm">
-                        <i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto
-                    </button>
+                    <div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div>
+                    <button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button>
                 </div>
-                
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-2" id="executors-checkboxes">
@@ -222,16 +203,9 @@
                         <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label>
                     </div>
                 </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label>
-                    <textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea>
-                </div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div>
             </div>
-            
-            <button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md">
-                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar
-            </button>
+            <button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button>
         </div>
     </div>
 
@@ -248,9 +222,7 @@
         </div>
     </div>
 
-    <!-- O CÉREBRO: LÓGICA E CONEXÃO COM O SEU GOOGLE SHEETS -->
     <script>
-        // Link real fornecido pelo usuário
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgJUsLqkpJLw2ityVwZoqg0_pHbNkJvMMJwhvA6SpjqFM7Q7QfkvEORpode5R2-w/pub?output=csv";
         window.cronogramaData = [];
 
@@ -259,73 +231,91 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
+        // --- CÉREBRO DE FERIADOS ---
         const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
+        
         function ehFeriado(data) {
             const mes = String(data.getMonth() + 1).padStart(2, '0');
             const dia = String(data.getDate()).padStart(2, '0');
             return feriadosNacionais.includes(`${mes}-${dia}`);
         }
 
-        // Parseador super blindado para ler qualquer CSV sem quebrar o HTML
+        // Encontra o próximo dia útil ignorando fins de semana e feriados
+        function proximoDiaUtilDate(dataBase) {
+            let novaData = new Date(dataBase);
+            while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { 
+                novaData.setDate(novaData.getDate() + 1); 
+            }
+            return novaData;
+        }
+
+        // Verifica estritamente a regra matriz SEM considerar feriado
+        function checarRegraOriginal(freqStr, dataOriginal) {
+            const diaSemana = dataOriginal.getDay(); const diaMes = dataOriginal.getDate(); const mes = dataOriginal.getMonth();
+            if (freqStr.includes('diaria') || freqStr.includes('5x')) return diaSemana >= 1 && diaSemana <= 5;
+            if (freqStr.includes('3x/semana')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
+            if (freqStr.includes('2x/semana')) return diaSemana === 2 || diaSemana === 4;
+            if (freqStr.includes('4x/m') || freqStr.includes('semanal')) return diaSemana === 3; 
+            if (freqStr.includes('3x/m')) return diaMes === 10 || diaMes === 20 || diaMes === 30;
+            if (freqStr.includes('2x/m')) return (diaSemana === 4 && diaMes <= 7) || (diaSemana === 4 && diaMes > 14 && diaMes <= 21);
+            if (freqStr.includes('1x/m') || freqStr.includes('mensal')) return (diaSemana === 2 && diaMes <= 14);
+            if (freqStr.includes('quadrimestral')) return (mes === 2 || mes === 6 || mes === 10) && diaMes === 15;
+            return false;
+        }
+
+        // Avalia se uma tarefa cai no dia solicitado (com a lógica de 'Reagendamento Automático')
+        function tarefaCaiHoje(freqStr, dataReferencia) {
+            if (!freqStr) return false;
+            freqStr = freqStr.toLowerCase();
+            
+            // É dia inútil? Então não faz nada.
+            if (dataReferencia.getDay() === 0 || dataReferencia.getDay() === 6 || ehFeriado(dataReferencia)) return false; 
+            
+            // Frequências que NÃO podem ser puladas
+            const isBaixaFreq = freqStr.includes('mês') || freqStr.includes('mensal') || freqStr.includes('quadrimestral') || freqStr.includes('m') || freqStr.includes('semanal') || freqStr.includes('4x');
+            
+            if (!isBaixaFreq) {
+                // Tarefa de alta frequência: só faz se a regra bater hoje
+                return checarRegraOriginal(freqStr, dataReferencia);
+            } else {
+                // Tarefa crítica: Vamos buscar se ela ficou 'represada' nos últimos 5 dias
+                for (let i = 0; i <= 5; i++) {
+                    let pastDate = new Date(dataReferencia);
+                    pastDate.setDate(pastDate.getDate() - i);
+                    
+                    if (checarRegraOriginal(freqStr, pastDate)) {
+                        // Descobre para que dia útil ela foi jogada
+                        let diaUtilDaTarefa = proximoDiaUtilDate(pastDate);
+                        
+                        // Se ela foi empurrada para bater exatamente com a dataReferencia (hoje), ela aparece e SOMARÁ na tela!
+                        if (diaUtilDaTarefa.getDate() === dataReferencia.getDate() && diaUtilDaTarefa.getMonth() === dataReferencia.getMonth()) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
         function parseCSV(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
                 let char = text[i];
-                if (insideQuotes) {
-                    if (char === '"') { if (text[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; }
-                    } else { currentCell += char; }
-                } else {
-                    if (char === '"') { insideQuotes = true; } 
-                    else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } 
-                    else if (char === '\n' || char === '\r') {
-                        if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-                        currentRow = []; currentCell = '';
-                        if(char === '\r' && text[i+1] === '\n') i++; 
-                    } else { currentCell += char; }
-                }
+                if (insideQuotes) { if (char === '"') { if (text[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; } } else { currentCell += char; }
+                } else { if (char === '"') { insideQuotes = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } else if (char === '\n' || char === '\r') { if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } currentRow = []; currentCell = ''; if(char === '\r' && text[i+1] === '\n') i++; } else { currentCell += char; } }
             }
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
             if(rows.length === 0) return [];
-            
             const headers = rows[0]; const data = [];
-            for(let i=1; i<rows.length; i++) {
-                let obj = {}; for(let j=0; j<headers.length; j++) { obj[headers[j]] = rows[i][j] || ''; } data.push(obj);
-            }
+            for(let i=1; i<rows.length; i++) { let obj = {}; for(let j=0; j<headers.length; j++) { obj[headers[j]] = rows[i][j] || ''; } data.push(obj); }
             return data;
-        }
-
-        // A INTELIGÊNCIA ARTIFICIAL DO CRONOGRAMA
-        function tarefaCaiHoje(freqStr, dataReferencia) {
-            if (!freqStr) return false;
-            freqStr = freqStr.toLowerCase();
-            const diaSemana = dataReferencia.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
-            const diaMes = dataReferencia.getDate();
-            const mes = dataReferencia.getMonth();
-            
-            // Pula Finais de Semana e Feriados para a rotina diária
-            if (diaSemana === 0 || diaSemana === 6 || ehFeriado(dataReferencia)) return false;
-
-            if (freqStr.includes('diaria') || freqStr.includes('5x')) return true;
-            if (freqStr.includes('3x/semana')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
-            if (freqStr.includes('2x/semana')) return diaSemana === 2 || diaSemana === 4;
-            if (freqStr.includes('4x/m') || freqStr.includes('semanal')) return diaSemana === 3;
-            if (freqStr.includes('3x/m')) return diaMes === 10 || diaMes === 20 || diaMes === 30;
-            if (freqStr.includes('2x/m')) return (diaSemana === 4 && diaMes <= 7) || (diaSemana === 4 && diaMes > 14 && diaMes <= 21);
-            if (freqStr.includes('1x/m') || freqStr.includes('mensal')) return (diaSemana === 2 && diaMes <= 14); // Terças da primeira e segunda semana
-            if (freqStr.includes('quadrimestral')) return (mes === 2 || mes === 6 || mes === 10) && diaMes === 15;
-            
-            return false;
         }
 
         function popularFiltrosModal() {
             const setoresUnicos = [...new Set(window.cronogramaData.map(t => t['Setor'] || t['Local']).filter(Boolean))];
             const tarefasUnicas = [...new Set(window.cronogramaData.map(t => t['Atividade'] || t['Tarefa']).filter(Boolean))];
-            
-            const selectSetor = document.getElementById('modal-select-setor');
-            const selectTarefa = document.getElementById('modal-select-tarefa');
-            
-            if(selectSetor && setoresUnicos.length > 0) selectSetor.innerHTML = setoresUnicos.map(s => `<option value="${s}">${s}</option>`).join('');
-            if(selectTarefa && tarefasUnicas.length > 0) selectTarefa.innerHTML = tarefasUnicas.map(t => `<option value="${t}">${t}</option>`).join('');
+            if(document.getElementById('modal-select-setor') && setoresUnicos.length > 0) document.getElementById('modal-select-setor').innerHTML = setoresUnicos.map(s => `<option value="${s}">${s}</option>`).join('');
+            if(document.getElementById('modal-select-tarefa') && tarefasUnicas.length > 0) document.getElementById('modal-select-tarefa').innerHTML = tarefasUnicas.map(t => `<option value="${t}">${t}</option>`).join('');
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
@@ -341,130 +331,74 @@
             });
 
             if(tarefasHoje.length === 0) {
-                container.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                initIcons();
-                return;
+                container.classList.add('hidden'); emptyState.classList.remove('hidden'); initIcons(); return;
             }
 
-            container.classList.remove('hidden');
-            emptyState.classList.add('hidden');
+            container.classList.remove('hidden'); emptyState.classList.add('hidden');
 
             let html = '';
             tarefasHoje.forEach((t, index) => {
-                const setor = t['Setor'] || 'Área Geral';
-                const atividade = t['Atividade'] || t['Tarefa'] || 'Tarefa Indefinida';
-                const id = index + 1;
-                
-                // Seguranca contra quebra de String em JS ('Espelho d'Água')
-                const safeSetor = setor.replace(/'/g, "\\'");
-                const safeAtividade = atividade.replace(/'/g, "\\'");
+                const setor = t['Setor'] || 'Área Geral'; const atividade = t['Atividade'] || t['Tarefa'] || ''; const id = index + 1;
+                const safeSetor = setor.replace(/'/g, "\\'"); const safeAtividade = atividade.replace(/'/g, "\\'");
                 
                 let corBadgeBg = 'bg-green-100', corBadgeText = 'text-green-800';
-                if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
+                if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata') || atividade.toLowerCase().includes('adub')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
                 else if(atividade.toLowerCase().includes('irrig') || atividade.toLowerCase().includes('vaso')) { corBadgeBg = 'bg-blue-100'; corBadgeText = 'text-blue-800'; }
 
                 html += `
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-${id}">
                     <div class="p-4">
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="flex items-center gap-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${corBadgeBg} ${corBadgeText}">${setor}</span></div>
-                            <span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded" id="status-${id}">Pendente</span>
-                        </div>
+                        <div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${corBadgeBg} ${corBadgeText}">${setor}</span></div><span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded" id="status-${id}">Pendente</span></div>
                         <h3 class="text-gray-900 font-semibold mb-3">${atividade}</h3>
-                        <div class="flex gap-2" id="actions-${id}">
-                            <button onclick="iniciarTarefa(${id}, '${safeSetor}', '${safeAtividade}')" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2">
-                                <i data-lucide="play" class="w-4 h-4"></i> Iniciar
-                            </button>
-                        </div>
-                        <div id="photos-${id}" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3">
-                            <div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden bg-cover bg-center" id="photo-antes-${id}">
-                                <span class="text-[9px] text-white font-bold absolute bottom-1 bg-black bg-opacity-50 px-1 rounded">ANTES</span>
-                            </div>
-                        </div>
+                        <div class="flex gap-2" id="actions-${id}"><button onclick="iniciarTarefa(${id}, '${safeSetor}', '${safeAtividade}')" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> Iniciar</button></div>
+                        <div id="photos-${id}" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3"><div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden bg-cover bg-center" id="photo-antes-${id}"><span class="text-[9px] text-white font-bold absolute bottom-1 bg-black bg-opacity-50 px-1 rounded">ANTES</span></div></div>
                     </div>
                 </div>`;
             });
-            container.innerHTML = html;
-            initIcons();
+            container.innerHTML = html; initIcons();
         }
 
         async function inicializarApp() {
             initIcons();
-            document.getElementById('loader-tasks').classList.remove('hidden');
-            document.getElementById('task-container').classList.add('hidden');
-            document.getElementById('empty-state-tasks').classList.add('hidden');
-            
+            document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
             try {
-                const response = await fetch(CSV_URL);
-                const data = await response.text();
-                window.cronogramaData = parseCSV(data);
-                
-                popularFiltrosModal();
-                renderizarTarefasDoDia(new Date()); // Aplica as regras na data de hoje
-                
-                document.getElementById('loader-tasks').classList.add('hidden');
+                const response = await fetch(CSV_URL); const data = await response.text(); window.cronogramaData = parseCSV(data);
+                popularFiltrosModal(); renderizarTarefasDoDia(new Date()); document.getElementById('loader-tasks').classList.add('hidden');
                 setTimeout(() => { openTeamModal(); }, 600); 
             } catch(error) {
-                console.error("Erro ao puxar CSV:", error);
-                document.getElementById('loader-tasks').classList.add('hidden');
-                document.getElementById('empty-state-tasks').classList.remove('hidden');
-                alert("Falha de internet. Não foi possível baixar o cronograma da Planilha do Google.");
+                console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden');
+                alert("Falha de internet. O app usará modo offline (sem tarefas sincronizadas).");
             }
         }
 
-        // TABS E CALENDÁRIO COM DADOS REAIS
         function switchTab(tabId) {
-            const btnHoje = document.getElementById('tab-hoje');
-            const btnCalendario = document.getElementById('tab-calendario');
-
-            if (tabId === 'hoje') { 
-                btnHoje.classList.replace('text-gray-400', 'text-orange-500'); 
-                btnCalendario.classList.replace('text-orange-500', 'text-gray-400');
-            } else { 
-                btnCalendario.classList.replace('text-gray-400', 'text-orange-500'); 
-                btnHoje.classList.replace('text-orange-500', 'text-gray-400');
-            }
-
+            const btnHoje = document.getElementById('tab-hoje'); const btnCalendario = document.getElementById('tab-calendario');
+            if (tabId === 'hoje') { btnHoje.classList.replace('text-gray-400', 'text-orange-500'); btnCalendario.classList.replace('text-orange-500', 'text-gray-400'); } else { btnCalendario.classList.replace('text-gray-400', 'text-orange-500'); btnHoje.classList.replace('text-orange-500', 'text-gray-400'); }
             const btnTasks = document.getElementById('btn-tasks'); const btnCalendar = document.getElementById('btn-calendar');
 
             if (tabId === 'hoje') {
-                document.getElementById('calendar-view').classList.add('hidden');
-                document.getElementById('tasks-view').classList.remove('hidden');
-                btnTasks.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
-                btnCalendar.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
-                
-                document.getElementById('view-title').textContent = 'Tarefas de Hoje';
-                document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
+                document.getElementById('calendar-view').classList.add('hidden'); document.getElementById('tasks-view').classList.remove('hidden');
+                btnTasks.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all"; btnCalendar.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
+                document.getElementById('view-title').textContent = 'Tarefas de Hoje'; document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
             } else if (tabId === 'calendario') {
-                document.getElementById('tasks-view').classList.add('hidden');
-                document.getElementById('calendar-view').classList.remove('hidden');
-                btnTasks.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
-                btnCalendar.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
-                
-                document.getElementById('view-title').textContent = 'Planejamento Mestre';
-                document.getElementById('current-date').textContent = 'Mês atual e Histórico';
+                document.getElementById('tasks-view').classList.add('hidden'); document.getElementById('calendar-view').classList.remove('hidden');
+                btnTasks.className = "px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all"; btnCalendar.className = "bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all";
+                document.getElementById('view-title').textContent = 'Planejamento Mestre'; document.getElementById('current-date').textContent = 'Mês atual e Histórico';
                 renderFullMonthCalendar();
             }
         }
-
         function toggleView(view) { if(view === 'tasks') switchTab('hoje'); else switchTab('calendario'); }
 
         function renderFullMonthCalendar() {
             const container = document.getElementById('month-days-container');
             if(container.innerHTML.trim() !== "") return;
-            
             let html = '';
             const hoje = new Date(); const ano = hoje.getFullYear(); const mes = hoje.getMonth(); const diaAtual = hoje.getDate();
             const mesesStr = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             document.getElementById('mes-titulo').textContent = mesesStr[mes]; document.getElementById('ano-titulo').textContent = ano;
 
-            const diasSemanaH = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-            diasSemanaH.forEach(d => html += `<div class="month-header">${d}</div>`);
-
-            const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
-            const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
-
+            const diasSemanaH = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']; diasSemanaH.forEach(d => html += `<div class="month-header">${d}</div>`);
+            const primeiroDiaSemana = new Date(ano, mes, 1).getDay(); const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
             for(let i = 0; i < primeiroDiaSemana; i++) { html += `<div class="month-cell empty"></div>`; }
 
             for(let day = 1; day <= totalDiasMes; day++) {
@@ -474,141 +408,92 @@
                 if(day === diaAtual) { classes += " today selected"; } 
                 if(feriado || diaSemana === 0 || diaSemana === 6) { classes += " bg-gray-50 opacity-75"; }
 
-                if (!feriado && diaSemana >= 1 && diaSemana <= 5 && window.cronogramaData.length > 0) {
-                    let hasRotina=false, hasIrrig=false, hasRoca=false;
+                if (window.cronogramaData.length > 0) {
+                    let hasRotina=false, hasIrrig=false, hasRoca=false, hasAduba=false;
                     window.cronogramaData.forEach(t => {
-                        const freq = t['Frequência'] || t['Frequencia'] || t['Freq'] || '';
-                        const ativ = (t['Atividade'] || t['Tarefa'] || '').toLowerCase();
+                        const freq = t['Frequência'] || t['Frequencia'] || t['Freq'] || ''; const ativ = (t['Atividade'] || t['Tarefa'] || '').toLowerCase();
                         if(tarefaCaiHoje(freq, dataIteracao)) {
                             if(ativ.includes('folha') || ativ.includes('limp')) hasRotina = true;
                             if(ativ.includes('irrig') || ativ.includes('vaso')) hasIrrig = true;
                             if(ativ.includes('roça') || ativ.includes('mata')) hasRoca = true;
+                            if(ativ.includes('aduba')) hasAduba = true;
                         }
                     });
                     if(hasRotina) dotsHtml += `<div class="dot bg-green-500"></div>`;
                     if(hasIrrig) dotsHtml += `<div class="dot bg-blue-400"></div>`;
                     if(hasRoca) dotsHtml += `<div class="dot bg-orange-500"></div>`;
+                    if(hasAduba) dotsHtml += `<div class="dot bg-red-600"></div>`;
                 }
                 html += `<div class="${classes}" onclick="selectMonthDate(${day}, this, ${diaSemana}, ${feriado})"><span class="day-num">${day}</span><div class="task-dots">${dotsHtml}</div></div>`;
             }
-            container.innerHTML = html;
-            selectMonthDate(diaAtual, document.querySelector('.month-cell.today'), hoje.getDay(), ehFeriado(hoje));
+            container.innerHTML = html; selectMonthDate(diaAtual, document.querySelector('.month-cell.today'), hoje.getDay(), ehFeriado(hoje));
         }
 
         function selectMonthDate(day, element, diaSemana, feriado) {
             document.querySelectorAll('.month-cell.selected').forEach(el => el.classList.remove('selected'));
-            if(element) element.classList.add('selected');
-            document.getElementById('selected-day-title').textContent = `Dia ${day}`;
+            if(element) element.classList.add('selected'); document.getElementById('selected-day-title').textContent = `Dia ${day}`;
             const list = document.getElementById('selected-day-list');
             
-            if (feriado || diaSemana === 0 || diaSemana === 6) {
-                document.getElementById('selected-day-count').textContent = 'Livre';
-                list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`;
-                initIcons(); return;
-            }
+            if (feriado || diaSemana === 0 || diaSemana === 6) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`; initIcons(); return; }
 
-            const hoje = new Date();
-            const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
+            const hoje = new Date(); const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
             const tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t['Frequência'] || t['Frequencia'] || '', dataClicada));
 
-            if(tarefasDoDia.length === 0) {
-                document.getElementById('selected-day-count').textContent = 'Livre';
-                list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`;
-                initIcons(); return;
-            }
+            if(tarefasDoDia.length === 0) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`; initIcons(); return; }
 
             document.getElementById('selected-day-count').textContent = `${tarefasDoDia.length} Atividades`;
             let itensHtml = '';
             tarefasDoDia.forEach(t => {
-                const setor = t['Setor'] || 'Geral'; const ativ = t['Atividade'] || t['Tarefa'] || '';
-                let cor = 'bg-green-500';
+                const setor = t['Setor'] || 'Geral'; const ativ = t['Atividade'] || t['Tarefa'] || ''; let cor = 'bg-green-500';
                 if(ativ.toLowerCase().includes('roça') || ativ.toLowerCase().includes('mata')) cor = 'bg-orange-500';
                 if(ativ.toLowerCase().includes('irrig') || ativ.toLowerCase().includes('vaso')) cor = 'bg-blue-400';
+                if(ativ.toLowerCase().includes('aduba')) cor = 'bg-red-600';
                 itensHtml += `<div class="flex justify-between p-2 border border-gray-100 rounded"><div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full ${cor}"></div><div><p class="text-sm font-medium">${ativ}</p><p class="text-[10px] text-gray-500">${setor}</p></div></div><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>`;
             });
-            list.innerHTML = itensHtml;
-            initIcons();
+            list.innerHTML = itensHtml; initIcons();
         }
 
-        // --- CONTROLES DE UX E SINCRONIZAÇÃO ---
+        // --- CONTROLES DE INTERFACE E SINCRONIZAÇÃO ---
         function openTeamModal() { document.getElementById('team-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('team-modal').classList.remove('opacity-0'); document.getElementById('team-modal').children[0].classList.remove('translate-y-full'); }, 10); }
         function closeTeamModal() { document.getElementById('team-modal').classList.add('opacity-0'); document.getElementById('team-modal').children[0].classList.add('translate-y-full'); setTimeout(() => document.getElementById('team-modal').classList.add('hidden'), 300); }
-        function updateTeamView() { 
-            const c = document.querySelectorAll('#team-checkboxes-view input:checked'); 
-            const btnText = document.getElementById('header-team-text');
-            if (c.length === 0) { btnText.textContent = "Identificar-se"; btnText.parentElement.classList.replace('bg-gray-100', 'bg-orange-50'); btnText.parentElement.classList.replace('text-gray-700', 'text-orange-700'); } 
-            else { btnText.textContent = c.length === 1 ? c[0].value : `${c[0].value} +${c.length-1}`; btnText.parentElement.classList.replace('bg-orange-50', 'bg-gray-100'); btnText.parentElement.classList.replace('text-orange-700', 'text-gray-700'); }
-            closeTeamModal(); 
-        }
+        function updateTeamView() { const c = document.querySelectorAll('#team-checkboxes-view input:checked'); const btnText = document.getElementById('header-team-text'); if (c.length === 0) { btnText.textContent = "Identificar-se"; btnText.parentElement.classList.replace('bg-gray-100', 'bg-orange-50'); btnText.parentElement.classList.replace('text-gray-700', 'text-orange-700'); } else { btnText.textContent = c.length === 1 ? c[0].value : `${c[0].value} +${c.length-1}`; btnText.parentElement.classList.replace('bg-orange-50', 'bg-gray-100'); btnText.parentElement.classList.replace('text-orange-700', 'text-gray-700'); } closeTeamModal(); }
         
         function openExtraModal() { document.getElementById('extra-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('extra-modal').classList.remove('opacity-0'); document.getElementById('extra-modal-content').classList.remove('translate-y-full'); }, 10); }
         function closeExtraModal() { document.getElementById('extra-modal').classList.add('opacity-0'); document.getElementById('extra-modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('extra-modal').classList.add('hidden'), 300); }
 
         let currentActiveTask=null, currentCaptureType=null, imgTempDepois=null, setorAtual="", tarefaAtual="";
-        
         function iniciarTarefa(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; currentCaptureType='antes'; document.getElementById('camera-input').click(); }
-        
-        function abrirModalConclusao(id, setor, tarefa) { 
-            currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa;
-            document.getElementById('modal-task-title').textContent = tarefa; document.getElementById('modal-setor-title').textContent = setor;
-            imgTempDepois=null; document.getElementById('preview-container').classList.add('hidden'); document.getElementById('obs-input').value=''; 
-            document.querySelectorAll('#executors-checkboxes input').forEach(cb => cb.checked = false);
-            const modal = document.getElementById('conclusion-modal');
-            modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10);
-        }
-        
+        function abrirModalConclusao(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; document.getElementById('modal-task-title').textContent = tarefa; document.getElementById('modal-setor-title').textContent = setor; imgTempDepois=null; document.getElementById('preview-container').classList.add('hidden'); document.getElementById('obs-input').value=''; document.querySelectorAll('#executors-checkboxes input').forEach(cb => cb.checked = false); const modal = document.getElementById('conclusion-modal'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10); }
         function closeConclusionModal() { const modal = document.getElementById('conclusion-modal'); modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
 
         document.getElementById('camera-input').addEventListener('change', function(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const r = new FileReader();
+            const file = e.target.files[0]; if (!file) return; const r = new FileReader();
             r.onload = function(event) {
                 if(currentCaptureType === 'antes') {
                     document.getElementById(`photos-${currentActiveTask}`).classList.remove('hidden');
-                    const b = document.getElementById(`photo-antes-${currentActiveTask}`);
-                    b.style.backgroundImage = `url(${event.target.result})`; b.style.backgroundSize = 'cover';
-                    b.innerHTML = '<span class="text-[9px] text-white font-bold absolute bottom-1 bg-black bg-opacity-50 px-1 rounded">ANTES</span>';
-                    
-                    const safeSetor = setorAtual.replace(/'/g, "\\'");
-                    const safeTarefa = tarefaAtual.replace(/'/g, "\\'");
-                    
+                    const b = document.getElementById(`photo-antes-${currentActiveTask}`); b.style.backgroundImage = `url(${event.target.result})`; b.style.backgroundSize = 'cover'; b.innerHTML = '<span class="text-[9px] text-white font-bold absolute bottom-1 bg-black bg-opacity-50 px-1 rounded">ANTES</span>';
+                    const safeSetor = setorAtual.replace(/'/g, "\\'"); const safeTarefa = tarefaAtual.replace(/'/g, "\\'");
                     document.getElementById(`actions-${currentActiveTask}`).innerHTML = `<button onclick="abrirModalConclusao(${currentActiveTask}, '${safeSetor}', '${safeTarefa}')" class="flex-1 bg-orange-500 text-white py-2.5 rounded-lg text-sm flex items-center justify-center gap-2"><i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade</button>`;
-                    const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-white','bg-orange-50'); c.classList.replace('border-gray-200','border-orange-200');
-                    document.getElementById(`status-${currentActiveTask}`).textContent="Em Andamento";
-                    initIcons();
-                } else {
-                    imgTempDepois = event.target.result;
-                    document.getElementById('preview-container').classList.remove('hidden');
-                    document.getElementById('foto-preview').src = imgTempDepois;
-                }
-            };
-            r.readAsDataURL(file);
+                    const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-white','bg-orange-50'); c.classList.replace('border-gray-200','border-orange-200'); document.getElementById(`status-${currentActiveTask}`).textContent="Em Andamento"; initIcons();
+                } else { imgTempDepois = event.target.result; document.getElementById('preview-container').classList.remove('hidden'); document.getElementById('foto-preview').src = imgTempDepois; }
+            }; r.readAsDataURL(file);
         });
 
         function finalizarProcesso() {
             if(!imgTempDepois){ alert("Tire a foto para auditoria."); return;}
             const checkedExecutors = Array.from(document.querySelectorAll('#executors-checkboxes input:checked')).map(cb => cb.value);
-            if(checkedExecutors.length === 0) { alert("Obrigatório: Marque na lista quem realmente executou este serviço (Passo 2)."); return;}
-            const obsText = document.getElementById('obs-input').value.trim();
-            if(obsText.length < 10) { alert("Observação muito curta."); return;}
-
+            if(checkedExecutors.length === 0) { alert("Obrigatório: Marque na lista quem realmente executou este serviço."); return;}
+            const obsText = document.getElementById('obs-input').value.trim(); if(obsText.length < 10) { alert("Observação muito curta."); return;}
             const btn = document.getElementById('btn-salvar'); btn.innerHTML = `Sincronizando...`;
 
-            fetch("https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ data_hora: new Date().toISOString(), equipa: checkedExecutors.join(', '), setor: setorAtual, tarefa: tarefaAtual, observacao: obsText, foto_base64: imgTempDepois })
-            })
+            fetch("https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data_hora: new Date().toISOString(), equipa: checkedExecutors.join(', '), setor: setorAtual, tarefa: tarefaAtual, observacao: obsText, foto_base64: imgTempDepois }) })
             .then(response => {
-                const c = document.getElementById(`task-${currentActiveTask}`); 
-                c.classList.replace('bg-orange-50','bg-green-50'); c.classList.replace('bg-blue-50','bg-green-50'); c.classList.replace('border-orange-200','border-green-200');
-                document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
+                const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-orange-50','bg-green-50'); c.classList.replace('border-orange-200','border-green-200'); document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
                 c.innerHTML = `<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="bg-gray-100 text-xs py-0.5 px-2 rounded font-medium text-gray-700"><i data-lucide="user-check" class="w-3 h-3 inline mr-1"></i>${checkedExecutors.join(', ')}</span><span class="text-[10px] text-green-800 bg-green-200 px-2 py-1 rounded">Concluído</span></div><h3 class="text-gray-600 font-semibold mb-3 line-through">${tarefaAtual}</h3><div class="w-16 h-16 bg-gray-200 rounded-lg bg-cover bg-center" style="background-image: url('${imgTempDepois}')"></div></div>`;
                 closeConclusionModal(); btn.innerHTML = `Salvar e Sincronizar`; initIcons();
-            })
-            .catch(error => { alert("Erro de conexão."); btn.innerHTML = `Salvar e Sincronizar`; });
+            }).catch(error => { alert("Erro de conexão."); btn.innerHTML = `Salvar e Sincronizar`; });
         }
 
-        // STARTUP DO APP CONECTADO
         window.onload = function() { inicializarApp(); };
     </script>
 </body>
