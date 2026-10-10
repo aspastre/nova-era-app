@@ -43,7 +43,11 @@
     <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
         <div class="mb-4 flex justify-between items-end">
             <div>
-                <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none"><option value="Miss Silvia" selected>📍 Edifício Miss Silvia</option><option value="Shopping Tietê">📍 Shopping Tietê</option><option value="Base Oficina">📍 Base Nova Era</option></select>
+                <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
+                    <option value="Miss Silvia" selected>📍 Edifício Miss Silvia</option>
+                    <option value="Shopping Tietê">📍 Shopping Tietê</option>
+                    <option value="Base Oficina">📍 Base Nova Era</option>
+                </select>
                 <p class="text-2xl font-bold text-gray-900" id="view-title">Tarefas de Hoje</p>
                 <p class="text-sm text-gray-500 mt-1" id="current-date">Carregando data...</p>
             </div>
@@ -55,17 +59,23 @@
 
         <div id="tasks-view">
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
-                <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i><h3 class="text-sm font-medium text-gray-700">Calculando matriz de operações...</h3><p class="text-xs text-gray-500 mt-1">Sincronizando com o Google Sheets</p>
+                <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
+                <h3 class="text-sm font-medium text-gray-700">Calculando matriz de operações...</h3>
+                <p class="text-xs text-gray-500 mt-1">Sincronizando com o Google Sheets</p>
             </div>
             <div class="space-y-4 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400 shadow-inner"><i data-lucide="coffee" class="w-8 h-8"></i></div><h3 class="text-lg font-medium text-gray-900 mb-1">Tudo limpo!</h3><p class="text-sm text-gray-500">Nenhuma tarefa agendada para esta data.</p>
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400 shadow-inner"><i data-lucide="coffee" class="w-8 h-8"></i></div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">Tudo limpo!</h3>
+                <p class="text-sm text-gray-500">Nenhuma tarefa agendada para esta data.</p>
             </div>
         </div>
 
         <div id="calendar-view" class="hidden">
             <div class="flex justify-between items-center mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
-                <button class="p-2 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button><div class="text-center"><h3 class="font-bold text-lg text-gray-800 leading-tight" id="mes-titulo">Outubro</h3><p class="text-xs font-medium text-gray-500" id="ano-titulo">2026</p></div><button class="p-2 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                <button class="p-2 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                <div class="text-center"><h3 class="font-bold text-lg text-gray-800 leading-tight" id="mes-titulo">Outubro</h3><p class="text-xs font-medium text-gray-500" id="ano-titulo">2026</p></div>
+                <button class="p-2 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
             </div>
             <div class="month-grid mb-6 shadow-sm" id="month-days-container"></div>
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
@@ -76,7 +86,7 @@
                 <p class="font-bold mb-2 uppercase tracking-wide">Legenda Operacional:</p>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Geral (Limpeza / Folhas)</div>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Mata-Mato)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Mata-Mato / Poda)</div>
                 <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Visitas)</div>
             </div>
         </div>
@@ -90,14 +100,18 @@
         </div>
     </nav>
 
-    <!-- Modais omitidos no HTML visual para economizar espaço de código, estão íntegros abaixo no fluxo -->
+    <!-- Modais -->
     <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300"><div class="p-5"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3><button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="space-y-3 mb-5" id="team-checkboxes-view"><label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Adriano</span></label><label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Glauco</span></label></div><button onclick="updateTeamView()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-colors">Confirmar Equipe</button></div></div></div>
+    
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div><button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
+    
     <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content"><div class="p-5"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Agendar Nova Tarefa</h3><button onclick="closeExtraModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><div class="space-y-4"><div><label class="block text-xs font-semibold text-gray-600 mb-1">Setor / Local</label><select id="modal-select-setor" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5"><option>Carregando...</option></select></div><div><label class="block text-xs font-semibold text-gray-600 mb-1">Atividade</label><select id="modal-select-tarefa" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5"><option>Carregando...</option></select></div><button onclick="closeExtraModal()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl mt-2">Adicionar ao Cronograma de Hoje</button></div></div></div></div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgJUsLqkpJLw2ityVwZoqg0_pHbNkJvMMJwhvA6SpjqFM7Q7QfkvEORpode5R2-w/pub?output=csv";
         window.cronogramaData = [];
+        window.listaSetores = [];
+        window.listaAtividades = [];
 
         function initIcons() { try { if(typeof lucide !== 'undefined') { lucide.createIcons(); } } catch(e) {} }
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -140,8 +154,8 @@
             }
         }
 
-        // --- PARSER BLINDADO (Com Duração, Espécie e Antolho de 10 colunas) ---
-        function parseCSVBlindado(text) {
+        // --- LEITOR DE CSV INTELIGENTE (Cronograma na Esquerda, Validação na Direita) ---
+        function parseCSVDual(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
                 let char = text[i];
@@ -149,7 +163,7 @@
                 } else { if (char === '"') { insideQuotes = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } else if (char === '\n' || char === '\r') { if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } currentRow = []; currentCell = ''; if(char === '\r' && text[i+1] === '\n') i++; } else { currentCell += char; } }
             }
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-            if(rows.length === 0) return [];
+            if(rows.length === 0) return { cronograma: [], mestreSetores: [], mestreAtividades: [] };
             
             let headerIndex = -1;
             for (let i = 0; i < Math.min(10, rows.length); i++) {
@@ -159,40 +173,75 @@
                 if (rowStr.includes('setor') || rowStr.includes('local') || rowStr.includes('área') || rowStr.includes('ambiente')) score++;
                 if (score >= 2) { headerIndex = i; break; }
             }
-            if (headerIndex === -1) return [];
+            if (headerIndex === -1) return { cronograma: [], mestreSetores: [], mestreAtividades: [] };
 
-            const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim()); 
-            const data = [];
+            const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim().toLowerCase()); 
+            const dataCronograma = [];
+            let mestreSetores = new Set();
+            let mestreAtividades = new Set();
             
+            let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1;
+            let colSetorMestre = -1, colAmbienteMestre = -1, colAtivMestre = -1;
+            
+            for(let j=0; j<headers.length; j++) {
+                const h = headers[j]; if (!h) continue;
+                if (j < 15) { 
+                    if (h === 'setor') colSetorRotina = j;
+                    else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteRotina = j;
+                    else if (h.includes('ativ') || h.includes('taref') || h.includes('desc')) colAtivRotina = j;
+                    else if (h.includes('freq')) colFreqRotina = j;
+                    else if (h.includes('dura') || h.includes('tempo')) colDuracaoRotina = j;
+                    else if (h.includes('espéc') || h.includes('espec') || h.includes('plant')) colEspecieRotina = j;
+                } else { 
+                    if (h === 'setor') colSetorMestre = j;
+                    else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteMestre = j;
+                    else if (h.includes('ativ') || h.includes('taref') || h.includes('desc')) colAtivMestre = j;
+                }
+            }
+
             for(let i = headerIndex + 1; i < rows.length; i++) { 
-                let obj = {}; let tempObj = {};
-                // LÊ APENAS AS PRIMEIRAS 10 COLUNAS (IGNORA RASCUNHOS NA DIREITA DO EXCEL)
-                for(let j=0; j<Math.min(10, headers.length); j++) { if(headers[j]) tempObj[headers[j].toLowerCase()] = rows[i][j] || ''; }
+                const row = rows[i];
                 
-                let setorTemp = '', localTemp = '';
-                for (let k in tempObj) {
-                    if (k.includes('freq')) obj['Frequência'] = tempObj[k];
-                    else if (k.includes('ativ') || k.includes('taref') || k.includes('desc')) obj['Atividade'] = tempObj[k];
-                    else if (k === 'setor') setorTemp = tempObj[k];
-                    else if (k.includes('local') || k.includes('area') || k.includes('área') || k.includes('ambiente')) localTemp = tempObj[k];
-                    else if (k.includes('dura') || k.includes('tempo')) obj['Duracao'] = tempObj[k];
-                    else if (k.includes('espéc') || k.includes('espec') || k.includes('plant')) obj['Especie'] = tempObj[k];
+                // 1. Puxa Cronograma (Tabela Esquerda) para o Calendário
+                if (colAtivRotina !== -1 && row[colAtivRotina] && row[colAtivRotina].length > 2) {
+                    let obj = {};
+                    obj['Atividade'] = row[colAtivRotina];
+                    if (colFreqRotina !== -1) obj['Frequência'] = row[colFreqRotina];
+                    if (colDuracaoRotina !== -1) obj['Duracao'] = row[colDuracaoRotina];
+                    if (colEspecieRotina !== -1) obj['Especie'] = row[colEspecieRotina];
+                    
+                    let s = colSetorRotina !== -1 ? row[colSetorRotina] : '';
+                    let a = colAmbienteRotina !== -1 ? row[colAmbienteRotina] : '';
+                    if(s && a) obj['SetorCompleto'] = `${s} (${a})`; else if(s) obj['SetorCompleto'] = s; else if(a) obj['SetorCompleto'] = a; else obj['SetorCompleto'] = 'Área Geral';
+                    
+                    dataCronograma.push(obj);
                 }
                 
-                if(setorTemp && localTemp) obj['SetorCompleto'] = `${setorTemp} (${localTemp})`;
-                else if (setorTemp) obj['SetorCompleto'] = setorTemp;
-                else if (localTemp) obj['SetorCompleto'] = localTemp;
-                else obj['SetorCompleto'] = 'Área Geral';
-                
-                if(obj['Atividade'] && obj['Atividade'].length > 2) data.push(obj); 
+                // 2. Puxa Base de Validação (Tabela Direita) para os Menus de Nova Tarefa
+                if (colSetorMestre !== -1 && row[colSetorMestre]) {
+                    let s = row[colSetorMestre]; let a = colAmbienteMestre !== -1 ? row[colAmbienteMestre] : '';
+                    mestreSetores.add((s && a) ? `${s} (${a})` : s);
+                }
+                if (colAtivMestre !== -1 && row[colAtivMestre]) mestreAtividades.add(row[colAtivMestre]);
             }
-            return data;
+            
+            // Fallback se não existir tabela na direita
+            if (mestreSetores.size === 0) dataCronograma.forEach(t => mestreSetores.add(t['SetorCompleto']));
+            if (mestreAtividades.size === 0) dataCronograma.forEach(t => mestreAtividades.add(t['Atividade']));
+
+            return { cronograma: dataCronograma, setores: Array.from(mestreSetores).filter(Boolean).sort(), atividades: Array.from(mestreAtividades).filter(Boolean).sort() };
         }
 
         async function inicializarApp() {
             initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
             try {
-                const response = await fetch(CSV_URL); const data = await response.text(); window.cronogramaData = parseCSVBlindado(data);
+                const response = await fetch(CSV_URL); const data = await response.text(); 
+                const processado = parseCSVDual(data);
+                
+                window.cronogramaData = processado.cronograma;
+                window.listaSetores = processado.setores;
+                window.listaAtividades = processado.atividades;
+                
                 popularFiltrosModal(); renderizarTarefasDoDia(new Date()); document.getElementById('loader-tasks').classList.add('hidden'); setTimeout(() => { openTeamModal(); }, 600); 
             } catch(error) {
                 console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden'); alert("Falha de internet ao ler o Google Sheets.");
@@ -200,10 +249,8 @@
         }
 
         function popularFiltrosModal() {
-            const setoresUnicos = [...new Set(window.cronogramaData.map(t => t['SetorCompleto']).filter(Boolean))];
-            const tarefasUnicas = [...new Set(window.cronogramaData.map(t => t['Atividade']).filter(Boolean))];
-            if(document.getElementById('modal-select-setor') && setoresUnicos.length > 0) document.getElementById('modal-select-setor').innerHTML = setoresUnicos.map(s => `<option value="${s}">${s}</option>`).join('');
-            if(document.getElementById('modal-select-tarefa') && tarefasUnicas.length > 0) document.getElementById('modal-select-tarefa').innerHTML = tarefasUnicas.map(t => `<option value="${t}">${t}</option>`).join('');
+            if(document.getElementById('modal-select-setor') && window.listaSetores.length > 0) document.getElementById('modal-select-setor').innerHTML = window.listaSetores.map(s => `<option value="${s}">${s}</option>`).join('');
+            if(document.getElementById('modal-select-tarefa') && window.listaAtividades.length > 0) document.getElementById('modal-select-tarefa').innerHTML = window.listaAtividades.map(t => `<option value="${t}">${t}</option>`).join('');
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
@@ -218,7 +265,6 @@
                 const setor = t['SetorCompleto']; const atividade = t['Atividade']; const id = index + 1;
                 const safeSetor = setor.replace(/'/g, "\\'"); const safeAtividade = atividade.replace(/'/g, "\\'");
                 
-                // --- INJEÇÃO VISUAL: DURAÇÃO E ESPÉCIE ---
                 const duracaoText = t['Duracao'] ? `<span class="flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200"><i data-lucide="clock" class="w-3 h-3"></i> ${t['Duracao']}</span>` : '';
                 const especieText = t['Especie'] && t['Especie'].toLowerCase() !== 'todas' ? `<span class="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-100"><i data-lucide="leaf" class="w-3 h-3"></i> ${t['Especie']}</span>` : '';
                 const tagsExtras = (duracaoText || especieText) ? `<div class="flex gap-2 mt-2 mb-1">${duracaoText}${especieText}</div>` : '';
