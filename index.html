@@ -1,28 +1,4 @@
-// --- LEITOR DE CSV BLINDADO E INTELIGENTE ---
-        function parseCSVBlindado(text) {
-            let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                let char = text[i];
-                if (insideQuotes) { 
-                    if (char === '"') { if (text[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; } } 
-                    else { currentCell += char; }
-                } else { 
-                    if (char === '"') { insideQuotes = true; } 
-                    else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } 
-                    else if (char === '\n' || char === '\r') { 
-                        if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } 
-                        currentRow = []; currentCell = ''; 
-                        if(char === '\r' && text[i+1] === '\n') i++; 
-                    } else { currentCell += char; } 
-                }
-            }
-            if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-            if(rows.length === 0) return [];
-            
-            // INTELIGÊNCIA NOVA: Acha em qual linha estão os verdadeiros cabeçalhos
-            let headerIndex = 0;
-            for (let i = 0; i < Math.min(10, rows.length); i++) {
-                let rowStr = rows[i].join('').toLowerCase();<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -560,31 +536,3 @@
     </script>
 </body>
 </html>
-                if (rowStr.includes('atividad') || rowStr.includes('tarefa') || rowStr.includes('frequ') || rowStr.includes('freqü')) {
-                    headerIndex = i;
-                    break;
-                }
-            }
-            
-            // Remove o invisível BOM character se existir
-            const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim()); 
-            const data = [];
-            
-            // Lê os dados apenas a partir da linha de baixo do cabeçalho encontrado
-            for(let i = headerIndex + 1; i < rows.length; i++) { 
-                let obj = {}; 
-                let tempObj = {};
-                for(let j=0; j<headers.length; j++) { tempObj[headers[j].toLowerCase()] = rows[i][j] || ''; }
-                
-                // Mapeia inteligentemente independente do nome exato da coluna
-                for (let k in tempObj) {
-                    if (k.includes('freq')) obj['Frequência'] = tempObj[k];
-                    else if (k.includes('ativ') || k.includes('taref') || k.includes('desc')) obj['Atividade'] = tempObj[k];
-                    else if (k.includes('setor') || k.includes('local') || k.includes('area') || k.includes('área')) obj['Setor'] = tempObj[k];
-                }
-                
-                // Se a linha tem alguma atividade real, salva no banco.
-                if(obj['Atividade'] && obj['Atividade'].length > 2) data.push(obj); 
-            }
-            return data;
-        }
