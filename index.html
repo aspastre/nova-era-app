@@ -59,7 +59,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 relative min-h-screen">
 
-    <!-- CABEÇALHO SUPERIOR -->
+    <!-- HEADER -->
     <header class="bg-white shadow-sm sticky top-0 z-20">
         <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -84,7 +84,7 @@
 
     <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
         
-        <!-- TÍTULO DA PÁGINA (ESTÁTICO) -->
+        <!-- TÍTULO -->
         <div class="mb-4 flex justify-between items-end">
             <div>
                 <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
@@ -106,17 +106,11 @@
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
                 <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
                 <h3 class="text-sm font-medium text-gray-700">Calculando matriz de operações...</h3>
-                <p class="text-xs text-gray-500 mt-1">Lendo regras de repetição e feriados</p>
+                <p class="text-xs text-gray-500 mt-1">Sincronizando com o Google Sheets</p>
             </div>
-
-            <div class="space-y-4 hidden" id="task-container">
-                <!-- Cards renderizados via JS vêm aqui -->
-            </div>
-            
+            <div class="space-y-4 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400 shadow-inner">
-                    <i data-lucide="coffee" class="w-8 h-8"></i>
-                </div>
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400 shadow-inner"><i data-lucide="coffee" class="w-8 h-8"></i></div>
                 <h3 class="text-lg font-medium text-gray-900 mb-1">Tudo limpo!</h3>
                 <p class="text-sm text-gray-500">Nenhuma tarefa agendada para esta data.</p>
             </div>
@@ -124,7 +118,6 @@
 
         <!-- VISÃO DE CALENDÁRIO -->
         <div id="calendar-view" class="hidden">
-            <!-- Navegador do Mês -->
             <div class="flex justify-between items-center mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
                 <button class="p-2 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
                 <div class="text-center">
@@ -134,38 +127,31 @@
                 <button class="p-2 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
             </div>
             
-            <!-- Grid da Folhinha -->
             <div class="month-grid mb-6 shadow-sm" id="month-days-container"></div>
             
-            <!-- Lista Invertida (Vem antes da Legenda) -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
                 <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2">
-                        <i data-lucide="calendar-search" class="w-4 h-4 text-orange-500"></i>
-                        <span id="selected-day-title">Dia Selecionado</span>
-                    </h3>
+                    <h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2"><i data-lucide="calendar-search" class="w-4 h-4 text-orange-500"></i><span id="selected-day-title">Dia Selecionado</span></h3>
                     <span class="bg-white border border-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full" id="selected-day-count">Calculando...</span>
                 </div>
                 <div class="p-3 space-y-2" id="selected-day-list"></div>
             </div>
 
-            <!-- Legenda Operacional (Fica por último) -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
                 <p class="font-bold mb-2 uppercase tracking-wide">Legenda Operacional:</p>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Geral (Limpeza / Folhas)</div>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Mata-Mato)</div>
-                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação Quadrimestral)</div>
+                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Outros)</div>
             </div>
         </div>
     </main>
 
-    <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
+    <!-- BARRA INFERIOR (BOTTOM NAV) -->
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div class="max-w-md mx-auto flex justify-between items-end px-6 pb-4 pt-2">
             <button onclick="switchTab('hoje')" id="tab-hoje" class="flex flex-col items-center p-2 text-orange-500 w-1/3 transition-colors">
-                <i data-lucide="calendar-check" class="w-6 h-6 mb-1"></i>
-                <span class="text-[10px] font-medium">Hoje</span>
+                <i data-lucide="calendar-check" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-medium">Hoje</span>
             </button>
             <div class="relative w-1/3 flex flex-col items-center">
                 <button onclick="openExtraModal()" class="absolute -top-10 w-14 h-14 bg-gradient-to-r from-orange-400 to-red-500 rounded-full shadow-lg shadow-orange-200 flex items-center justify-center text-white hover:scale-105 transition-transform z-30 ring-4 ring-white">
@@ -174,13 +160,12 @@
                 <span class="text-[10px] font-bold text-gray-500 mt-5">Nova Tarefa</span>
             </div>
             <button onclick="switchTab('calendario')" id="tab-calendario" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-500 transition-colors w-1/3">
-                <i data-lucide="calendar-days" class="w-6 h-6 mb-1"></i>
-                <span class="text-[10px] font-medium">Calendário</span>
+                <i data-lucide="calendar-days" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-medium">Calendário</span>
             </button>
         </div>
     </nav>
 
-    <!-- MODAL: SELECIONAR EQUIPE -->
+    <!-- MODAL: EQUIPE -->
     <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
             <div class="p-5">
@@ -194,7 +179,7 @@
         </div>
     </div>
 
-    <!-- MODAL: CONCLUIR ATIVIDADE (CÂMERA) -->
+    <!-- MODAL: CÂMERA E CONCLUSÃO -->
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300">
             <div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div>
@@ -219,7 +204,7 @@
         </div>
     </div>
 
-    <!-- MODAL: NOVA TAREFA EXTRA -->
+    <!-- MODAL: NOVA TAREFA -->
     <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
             <div class="p-5">
@@ -233,7 +218,7 @@
         </div>
     </div>
 
-    <!-- ===== O CÉREBRO JAVASCRIPT ===== -->
+    <!-- CÓDIGO JAVASCRIPT PRINCIPAL -->
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgJUsLqkpJLw2ityVwZoqg0_pHbNkJvMMJwhvA6SpjqFM7Q7QfkvEORpode5R2-w/pub?output=csv";
         window.cronogramaData = [];
@@ -243,7 +228,7 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
-// --- CÉREBRO DE FERIADOS E DIAS ÚTEIS ---
+        // --- CÉREBRO DE FERIADOS E DIAS ÚTEIS ---
         const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
         function ehFeriado(data) {
             const mes = String(data.getMonth() + 1).padStart(2, '0'); const dia = String(data.getDate()).padStart(2, '0');
@@ -261,7 +246,7 @@
             const freq = freqStr.toLowerCase();
             const diaSemana = dataOriginal.getDay(); const diaMes = dataOriginal.getDate(); const mes = dataOriginal.getMonth();
             
-            // NOVO DICIONÁRIO (Entende o Português Humano da Planilha)
+            // Regras Mapeadas (Inclui Português "Humano")
             if (freq.includes('diaria') || freq.includes('5x')) return diaSemana >= 1 && diaSemana <= 5;
             if (freq.includes('3x/semana') || freq.includes('esporádico') || freq.includes('esporadico') || freq.includes('dia sim')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
             if (freq.includes('2x/semana')) return diaSemana === 2 || diaSemana === 4;
@@ -276,6 +261,7 @@
         function tarefaCaiHoje(freqStr, dataReferencia) {
             if (!freqStr) return false;
             if (dataReferencia.getDay() === 0 || dataReferencia.getDay() === 6 || ehFeriado(dataReferencia)) return false; 
+            
             const freq = freqStr.toLowerCase();
             const isBaixaFreq = freq.includes('mês') || freq.includes('mensal') || freq.includes('quadrimestral') || (freq.includes('m') && freq.length < 5) || freq.includes('semanal');
             
@@ -292,7 +278,7 @@
             }
         }
 
-        // --- LEITOR DE CSV BLINDADO (Com Separação de Setor e Área) ---
+        // --- LEITOR DE CSV BLINDADO (Inteligência para achar Cabeçalho) ---
         function parseCSVBlindado(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
@@ -303,15 +289,23 @@
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
             if(rows.length === 0) return [];
             
-            let headerIndex = 0;
+            // Procura a linha correta do cabeçalho
+            let headerIndex = -1;
             for (let i = 0; i < Math.min(10, rows.length); i++) {
                 let rowStr = rows[i].join('').toLowerCase();
-                if (rowStr.includes('atividad') || rowStr.includes('tarefa') || rowStr.includes('frequ') || rowStr.includes('freqü')) { headerIndex = i; break; }
+                let score = 0;
+                // Exige pelo menos duas palavras-chave pra considerar como cabeçalho mestre
+                if (rowStr.includes('atividad') || rowStr.includes('tarefa')) score++;
+                if (rowStr.includes('frequ') || rowStr.includes('freqü')) score++;
+                if (rowStr.includes('setor') || rowStr.includes('local') || rowStr.includes('área') || rowStr.includes('ambiente')) score++;
+                if (score >= 2) { headerIndex = i; break; }
             }
-            
+            if (headerIndex === -1) return [];
+
             const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim()); 
             const data = [];
             
+            // Mapeia colunas sem depender do nome exato
             for(let i = headerIndex + 1; i < rows.length; i++) { 
                 let obj = {}; let tempObj = {};
                 for(let j=0; j<headers.length; j++) { tempObj[headers[j].toLowerCase()] = rows[i][j] || ''; }
@@ -321,10 +315,10 @@
                     if (k.includes('freq')) obj['Frequência'] = tempObj[k];
                     else if (k.includes('ativ') || k.includes('taref') || k.includes('desc')) obj['Atividade'] = tempObj[k];
                     else if (k === 'setor') setorTemp = tempObj[k];
-                    else if (k.includes('local') || k.includes('area') || k.includes('área')) localTemp = tempObj[k];
+                    else if (k.includes('local') || k.includes('area') || k.includes('área') || k.includes('ambiente')) localTemp = tempObj[k];
                 }
                 
-                // Junta Setor e Área para ficar bonitinho: Ex: "Área do Totem (Externa)"
+                // Concatena Setor + Ambiente (ex: Área do Totem (Externa))
                 if(setorTemp && localTemp) obj['SetorCompleto'] = `${setorTemp} (${localTemp})`;
                 else if (setorTemp) obj['SetorCompleto'] = setorTemp;
                 else if (localTemp) obj['SetorCompleto'] = localTemp;
@@ -335,7 +329,20 @@
             return data;
         }
 
-        // --- RENDERIZAÇÃO DO APLICATIVO ---
+        // --- ROTINAS DE RENDERIZAÇÃO DO APP ---
+        async function inicializarApp() {
+            initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
+            try {
+                const response = await fetch(CSV_URL); 
+                const data = await response.text(); 
+                window.cronogramaData = parseCSVBlindado(data);
+                
+                popularFiltrosModal(); renderizarTarefasDoDia(new Date()); document.getElementById('loader-tasks').classList.add('hidden'); setTimeout(() => { openTeamModal(); }, 600); 
+            } catch(error) {
+                console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden'); alert("Falha de internet ao ler o Google Sheets.");
+            }
+        }
+
         function popularFiltrosModal() {
             const setoresUnicos = [...new Set(window.cronogramaData.map(t => t['SetorCompleto']).filter(Boolean))];
             const tarefasUnicas = [...new Set(window.cronogramaData.map(t => t['Atividade']).filter(Boolean))];
@@ -356,7 +363,7 @@
                 const safeSetor = setor.replace(/'/g, "\\'"); const safeAtividade = atividade.replace(/'/g, "\\'");
                 
                 let corBadgeBg = 'bg-green-100', corBadgeText = 'text-green-800';
-                if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata') || atividade.toLowerCase().includes('adub')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
+                if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata') || atividade.toLowerCase().includes('adub') || atividade.toLowerCase().includes('poda')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
                 else if(atividade.toLowerCase().includes('irrig') || atividade.toLowerCase().includes('vaso')) { corBadgeBg = 'bg-blue-100'; corBadgeText = 'text-blue-800'; }
 
                 html += `
@@ -372,16 +379,7 @@
             container.innerHTML = html; initIcons();
         }
 
-        async function inicializarApp() {
-            initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
-            try {
-                const response = await fetch(CSV_URL); const data = await response.text(); window.cronogramaData = parseCSVBlindado(data);
-                popularFiltrosModal(); renderizarTarefasDoDia(new Date()); document.getElementById('loader-tasks').classList.add('hidden'); setTimeout(() => { openTeamModal(); }, 600); 
-            } catch(error) {
-                console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden'); alert("Falha de internet. O app usará modo offline (sem tarefas sincronizadas).");
-            }
-        }
-
+        // --- NAVEGAÇÃO DE ABAS ---
         function switchTab(tabId) {
             const btnHoje = document.getElementById('tab-hoje'); const btnCalendario = document.getElementById('tab-calendario');
             if (tabId === 'hoje') { btnHoje.classList.replace('text-gray-400', 'text-orange-500'); btnCalendario.classList.replace('text-orange-500', 'text-gray-400'); } else { btnCalendario.classList.replace('text-gray-400', 'text-orange-500'); btnHoje.classList.replace('text-orange-500', 'text-gray-400'); }
@@ -400,6 +398,7 @@
         }
         function toggleView(view) { if(view === 'tasks') switchTab('hoje'); else switchTab('calendario'); }
 
+        // --- CALENDÁRIO COM PONTOS COLORIDOS ---
         function renderFullMonthCalendar() {
             const container = document.getElementById('month-days-container'); if(container.innerHTML.trim() !== "") return;
             let html = ''; const hoje = new Date(); const ano = hoje.getFullYear(); const mes = hoje.getMonth(); const diaAtual = hoje.getDate();
@@ -424,8 +423,8 @@
                         if(tarefaCaiHoje(freq, dataIteracao)) {
                             if(ativ.includes('folha') || ativ.includes('limp')) hasRotina = true;
                             if(ativ.includes('irrig') || ativ.includes('vaso')) hasIrrig = true;
-                            if(ativ.includes('roça') || ativ.includes('mata')) hasRoca = true;
-                            if(ativ.includes('aduba')) hasAduba = true;
+                            if(ativ.includes('roça') || ativ.includes('mata') || ativ.includes('poda')) hasRoca = true;
+                            if(ativ.includes('aduba') || ativ.includes('visita')) hasAduba = true;
                         }
                     });
                     if(hasRotina) dotsHtml += `<div class="dot bg-green-500"></div>`;
@@ -453,15 +452,15 @@
             document.getElementById('selected-day-count').textContent = `${tarefasDoDia.length} Atividades`; let itensHtml = '';
             tarefasDoDia.forEach(t => {
                 const setor = t['SetorCompleto']; const ativ = t['Atividade']; let cor = 'bg-green-500';
-                if(ativ.toLowerCase().includes('roça') || ativ.toLowerCase().includes('mata')) cor = 'bg-orange-500';
+                if(ativ.toLowerCase().includes('roça') || ativ.toLowerCase().includes('mata') || ativ.toLowerCase().includes('poda')) cor = 'bg-orange-500';
                 if(ativ.toLowerCase().includes('irrig') || ativ.toLowerCase().includes('vaso')) cor = 'bg-blue-400';
-                if(ativ.toLowerCase().includes('aduba')) cor = 'bg-red-600';
+                if(ativ.toLowerCase().includes('aduba') || ativ.toLowerCase().includes('visita')) cor = 'bg-red-600';
                 itensHtml += `<div class="flex justify-between p-2 border border-gray-100 rounded"><div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full ${cor}"></div><div><p class="text-sm font-medium">${ativ}</p><p class="text-[10px] text-gray-500">${setor}</p></div></div><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>`;
             });
             list.innerHTML = itensHtml; initIcons();
         }
 
-        // --- CONTROLES DE INTERAÇÃO ---
+        // --- CONTROLES DE INTERAÇÃO DOS MODAIS ---
         function openTeamModal() { document.getElementById('team-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('team-modal').classList.remove('opacity-0'); document.getElementById('team-modal').children[0].classList.remove('translate-y-full'); }, 10); }
         function closeTeamModal() { document.getElementById('team-modal').classList.add('opacity-0'); document.getElementById('team-modal').children[0].classList.add('translate-y-full'); setTimeout(() => document.getElementById('team-modal').classList.add('hidden'), 300); }
         function updateTeamView() { const c = document.querySelectorAll('#team-checkboxes-view input:checked'); const btnText = document.getElementById('header-team-text'); if (c.length === 0) { btnText.textContent = "Identificar-se"; btnText.parentElement.classList.replace('bg-gray-100', 'bg-orange-50'); btnText.parentElement.classList.replace('text-gray-700', 'text-orange-700'); } else { btnText.textContent = c.length === 1 ? c[0].value : `${c[0].value} +${c.length-1}`; btnText.parentElement.classList.replace('bg-orange-50', 'bg-gray-100'); btnText.parentElement.classList.replace('text-orange-700', 'text-gray-700'); } closeTeamModal(); }
@@ -474,6 +473,7 @@
         function abrirModalConclusao(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; document.getElementById('modal-task-title').textContent = tarefa; document.getElementById('modal-setor-title').textContent = setor; imgTempDepois=null; document.getElementById('preview-container').classList.add('hidden'); document.getElementById('obs-input').value=''; document.querySelectorAll('#executors-checkboxes input').forEach(cb => cb.checked = false); const modal = document.getElementById('conclusion-modal'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10); }
         function closeConclusionModal() { const modal = document.getElementById('conclusion-modal'); modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
 
+        // --- CÂMERA E INTEGRAÇÃO COM MAKE.COM ---
         document.getElementById('camera-input').addEventListener('change', function(e) {
             const file = e.target.files[0]; if (!file) return; const r = new FileReader();
             r.onload = function(event) {
@@ -499,7 +499,7 @@
                 const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-orange-50','bg-green-50'); c.classList.replace('border-orange-200','border-green-200'); document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
                 c.innerHTML = `<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="bg-gray-100 text-xs py-0.5 px-2 rounded font-medium text-gray-700"><i data-lucide="user-check" class="w-3 h-3 inline mr-1"></i>${checkedExecutors.join(', ')}</span><span class="text-[10px] text-green-800 bg-green-200 px-2 py-1 rounded">Concluído</span></div><h3 class="text-gray-600 font-semibold mb-3 line-through">${tarefaAtual}</h3><div class="w-16 h-16 bg-gray-200 rounded-lg bg-cover bg-center" style="background-image: url('${imgTempDepois}')"></div></div>`;
                 closeConclusionModal(); btn.innerHTML = `Salvar e Sincronizar`; initIcons();
-            }).catch(error => { alert("Erro de conexão."); btn.innerHTML = `Salvar e Sincronizar`; });
+            }).catch(error => { alert("Erro de conexão com Make.com."); btn.innerHTML = `Salvar e Sincronizar`; });
         }
 
         window.onload = function() { inicializarApp(); };
