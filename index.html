@@ -243,19 +243,16 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
-        // --- CÉREBRO DE FERIADOS E DIAS ÚTEIS ---
+// --- CÉREBRO DE FERIADOS E DIAS ÚTEIS ---
         const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
         function ehFeriado(data) {
-            const mes = String(data.getMonth() + 1).padStart(2, '0');
-            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0'); const dia = String(data.getDate()).padStart(2, '0');
             return feriadosNacionais.includes(`${mes}-${dia}`);
         }
 
         function proximoDiaUtilDate(dataBase) {
             let novaData = new Date(dataBase);
-            while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { 
-                novaData.setDate(novaData.getDate() + 1); 
-            }
+            while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { novaData.setDate(novaData.getDate() + 1); }
             return novaData;
         }
 
@@ -264,8 +261,9 @@
             const freq = freqStr.toLowerCase();
             const diaSemana = dataOriginal.getDay(); const diaMes = dataOriginal.getDate(); const mes = dataOriginal.getMonth();
             
+            // NOVO DICIONÁRIO (Entende o Português Humano da Planilha)
             if (freq.includes('diaria') || freq.includes('5x')) return diaSemana >= 1 && diaSemana <= 5;
-            if (freq.includes('3x/semana')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
+            if (freq.includes('3x/semana') || freq.includes('esporádico') || freq.includes('esporadico') || freq.includes('dia sim')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
             if (freq.includes('2x/semana')) return diaSemana === 2 || diaSemana === 4;
             if (freq.includes('semanal') && !freq.includes('semanas')) return diaSemana === 3; 
             if (freq.includes('3x/m')) return diaMes === 10 || diaMes === 20 || diaMes === 30;
@@ -277,46 +275,30 @@
 
         function tarefaCaiHoje(freqStr, dataReferencia) {
             if (!freqStr) return false;
-            
             if (dataReferencia.getDay() === 0 || dataReferencia.getDay() === 6 || ehFeriado(dataReferencia)) return false; 
-            
             const freq = freqStr.toLowerCase();
             const isBaixaFreq = freq.includes('mês') || freq.includes('mensal') || freq.includes('quadrimestral') || (freq.includes('m') && freq.length < 5) || freq.includes('semanal');
             
-            if (!isBaixaFreq) {
-                return checarRegraOriginal(freqStr, dataReferencia);
-            } else {
+            if (!isBaixaFreq) { return checarRegraOriginal(freqStr, dataReferencia); } 
+            else {
                 for (let i = 0; i <= 5; i++) {
-                    let pastDate = new Date(dataReferencia);
-                    pastDate.setDate(pastDate.getDate() - i);
+                    let pastDate = new Date(dataReferencia); pastDate.setDate(pastDate.getDate() - i);
                     if (checarRegraOriginal(freqStr, pastDate)) {
                         let diaUtilDaTarefa = proximoDiaUtilDate(pastDate);
-                        if (diaUtilDaTarefa.getDate() === dataReferencia.getDate() && diaUtilDaTarefa.getMonth() === dataReferencia.getMonth()) {
-                            return true;
-                        }
+                        if (diaUtilDaTarefa.getDate() === dataReferencia.getDate() && diaUtilDaTarefa.getMonth() === dataReferencia.getMonth()) return true;
                     }
                 }
                 return false;
             }
         }
 
-        // --- LEITOR DE CSV BLINDADO (Pula linhas de título e acha cabeçalho dinâmico) ---
+        // --- LEITOR DE CSV BLINDADO (Com Separação de Setor e Área) ---
         function parseCSVBlindado(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
                 let char = text[i];
-                if (insideQuotes) { 
-                    if (char === '"') { if (text[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; } } 
-                    else { currentCell += char; }
-                } else { 
-                    if (char === '"') { insideQuotes = true; } 
-                    else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } 
-                    else if (char === '\n' || char === '\r') { 
-                        if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } 
-                        currentRow = []; currentCell = ''; 
-                        if(char === '\r' && text[i+1] === '\n') i++; 
-                    } else { currentCell += char; } 
-                }
+                if (insideQuotes) { if (char === '"') { if (text[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; } } else { currentCell += char; }
+                } else { if (char === '"') { insideQuotes = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } else if (char === '\n' || char === '\r') { if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } currentRow = []; currentCell = ''; if(char === '\r' && text[i+1] === '\n') i++; } else { currentCell += char; } }
             }
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
             if(rows.length === 0) return [];
@@ -324,25 +306,30 @@
             let headerIndex = 0;
             for (let i = 0; i < Math.min(10, rows.length); i++) {
                 let rowStr = rows[i].join('').toLowerCase();
-                if (rowStr.includes('atividad') || rowStr.includes('tarefa') || rowStr.includes('frequ') || rowStr.includes('freqü')) {
-                    headerIndex = i;
-                    break;
-                }
+                if (rowStr.includes('atividad') || rowStr.includes('tarefa') || rowStr.includes('frequ') || rowStr.includes('freqü')) { headerIndex = i; break; }
             }
             
             const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim()); 
             const data = [];
             
             for(let i = headerIndex + 1; i < rows.length; i++) { 
-                let obj = {}; 
-                let tempObj = {};
+                let obj = {}; let tempObj = {};
                 for(let j=0; j<headers.length; j++) { tempObj[headers[j].toLowerCase()] = rows[i][j] || ''; }
                 
+                let setorTemp = '', localTemp = '';
                 for (let k in tempObj) {
                     if (k.includes('freq')) obj['Frequência'] = tempObj[k];
                     else if (k.includes('ativ') || k.includes('taref') || k.includes('desc')) obj['Atividade'] = tempObj[k];
-                    else if (k.includes('setor') || k.includes('local') || k.includes('area') || k.includes('área')) obj['Setor'] = tempObj[k];
+                    else if (k === 'setor') setorTemp = tempObj[k];
+                    else if (k.includes('local') || k.includes('area') || k.includes('área')) localTemp = tempObj[k];
                 }
+                
+                // Junta Setor e Área para ficar bonitinho: Ex: "Área do Totem (Externa)"
+                if(setorTemp && localTemp) obj['SetorCompleto'] = `${setorTemp} (${localTemp})`;
+                else if (setorTemp) obj['SetorCompleto'] = setorTemp;
+                else if (localTemp) obj['SetorCompleto'] = localTemp;
+                else obj['SetorCompleto'] = 'Área Geral';
+                
                 if(obj['Atividade'] && obj['Atividade'].length > 2) data.push(obj); 
             }
             return data;
@@ -350,28 +337,22 @@
 
         // --- RENDERIZAÇÃO DO APLICATIVO ---
         function popularFiltrosModal() {
-            const setoresUnicos = [...new Set(window.cronogramaData.map(t => t['Setor']).filter(Boolean))];
+            const setoresUnicos = [...new Set(window.cronogramaData.map(t => t['SetorCompleto']).filter(Boolean))];
             const tarefasUnicas = [...new Set(window.cronogramaData.map(t => t['Atividade']).filter(Boolean))];
             if(document.getElementById('modal-select-setor') && setoresUnicos.length > 0) document.getElementById('modal-select-setor').innerHTML = setoresUnicos.map(s => `<option value="${s}">${s}</option>`).join('');
             if(document.getElementById('modal-select-tarefa') && tarefasUnicas.length > 0) document.getElementById('modal-select-tarefa').innerHTML = tarefasUnicas.map(t => `<option value="${t}">${t}</option>`).join('');
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
-            const container = document.getElementById('task-container');
-            const emptyState = document.getElementById('empty-state-tasks');
-            container.innerHTML = '';
+            const container = document.getElementById('task-container'); const emptyState = document.getElementById('empty-state-tasks'); container.innerHTML = '';
             
-            let tarefasHoje = window.cronogramaData.filter(t => {
-                if (!t['Atividade']) return false;
-                return tarefaCaiHoje(t['Frequência'], dataReferencia);
-            });
-
+            let tarefasHoje = window.cronogramaData.filter(t => { if (!t['Atividade']) return false; return tarefaCaiHoje(t['Frequência'], dataReferencia); });
             if(tarefasHoje.length === 0) { container.classList.add('hidden'); emptyState.classList.remove('hidden'); initIcons(); return; }
             container.classList.remove('hidden'); emptyState.classList.add('hidden');
 
             let html = '';
             tarefasHoje.forEach((t, index) => {
-                const setor = t['Setor'] || 'Área Geral'; const atividade = t['Atividade'] || 'Tarefa Indefinida'; const id = index + 1;
+                const setor = t['SetorCompleto']; const atividade = t['Atividade']; const id = index + 1;
                 const safeSetor = setor.replace(/'/g, "\\'"); const safeAtividade = atividade.replace(/'/g, "\\'");
                 
                 let corBadgeBg = 'bg-green-100', corBadgeText = 'text-green-800';
@@ -392,20 +373,12 @@
         }
 
         async function inicializarApp() {
-            initIcons();
-            document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
+            initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
             try {
-                const response = await fetch(CSV_URL); 
-                const data = await response.text(); 
-                window.cronogramaData = parseCSVBlindado(data);
-                
-                popularFiltrosModal(); 
-                renderizarTarefasDoDia(new Date()); 
-                document.getElementById('loader-tasks').classList.add('hidden');
-                setTimeout(() => { openTeamModal(); }, 600); 
+                const response = await fetch(CSV_URL); const data = await response.text(); window.cronogramaData = parseCSVBlindado(data);
+                popularFiltrosModal(); renderizarTarefasDoDia(new Date()); document.getElementById('loader-tasks').classList.add('hidden'); setTimeout(() => { openTeamModal(); }, 600); 
             } catch(error) {
-                console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden');
-                alert("Falha de internet. O app não conseguiu ler o Google Sheets.");
+                console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden'); alert("Falha de internet. O app usará modo offline (sem tarefas sincronizadas).");
             }
         }
 
@@ -428,10 +401,8 @@
         function toggleView(view) { if(view === 'tasks') switchTab('hoje'); else switchTab('calendario'); }
 
         function renderFullMonthCalendar() {
-            const container = document.getElementById('month-days-container');
-            if(container.innerHTML.trim() !== "") return;
-            let html = '';
-            const hoje = new Date(); const ano = hoje.getFullYear(); const mes = hoje.getMonth(); const diaAtual = hoje.getDate();
+            const container = document.getElementById('month-days-container'); if(container.innerHTML.trim() !== "") return;
+            let html = ''; const hoje = new Date(); const ano = hoje.getFullYear(); const mes = hoje.getMonth(); const diaAtual = hoje.getDate();
             const mesesStr = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             document.getElementById('mes-titulo').textContent = mesesStr[mes]; document.getElementById('ano-titulo').textContent = ano;
 
@@ -479,10 +450,9 @@
 
             if(tarefasDoDia.length === 0) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`; initIcons(); return; }
 
-            document.getElementById('selected-day-count').textContent = `${tarefasDoDia.length} Atividades`;
-            let itensHtml = '';
+            document.getElementById('selected-day-count').textContent = `${tarefasDoDia.length} Atividades`; let itensHtml = '';
             tarefasDoDia.forEach(t => {
-                const setor = t['Setor'] || 'Geral'; const ativ = t['Atividade']; let cor = 'bg-green-500';
+                const setor = t['SetorCompleto']; const ativ = t['Atividade']; let cor = 'bg-green-500';
                 if(ativ.toLowerCase().includes('roça') || ativ.toLowerCase().includes('mata')) cor = 'bg-orange-500';
                 if(ativ.toLowerCase().includes('irrig') || ativ.toLowerCase().includes('vaso')) cor = 'bg-blue-400';
                 if(ativ.toLowerCase().includes('aduba')) cor = 'bg-red-600';
