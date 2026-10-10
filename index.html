@@ -74,9 +74,10 @@
                 </svg>
                 <h1 class="font-bold text-lg tracking-tight text-gray-900">Nova Era</h1>
             </div>
-            <button onclick="openTeamModal()" class="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 text-sm font-medium rounded-full py-1.5 px-3 transition-colors">
-                <i data-lucide="users" class="w-4 h-4"></i>
-                <span id="header-team-text">Adriano & Glauco</span>
+            <!-- Botão Inicia "Em Branco" e com Destaque -->
+            <button onclick="openTeamModal()" class="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 text-sm font-semibold rounded-full py-1.5 px-3 transition-colors shadow-sm">
+                <i data-lucide="user-circle" class="w-4 h-4"></i>
+                <span id="header-team-text">Identificar-se</span>
             </button>
         </div>
     </header>
@@ -154,7 +155,6 @@
             
             <div class="month-grid mb-6 shadow-sm" id="month-days-container"></div>
             
-            <!-- LISTA AGORA VEM ANTES DA LEGENDA -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
                 <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
                     <h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2">
@@ -166,7 +166,6 @@
                 <div class="p-3 space-y-2" id="selected-day-list"></div>
             </div>
 
-            <!-- LEGENDA REBAIXADA -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
                 <p class="font-bold mb-2 uppercase tracking-wide">Legenda do Cronograma:</p>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Diária (Ex: Limpeza)</div>
@@ -175,7 +174,6 @@
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-red-600"></div> Adubação Quadrimestral</div>
                 <div class="flex items-center gap-2"><div class="dot bg-purple-400"></div> Orquídeas / Supervisão</div>
             </div>
-
         </div>
     </main>
 
@@ -205,14 +203,16 @@
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
             <div class="p-5">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-gray-900">Filtrar Agenda</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3>
                     <button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
+                <p class="text-xs text-gray-500 mb-4">Selecione quem está trabalhando neste posto de trabalho hoje.</p>
                 <div class="space-y-3 mb-5" id="team-checkboxes-view">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500" checked><span class="font-medium text-gray-800">Adriano</span></label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500" checked><span class="font-medium text-gray-800">Glauco</span></label>
+                    <!-- REMOVIDO os "checked" iniciais -->
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Adriano</span></label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Glauco</span></label>
                 </div>
-                <button onclick="updateTeamView()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl">Atualizar Visão</button>
+                <button onclick="updateTeamView()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-colors">Confirmar Equipe</button>
             </div>
         </div>
     </div>
@@ -240,16 +240,17 @@
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Equipe Executora <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-2" id="executors-checkboxes">
-                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500" checked><span class="text-xs font-semibold text-gray-700">Adriano</span></label>
+                        <!-- REMOVIDO os "checked" iniciais da modal de foto -->
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label>
                         <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label>
-                    <textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes..."></textarea>
+                    <textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes (Ex: Poda de galho seco realizada)..."></textarea>
                 </div>
             </div>
             
@@ -404,9 +405,32 @@
             initIcons();
         }
 
-        function openTeamModal() { document.getElementById('team-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('team-modal').classList.remove('opacity-0'); document.getElementById('team-modal').children[0].classList.remove('translate-y-full'); }, 10); }
-        function closeTeamModal() { document.getElementById('team-modal').classList.add('opacity-0'); document.getElementById('team-modal').children[0].classList.add('translate-y-full'); setTimeout(() => document.getElementById('team-modal').classList.add('hidden'), 300); }
-        function updateTeamView() { const c = document.querySelectorAll('#team-checkboxes-view input:checked'); document.getElementById('header-team-text').textContent = c.length===1?c[0].value:`${c[0].value} +${c.length-1}`; closeTeamModal(); }
+        // --- CONTROLE DE LOGIN (QUEM SOU EU) ---
+        function openTeamModal() { 
+            document.getElementById('team-modal').classList.remove('hidden'); 
+            setTimeout(() => { document.getElementById('team-modal').classList.remove('opacity-0'); document.getElementById('team-modal').children[0].classList.remove('translate-y-full'); }, 10); 
+        }
+        function closeTeamModal() { 
+            document.getElementById('team-modal').classList.add('opacity-0'); 
+            document.getElementById('team-modal').children[0].classList.add('translate-y-full'); 
+            setTimeout(() => document.getElementById('team-modal').classList.add('hidden'), 300); 
+        }
+        
+        function updateTeamView() { 
+            const c = document.querySelectorAll('#team-checkboxes-view input:checked'); 
+            const btnText = document.getElementById('header-team-text');
+            
+            if (c.length === 0) {
+                btnText.textContent = "Identificar-se";
+                btnText.parentElement.classList.replace('bg-gray-100', 'bg-orange-50');
+                btnText.parentElement.classList.replace('text-gray-700', 'text-orange-700');
+            } else {
+                btnText.textContent = c.length === 1 ? c[0].value : `${c[0].value} +${c.length-1}`; 
+                btnText.parentElement.classList.replace('bg-orange-50', 'bg-gray-100');
+                btnText.parentElement.classList.replace('text-orange-700', 'text-gray-700');
+            }
+            closeTeamModal(); 
+        }
         
         function openExtraModal() { document.getElementById('extra-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('extra-modal').classList.remove('opacity-0'); document.getElementById('extra-modal-content').classList.remove('translate-y-full'); }, 10); }
         function closeExtraModal() { document.getElementById('extra-modal').classList.add('opacity-0'); document.getElementById('extra-modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('extra-modal').classList.add('hidden'), 300); }
@@ -419,7 +443,13 @@
             currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa;
             document.getElementById('modal-task-title').textContent = tarefa;
             document.getElementById('modal-setor-title').textContent = setor;
-            imgTempDepois=null; document.getElementById('preview-container').classList.add('hidden'); document.getElementById('obs-input').value=''; 
+            imgTempDepois=null; 
+            document.getElementById('preview-container').classList.add('hidden'); 
+            document.getElementById('obs-input').value=''; 
+            
+            // Garante que ninguém vem selecionado ao abrir a modal de concluir a foto
+            document.querySelectorAll('#executors-checkboxes input').forEach(cb => cb.checked = false);
+
             const modal = document.getElementById('conclusion-modal');
             modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10);
         }
@@ -452,8 +482,13 @@
 
         function finalizarProcesso() {
             if(!imgTempDepois){ alert("Tire a foto para auditoria."); return;}
+            
+            // Trava de "Falsa Autoria"
             const checkedExecutors = Array.from(document.querySelectorAll('#executors-checkboxes input:checked')).map(cb => cb.value);
-            if(checkedExecutors.length === 0) { alert("Selecione quem executou (passo 2)."); return;}
+            if(checkedExecutors.length === 0) { 
+                alert("Obrigatório: Marque na lista quem realmente executou este serviço (Passo 2)."); 
+                return;
+            }
             
             const obsText = document.getElementById('obs-input').value.trim();
             if(obsText.length < 10) { alert("Observação muito curta."); return;}
@@ -469,14 +504,18 @@
                 const c = document.getElementById(`task-${currentActiveTask}`); 
                 c.classList.replace('bg-orange-50','bg-green-50'); c.classList.replace('bg-blue-50','bg-green-50');
                 document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
-                c.innerHTML = `<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="bg-gray-100 text-xs py-0.5 px-2 rounded">${checkedExecutors.join(', ')}</span><span class="text-[10px] text-green-800 bg-green-200 px-2 py-1 rounded">Concluído</span></div><h3 class="text-gray-600 font-semibold mb-3 line-through">${tarefaAtual}</h3><div class="w-16 h-16 bg-gray-200 rounded-lg bg-cover bg-center" style="background-image: url('${imgTempDepois}')"></div></div>`;
+                c.innerHTML = `<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="bg-gray-100 text-xs py-0.5 px-2 rounded font-medium text-gray-700"><i data-lucide="user-check" class="w-3 h-3 inline mr-1"></i>${checkedExecutors.join(', ')}</span><span class="text-[10px] text-green-800 bg-green-200 px-2 py-1 rounded">Concluído</span></div><h3 class="text-gray-600 font-semibold mb-3 line-through">${tarefaAtual}</h3><div class="w-16 h-16 bg-gray-200 rounded-lg bg-cover bg-center" style="background-image: url('${imgTempDepois}')"></div></div>`;
                 closeConclusionModal(); btn.innerHTML = `Salvar e Sincronizar`;
                 initIcons();
             })
             .catch(error => { alert("Erro de conexão."); btn.innerHTML = `Salvar e Sincronizar`; });
         }
 
-        window.onload = function() { initIcons(); };
+        window.onload = function() { 
+            initIcons(); 
+            // Força a tela de Login (Identificar-se) assim que o app carrega
+            setTimeout(() => { openTeamModal(); }, 800);
+        };
     </script>
 </body>
 </html>
