@@ -87,7 +87,7 @@
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Geral (Limpeza / Folhas)</div>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Mata-Mato / Poda)</div>
-                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Visitas)</div>
+                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Visitas / Outros)</div>
             </div>
         </div>
     </main>
@@ -105,7 +105,27 @@
     
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div><button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
     
-    <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content"><div class="p-5"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Agendar Nova Tarefa</h3><button onclick="closeExtraModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><div class="space-y-4"><div><label class="block text-xs font-semibold text-gray-600 mb-1">Setor / Local</label><select id="modal-select-setor" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5"><option>Carregando...</option></select></div><div><label class="block text-xs font-semibold text-gray-600 mb-1">Atividade</label><select id="modal-select-tarefa" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5"><option>Carregando...</option></select></div><button onclick="closeExtraModal()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl mt-2">Adicionar ao Cronograma de Hoje</button></div></div></div></div>
+    <!-- MODAL NOVA TAREFA (COM INPUT LIVRE / DATALIST) -->
+    <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
+            <div class="p-5">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Agendar Nova Tarefa</h3><button onclick="closeExtraModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Setor / Local (Selecione ou Digite)</label>
+                        <input list="setores-list" id="input-modal-setor" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Calçada Lateral">
+                        <datalist id="setores-list"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Atividade (Selecione ou Digite)</label>
+                        <input list="tarefas-list" id="input-modal-tarefa" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Criar passagens entre as clúsias">
+                        <datalist id="tarefas-list"></datalist>
+                    </div>
+                    <button onclick="adicionarTarefaExtra()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl mt-2">Adicionar ao Cronograma de Hoje</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgJUsLqkpJLw2ityVwZoqg0_pHbNkJvMMJwhvA6SpjqFM7Q7QfkvEORpode5R2-w/pub?output=csv";
@@ -154,7 +174,7 @@
             }
         }
 
-        // --- LEITOR DE CSV INTELIGENTE (Cronograma na Esquerda, Validação na Direita) ---
+        // --- LEITOR DE CSV INTELIGENTE ---
         function parseCSVDual(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
@@ -201,23 +221,17 @@
 
             for(let i = headerIndex + 1; i < rows.length; i++) { 
                 const row = rows[i];
-                
-                // 1. Puxa Cronograma (Tabela Esquerda) para o Calendário
                 if (colAtivRotina !== -1 && row[colAtivRotina] && row[colAtivRotina].length > 2) {
                     let obj = {};
                     obj['Atividade'] = row[colAtivRotina];
                     if (colFreqRotina !== -1) obj['Frequência'] = row[colFreqRotina];
                     if (colDuracaoRotina !== -1) obj['Duracao'] = row[colDuracaoRotina];
                     if (colEspecieRotina !== -1) obj['Especie'] = row[colEspecieRotina];
-                    
                     let s = colSetorRotina !== -1 ? row[colSetorRotina] : '';
                     let a = colAmbienteRotina !== -1 ? row[colAmbienteRotina] : '';
                     if(s && a) obj['SetorCompleto'] = `${s} (${a})`; else if(s) obj['SetorCompleto'] = s; else if(a) obj['SetorCompleto'] = a; else obj['SetorCompleto'] = 'Área Geral';
-                    
                     dataCronograma.push(obj);
                 }
-                
-                // 2. Puxa Base de Validação (Tabela Direita) para os Menus de Nova Tarefa
                 if (colSetorMestre !== -1 && row[colSetorMestre]) {
                     let s = row[colSetorMestre]; let a = colAmbienteMestre !== -1 ? row[colAmbienteMestre] : '';
                     mestreSetores.add((s && a) ? `${s} (${a})` : s);
@@ -225,7 +239,6 @@
                 if (colAtivMestre !== -1 && row[colAtivMestre]) mestreAtividades.add(row[colAtivMestre]);
             }
             
-            // Fallback se não existir tabela na direita
             if (mestreSetores.size === 0) dataCronograma.forEach(t => mestreSetores.add(t['SetorCompleto']));
             if (mestreAtividades.size === 0) dataCronograma.forEach(t => mestreAtividades.add(t['Atividade']));
 
@@ -237,7 +250,6 @@
             try {
                 const response = await fetch(CSV_URL); const data = await response.text(); 
                 const processado = parseCSVDual(data);
-                
                 window.cronogramaData = processado.cronograma;
                 window.listaSetores = processado.setores;
                 window.listaAtividades = processado.atividades;
@@ -249,14 +261,43 @@
         }
 
         function popularFiltrosModal() {
-            if(document.getElementById('modal-select-setor') && window.listaSetores.length > 0) document.getElementById('modal-select-setor').innerHTML = window.listaSetores.map(s => `<option value="${s}">${s}</option>`).join('');
-            if(document.getElementById('modal-select-tarefa') && window.listaAtividades.length > 0) document.getElementById('modal-select-tarefa').innerHTML = window.listaAtividades.map(t => `<option value="${t}">${t}</option>`).join('');
+            if(document.getElementById('setores-list') && window.listaSetores.length > 0) {
+                document.getElementById('setores-list').innerHTML = window.listaSetores.map(s => `<option value="${s}">`).join('');
+            }
+            if(document.getElementById('tarefas-list') && window.listaAtividades.length > 0) {
+                document.getElementById('tarefas-list').innerHTML = window.listaAtividades.map(t => `<option value="${t}">`).join('');
+            }
+        }
+
+        // --- ADICIONAR TAREFA EXTRA (Livre / Avulsa) ---
+        function adicionarTarefaExtra() {
+            const setorLivre = document.getElementById('input-modal-setor').value.trim();
+            const tarefaLivre = document.getElementById('input-modal-tarefa').value.trim();
+
+            if(!setorLivre || !tarefaLivre) {
+                alert("Por favor, preencha o Setor e a Atividade.");
+                return;
+            }
+
+            // Insere a tarefa avulsa no topo do array de hoje para o supervisor executar na hora
+            window.cronogramaData.unshift({
+                'Atividade': tarefaLivre,
+                'Frequência': 'Diariamente', // Força aparecer hoje
+                'SetorCompleto': setorLivre,
+                'Duracao': 'Avulsa',
+                'Especie': 'Personalizada'
+            });
+
+            closeExtraModal();
+            renderizarTarefasDoDia(new Date());
+            // Muda para a aba de hoje para o supervisor ver a tarefa recém criada
+            switchTab('hoje');
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
             const container = document.getElementById('task-container'); const emptyState = document.getElementById('empty-state-tasks'); container.innerHTML = '';
             
-            let tarefasHoje = window.cronogramaData.filter(t => { if (!t['Atividade']) return false; return tarefaCaiHoje(t['Frequência'], dataReferencia); });
+            let tarefasHoje = window.cronogramaData.filter(t => { if (!t['Atividade']) return false; return tarefaCaiHoje(t['Frequência'], dataReferencia) || t['Duracao'] === 'Avulsa'; });
             if(tarefasHoje.length === 0) { container.classList.add('hidden'); emptyState.classList.remove('hidden'); initIcons(); return; }
             container.classList.remove('hidden'); emptyState.classList.add('hidden');
 
@@ -270,7 +311,7 @@
                 const tagsExtras = (duracaoText || especieText) ? `<div class="flex gap-2 mt-2 mb-1">${duracaoText}${especieText}</div>` : '';
 
                 let corBadgeBg = 'bg-green-100', corBadgeText = 'text-green-800';
-                if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata') || atividade.toLowerCase().includes('poda')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
+                if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata') || atividade.toLowerCase().includes('poda') || atividade.toLowerCase().includes('passagem')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
                 else if(atividade.toLowerCase().includes('irrig') || atividade.toLowerCase().includes('vaso')) { corBadgeBg = 'bg-blue-100'; corBadgeText = 'text-blue-800'; }
                 else if(atividade.toLowerCase().includes('aduba') || atividade.toLowerCase().includes('visita')) { corBadgeBg = 'bg-red-100'; corBadgeText = 'text-red-800'; }
 
@@ -327,7 +368,7 @@
                     let hasRotina=false, hasIrrig=false, hasRoca=false, hasAduba=false;
                     window.cronogramaData.forEach(t => {
                         const freq = t['Frequência']; const ativ = (t['Atividade'] || '').toLowerCase();
-                        if(tarefaCaiHoje(freq, dataIteracao)) {
+                        if(tarefaCaiHoje(freq, dataIteracao) || t['Duracao'] === 'Avulsa') {
                             if(ativ.includes('folha') || ativ.includes('limp')) hasRotina = true;
                             if(ativ.includes('irrig') || ativ.includes('vaso')) hasIrrig = true;
                             if(ativ.includes('roça') || ativ.includes('mata') || ativ.includes('poda')) hasRoca = true;
@@ -352,7 +393,7 @@
             if (feriado || diaSemana === 0 || diaSemana === 6) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`; initIcons(); return; }
 
             const hoje = new Date(); const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
-            const tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t['Frequência'], dataClicada));
+            const tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t['Frequência'], dataClicada) || t['Duracao'] === 'Avulsa');
 
             if(tarefasDoDia.length === 0) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`; initIcons(); return; }
 
