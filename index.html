@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nova Era - App de Campo</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f97316">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -43,6 +41,16 @@
     </header>
 
     <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
+        
+        <!-- BANNER DE ALERTA DE HORÁRIO DE PICO (11:30 às 14:00) -->
+        <div id="pico-alert" class="hidden mb-4 bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-xl shadow-sm flex items-start gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"></i>
+            <div>
+                <p class="text-xs font-bold text-amber-800 uppercase">Janela de Alto Fluxo (11:30 - 14:00)</p>
+                <p class="text-[11px] text-amber-700 mt-0.5">Evite roçagens ou podas em áreas externas. Priorize manutenções internas.</p>
+            </div>
+        </div>
+
         <div class="mb-4 flex justify-between items-end">
             <div>
                 <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
@@ -62,8 +70,8 @@
         <div id="tasks-view">
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
                 <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
-                <h3 class="text-sm font-medium text-gray-700">Calculando matriz de operações...</h3>
-                <p class="text-xs text-gray-500 mt-1">Sincronizando com o Google Sheets</p>
+                <h3 class="text-sm font-medium text-gray-700">Calculando matriz inteligente...</h3>
+                <p class="text-xs text-gray-500 mt-1">Sincronizando regras, SLAs e datas alvo</p>
             </div>
             <div class="space-y-4 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
@@ -86,10 +94,10 @@
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
                 <p class="font-bold mb-2 uppercase tracking-wide">Legenda Operacional:</p>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Geral (Limpeza / Folhas)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Geral (Limpeza / Folhas - 1ª Prioridade)</div>
                 <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Mata-Mato / Poda)</div>
-                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Visitas / Outros)</div>
+                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Poda)</div>
+                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Visitas / Alvos)</div>
             </div>
         </div>
     </main>
@@ -107,7 +115,6 @@
     
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div><button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
     
-    <!-- MODAL NOVA TAREFA (COM INPUT LIVRE / DATALIST) -->
     <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
             <div class="p-5">
@@ -139,7 +146,21 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
-        // --- CÉREBRO DE FERIADOS E REGRAS ---
+        // --- VERIFICAÇÃO DE HORÁRIO DE PICO (11:30 às 14:00) ---
+        function verificarHorarioPico() {
+            const agora = new Date();
+            const tempoMinutos = agora.getHours() * 60 + agora.getMinutes();
+            const emHorarioPico = tempoMinutos >= 690 && tempoMinutos <= 840; // 11:30 = 690, 14:00 = 840
+            const alertBox = document.getElementById('pico-alert');
+            if(alertBox) {
+                if(emHorarioPico) alertBox.classList.remove('hidden');
+                else alertBox.classList.add('hidden');
+            }
+        }
+        setInterval(verificarHorarioPico, 60000);
+        verificarHorarioPico();
+
+        // --- REGRAS DE NEGÓCIO E FERIADOS ---
         const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
         function ehFeriado(data) { const mes = String(data.getMonth() + 1).padStart(2, '0'); const dia = String(data.getDate()).padStart(2, '0'); return feriadosNacionais.includes(`${mes}-${dia}`); }
         function proximoDiaUtilDate(dataBase) { let novaData = new Date(dataBase); while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { novaData.setDate(novaData.getDate() + 1); } return novaData; }
@@ -157,9 +178,19 @@
             return false;
         }
 
-        function tarefaCaiHoje(freqStr, dataReferencia) {
+        function tarefaCaiHoje(tarefaObj, dataReferencia) {
+            if (tarefaObj['DataAlvo']) {
+                const partes = tarefaObj['DataAlvo'].split('/');
+                if (partes.length === 3) {
+                    return dataReferencia.getDate() === parseInt(partes[0], 10) && dataReferencia.getMonth() === parseInt(partes[1], 10) - 1 && dataReferencia.getFullYear() === parseInt(partes[2], 10);
+                }
+            }
+            if (tarefaObj['Duracao'] === 'Avulsa') return true;
+
+            const freqStr = tarefaObj['Frequência'];
             if (!freqStr) return false;
             if (dataReferencia.getDay() === 0 || dataReferencia.getDay() === 6 || ehFeriado(dataReferencia)) return false; 
+            
             const freq = freqStr.toLowerCase();
             const isBaixaFreq = freq.includes('mês') || freq.includes('mensal') || freq.includes('quadrimestral') || (freq.includes('m') && freq.length < 5) || freq.includes('semanal');
             
@@ -176,7 +207,23 @@
             }
         }
 
-        // --- LEITOR DE CSV INTELIGENTE ---
+        // --- ORDENAÇÃO INTELIGENTE (SLA) ---
+        function ordenarTarefas(tarefas) {
+            return tarefas.sort((a, b) => {
+                const ativA = (a['Atividade'] || '').toLowerCase();
+                const ativB = (b['Atividade'] || '').toLowerCase();
+                
+                // Prioridade 1: Varrição e Folhas Secas sempre no topo
+                const ehFolhaA = ativA.includes('folha') || ativA.includes('varrição');
+                const ehFolhaB = ativB.includes('folha') || ativB.includes('varrição');
+                
+                if (ehFolhaA && !ehFolhaB) return -1;
+                if (!ehFolhaA && ehFolhaB) return 1;
+                return 0;
+            });
+        }
+
+        // --- PARSER DUAL BLINDADO ---
         function parseCSVDual(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
@@ -185,7 +232,8 @@
                 } else { if (char === '"') { insideQuotes = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } else if (char === '\n' || char === '\r') { if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } currentRow = []; currentCell = ''; if(char === '\r' && text[i+1] === '\n') i++; } else { currentCell += char; } }
             }
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-            if(rows.length === 0) return { cronograma: [], mestreSetores: [], mestreAtividades: [] };
+            
+            if(rows.length === 0) throw new Error("Planilha vazia");
             
             let headerIndex = -1;
             for (let i = 0; i < Math.min(10, rows.length); i++) {
@@ -195,14 +243,14 @@
                 if (rowStr.includes('setor') || rowStr.includes('local') || rowStr.includes('área') || rowStr.includes('ambiente')) score++;
                 if (score >= 2) { headerIndex = i; break; }
             }
-            if (headerIndex === -1) return { cronograma: [], mestreSetores: [], mestreAtividades: [] };
+            if (headerIndex === -1) throw new Error("Cabeçalho não encontrado. Verifique as configurações públicas do CSV.");
 
             const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim().toLowerCase()); 
             const dataCronograma = [];
             let mestreSetores = new Set();
             let mestreAtividades = new Set();
             
-            let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1;
+            let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1, colDataAlvoRotina = -1;
             let colSetorMestre = -1, colAmbienteMestre = -1, colAtivMestre = -1;
             
             for(let j=0; j<headers.length; j++) {
@@ -214,6 +262,7 @@
                     else if (h.includes('freq')) colFreqRotina = j;
                     else if (h.includes('dura') || h.includes('tempo')) colDuracaoRotina = j;
                     else if (h.includes('espéc') || h.includes('espec') || h.includes('plant')) colEspecieRotina = j;
+                    else if (h.includes('data') || h.includes('alvo') || h.includes('data alvo')) colDataAlvoRotina = j;
                 } else { 
                     if (h === 'setor') colSetorMestre = j;
                     else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteMestre = j;
@@ -229,6 +278,7 @@
                     if (colFreqRotina !== -1) obj['Frequência'] = row[colFreqRotina];
                     if (colDuracaoRotina !== -1) obj['Duracao'] = row[colDuracaoRotina];
                     if (colEspecieRotina !== -1) obj['Especie'] = row[colEspecieRotina];
+                    if (colDataAlvoRotina !== -1) obj['DataAlvo'] = row[colDataAlvoRotina];
                     let s = colSetorRotina !== -1 ? row[colSetorRotina] : '';
                     let a = colAmbienteRotina !== -1 ? row[colAmbienteRotina] : '';
                     if(s && a) obj['SetorCompleto'] = `${s} (${a})`; else if(s) obj['SetorCompleto'] = s; else if(a) obj['SetorCompleto'] = a; else obj['SetorCompleto'] = 'Área Geral';
@@ -250,41 +300,44 @@
         async function inicializarApp() {
             initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
             try {
-                const response = await fetch(CSV_URL); const data = await response.text(); 
+                const response = await fetch(CSV_URL); 
+                if (!response.ok) throw new Error("Erro HTTP: " + response.status);
+                const data = await response.text(); 
+                
                 const processado = parseCSVDual(data);
                 window.cronogramaData = processado.cronograma;
                 window.listaSetores = processado.setores;
                 window.listaAtividades = processado.atividades;
                 
-                popularFiltrosModal(); renderizarTarefasDoDia(new Date()); document.getElementById('loader-tasks').classList.add('hidden'); setTimeout(() => { openTeamModal(); }, 600); 
+                popularFiltrosModal(); 
+                renderizarTarefasDoDia(new Date()); 
+                document.getElementById('loader-tasks').classList.add('hidden'); 
+                setTimeout(() => { openTeamModal(); }, 600); 
             } catch(error) {
-                console.error(error); document.getElementById('loader-tasks').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.remove('hidden'); alert("Falha de internet ao ler o Google Sheets.");
+                console.error("Erro no App:", error); 
+                document.getElementById('loader-tasks').classList.add('hidden'); 
+                document.getElementById('empty-state-tasks').classList.remove('hidden'); 
+                alert("Falha de internet ao ler o Google Sheets.\nVerifique se o link CSV está correto e se o Google Sheets está publicado para a Web e sem bloqueio de organização.");
             }
         }
 
         function popularFiltrosModal() {
-            if(document.getElementById('setores-list') && window.listaSetores.length > 0) {
+            if(document.getElementById('setores-list') && window.listaSetores && window.listaSetores.length > 0) {
                 document.getElementById('setores-list').innerHTML = window.listaSetores.map(s => `<option value="${s}">`).join('');
             }
-            if(document.getElementById('tarefas-list') && window.listaAtividades.length > 0) {
+            if(document.getElementById('tarefas-list') && window.listaAtividades && window.listaAtividades.length > 0) {
                 document.getElementById('tarefas-list').innerHTML = window.listaAtividades.map(t => `<option value="${t}">`).join('');
             }
         }
 
-        // --- ADICIONAR TAREFA EXTRA (Livre / Avulsa) ---
         function adicionarTarefaExtra() {
             const setorLivre = document.getElementById('input-modal-setor').value.trim();
             const tarefaLivre = document.getElementById('input-modal-tarefa').value.trim();
+            if(!setorLivre || !tarefaLivre) { alert("Por favor, preencha o Setor e a Atividade."); return; }
 
-            if(!setorLivre || !tarefaLivre) {
-                alert("Por favor, preencha o Setor e a Atividade.");
-                return;
-            }
-
-            // Insere a tarefa avulsa no topo do array de hoje para o supervisor executar na hora
             window.cronogramaData.unshift({
                 'Atividade': tarefaLivre,
-                'Frequência': 'Diariamente', // Força aparecer hoje
+                'Frequência': '',
                 'SetorCompleto': setorLivre,
                 'Duracao': 'Avulsa',
                 'Especie': 'Personalizada'
@@ -292,14 +345,15 @@
 
             closeExtraModal();
             renderizarTarefasDoDia(new Date());
-            // Muda para a aba de hoje para o supervisor ver a tarefa recém criada
             switchTab('hoje');
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
             const container = document.getElementById('task-container'); const emptyState = document.getElementById('empty-state-tasks'); container.innerHTML = '';
             
-            let tarefasHoje = window.cronogramaData.filter(t => { if (!t['Atividade']) return false; return tarefaCaiHoje(t['Frequência'], dataReferencia) || t['Duracao'] === 'Avulsa'; });
+            let tarefasHoje = window.cronogramaData.filter(t => { if (!t['Atividade']) return false; return tarefaCaiHoje(t, dataReferencia); });
+            tarefasHoje = ordenarTarefas(tarefasHoje);
+
             if(tarefasHoje.length === 0) { container.classList.add('hidden'); emptyState.classList.remove('hidden'); initIcons(); return; }
             container.classList.remove('hidden'); emptyState.classList.add('hidden');
 
@@ -369,8 +423,8 @@
                 if (window.cronogramaData.length > 0) {
                     let hasRotina=false, hasIrrig=false, hasRoca=false, hasAduba=false;
                     window.cronogramaData.forEach(t => {
-                        const freq = t['Frequência']; const ativ = (t['Atividade'] || '').toLowerCase();
-                        if(tarefaCaiHoje(freq, dataIteracao) || t['Duracao'] === 'Avulsa') {
+                        const ativ = (t['Atividade'] || '').toLowerCase();
+                        if(tarefaCaiHoje(t, dataIteracao)) {
                             if(ativ.includes('folha') || ativ.includes('limp')) hasRotina = true;
                             if(ativ.includes('irrig') || ativ.includes('vaso')) hasIrrig = true;
                             if(ativ.includes('roça') || ativ.includes('mata') || ativ.includes('poda')) hasRoca = true;
@@ -395,7 +449,8 @@
             if (feriado || diaSemana === 0 || diaSemana === 6) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`; initIcons(); return; }
 
             const hoje = new Date(); const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
-            const tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t['Frequência'], dataClicada) || t['Duracao'] === 'Avulsa');
+            let tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataClicada));
+            tarefasDoDia = ordenarTarefas(tarefasDoDia);
 
             if(tarefasDoDia.length === 0) { document.getElementById('selected-day-count').textContent = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`; initIcons(); return; }
 
