@@ -113,7 +113,6 @@
     
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div>
     
-    <!-- MUDANÇA DA CORREÇÃO AQUI -->
     <button onclick="capturarFotoDepois()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button>
     </div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
     
@@ -123,23 +122,32 @@
                 <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Agendar Nova Tarefa</h3><button onclick="closeExtraModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Setor / Local (Selecione ou Digite)</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Setor / Local</label>
                         <input list="setores-list" id="input-modal-setor" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Calçada Lateral">
                         <datalist id="setores-list"></datalist>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Atividade (Selecione ou Digite)</label>
-                        <input list="tarefas-list" id="input-modal-tarefa" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Criar passagens entre as clúsias">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Atividade</label>
+                        <input list="tarefas-list" id="input-modal-tarefa" class="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Poda de emergência">
                         <datalist id="tarefas-list"></datalist>
                     </div>
-                    <button onclick="adicionarTarefaExtra()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl mt-2">Adicionar ao Cronograma de Hoje</button>
+                    <button id="btn-criar-extra" onclick="adicionarTarefaExtra()" class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl mt-2 flex justify-center items-center gap-2">
+                        Adicionar ao Cronograma de Hoje
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // CONFIGURAÇÕES DE WEBHOOKS
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgJUsLqkpJLw2ityVwZoqg0_pHbNkJvMMJwhvA6SpjqFM7Q7QfkvEORpode5R2-w/pub?output=csv";
+        const WEBHOOK_AUDITORIA_FINAL = "https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha"; // Para salvar foto e conclusão
+        
+        // 👉 CRIE UM NOVO WEBHOOK NO MAKE.COM PARA RECEBER AS TAREFAS NOVAS E COLOQUE O LINK AQUI:
+        const WEBHOOK_NOVA_TAREFA = "COLOQUE_SEU_WEBHOOK_NOVO_AQUI"; 
+
+
         window.cronogramaData = [];
         window.listaSetores = [];
         window.listaAtividades = [];
@@ -166,7 +174,6 @@
             renderizarTarefasDoDia(new Date());
         }
 
-        // --- VERIFICAÇÃO DE HORÁRIO DE PICO ---
         function verificarHorarioPico() {
             const agora = new Date();
             const tempoMinutos = agora.getHours() * 60 + agora.getMinutes();
@@ -347,22 +354,67 @@
             }
         }
 
+        // --- SISTEMA ATUALIZADO: ENVIO DE NOVA TAREFA PARA A NUVEM (MAKE) ---
         function adicionarTarefaExtra() {
             const setorLivre = document.getElementById('input-modal-setor').value.trim();
             const tarefaLivre = document.getElementById('input-modal-tarefa').value.trim();
             if(!setorLivre || !tarefaLivre) { alert("Por favor, preencha o Setor e a Atividade."); return; }
 
-            window.cronogramaData.unshift({
-                'Atividade': tarefaLivre,
-                'Frequência': '',
-                'SetorCompleto': setorLivre,
-                'Duracao': 'Avulsa',
-                'Especie': 'Personalizada'
-            });
+            const btn = document.getElementById('btn-criar-extra');
+            const txtOriginal = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline-block"></i> Avisando a Base...`;
+            btn.disabled = true;
 
-            closeExtraModal();
-            renderizarTarefasDoDia(new Date());
-            switchTab('hoje');
+            const hoje = new Date();
+            const dataAlvoStr = String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear();
+
+            const payload = {
+                setor: setorLivre,
+                tarefa: tarefaLivre,
+                data_alvo: dataAlvoStr
+            };
+
+            let req = Promise.resolve();
+            if(WEBHOOK_NOVA_TAREFA !== "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") {
+                req = fetch(WEBHOOK_NOVA_TAREFA, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            req.then(() => {
+                // Adiciona na tela local imediatamente
+                window.cronogramaData.unshift({
+                    'Atividade': tarefaLivre,
+                    'Frequência': '',
+                    'SetorCompleto': setorLivre,
+                    'Duracao': 'Avulsa',
+                    'Especie': 'Personalizada',
+                    'Chuva': 'Sim', // Não bloqueia por chuva
+                    'DataAlvo': dataAlvoStr
+                });
+
+                closeExtraModal();
+                renderizarTarefasDoDia(new Date());
+                switchTab('hoje');
+                
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
+                document.getElementById('input-modal-setor').value = '';
+                document.getElementById('input-modal-tarefa').value = '';
+                
+                if(WEBHOOK_NOVA_TAREFA === "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") {
+                    alert("Aviso: Tarefa criada apenas no seu celular. Para que todos vejam, configure o Webhook no código do App.");
+                } else {
+                    alert("Sincronizado! A Nova Tarefa foi salva na base e todos os celulares já podem visualizá-la.");
+                }
+
+            }).catch(error => {
+                alert("Erro ao avisar a base. Verifique sua conexão.");
+                btn.innerHTML = txtOriginal;
+                btn.disabled = false;
+            });
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
@@ -370,12 +422,9 @@
             
             let tarefasHoje = window.cronogramaData.filter(t => { 
                 if (!t['Atividade']) return false; 
-                
-                // MODO CHUVA: Se a regra for "Não" e a chuva estiver ativa, oculta a tarefa
                 if (modoChuvaAtivo && t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) {
                     return false;
                 }
-
                 return tarefaCaiHoje(t, dataReferencia); 
             });
             tarefasHoje = ordenarTarefas(tarefasHoje);
@@ -391,7 +440,6 @@
                 const duracaoText = t['Duracao'] ? `<span class="flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200"><i data-lucide="clock" class="w-3 h-3"></i> ${t['Duracao']}</span>` : '';
                 const especieText = t['Especie'] && t['Especie'].toLowerCase() !== 'todas' ? `<span class="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-100"><i data-lucide="leaf" class="w-3 h-3"></i> ${t['Especie']}</span>` : '';
                 
-                // Etiqueta Visual de Restrição de Chuva
                 const rainBadge = (t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) 
                     ? `<span class="flex items-center gap-1 text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100" title="Não realizar com chuva"><i data-lucide="cloud-off" class="w-3 h-3"></i> Sem Chuva</span>` : '';
                 
@@ -511,7 +559,6 @@
             document.getElementById('camera-input').click(); 
         }
         
-        // CORREÇÃO: Função específica para chamar a foto de DEPOIS
         function capturarFotoDepois() {
             currentCaptureType = 'depois';
             document.getElementById('camera-input').click();
@@ -544,7 +591,7 @@
             const obsText = document.getElementById('obs-input').value.trim(); if(obsText.length < 10) { alert("Observação muito curta."); return;}
             const btn = document.getElementById('btn-salvar'); btn.innerHTML = `Sincronizando...`;
 
-            fetch("https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data_hora: new Date().toISOString(), equipa: checkedExecutors.join(', '), setor: setorAtual, tarefa: tarefaAtual, observacao: obsText, foto_base64: imgTempDepois }) })
+            fetch(WEBHOOK_AUDITORIA_FINAL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data_hora: new Date().toISOString(), equipa: checkedExecutors.join(', '), setor: setorAtual, tarefa: tarefaAtual, observacao: obsText, foto_base64: imgTempDepois }) })
             .then(response => {
                 const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-orange-50','bg-green-50'); c.classList.replace('border-orange-200','border-green-200'); document.getElementById(`actions-${currentActiveTask}`).classList.add('hidden');
                 c.innerHTML = `<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="bg-gray-100 text-xs py-0.5 px-2 rounded font-medium text-gray-700"><i data-lucide="user-check" class="w-3 h-3 inline mr-1"></i>${checkedExecutors.join(', ')}</span><span class="text-[10px] text-green-800 bg-green-200 px-2 py-1 rounded">Concluído</span></div><h3 class="text-gray-600 font-semibold mb-3 line-through">${tarefaAtual}</h3><div class="w-16 h-16 bg-gray-200 rounded-lg bg-cover bg-center" style="background-image: url('${imgTempDepois}')"></div></div>`;
