@@ -53,9 +53,7 @@
         <div class="mb-4 flex justify-between items-end">
             <div>
                 <select id="posto-trabalho" class="text-xs font-bold text-orange-600 bg-transparent uppercase tracking-wider mb-1 border-none p-0 focus:ring-0 cursor-pointer outline-none appearance-none">
-                    <option value="Miss Silvia" selected>📍 Edifício Miss Silvia</option>
-                    <option value="Shopping Tietê">📍 Shopping Tietê</option>
-                    <option value="Base Oficina">📍 Base Nova Era</option>
+                    <option value="Carregando">📍 Carregando Clientes...</option>
                 </select>
                 <div class="flex items-center gap-3">
                     <p class="text-2xl font-bold text-gray-900" id="view-title">Tarefas de Hoje</p>
@@ -64,6 +62,7 @@
                 <p class="text-sm text-gray-500 mt-1" id="current-date">Carregando data...</p>
             </div>
             <div class="flex gap-2 items-center">
+                <!-- Botão Chuva -->
                 <button onclick="toggleChuva()" id="btn-chuva" class="bg-white border border-gray-200 shadow-sm px-2.5 py-1.5 rounded-lg text-gray-400 hover:text-blue-500 transition-all flex items-center gap-1" title="Modo Chuva">
                     <i data-lucide="cloud-rain" class="w-5 h-5"></i>
                 </button>
@@ -78,7 +77,7 @@
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
                 <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
                 <h3 class="text-sm font-medium text-gray-700">Calculando matriz inteligente...</h3>
-                <p class="text-xs text-gray-500 mt-1">Sincronizando prioridades VIPs e frequências...</p>
+                <p class="text-xs text-gray-500 mt-1">Sincronizando transbordo e previsão do tempo...</p>
             </div>
             <div class="space-y-4 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
@@ -111,12 +110,16 @@
     </nav>
 
     <!-- Modais -->
-    <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300"><div class="p-5"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3><button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="space-y-3 mb-5" id="team-checkboxes-view"><label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Adriano</span></label><label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Glauco</span></label></div><button onclick="updateTeamView()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-colors">Confirmar Equipe</button></div></div></div>
+    <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300"><div class="p-5"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3><button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="space-y-3 mb-5" id="team-checkboxes-view">
+        <!-- Equipes injetadas aqui -->
+    </div><button onclick="updateTeamView()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-colors">Confirmar Equipe</button></div></div></div>
     
     <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div>
     
     <button onclick="capturarFotoDepois()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button>
-    </div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
+    </div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes">
+        <!-- Executores injetados aqui -->
+    </div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
     
     <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
@@ -148,13 +151,25 @@
     </div>
 
     <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgJUsLqkpJLw2ityVwZoqg0_pHbNkJvMMJwhvA6SpjqFM7Q7QfkvEORpode5R2-w/pub?output=csv";
+        // ==========================================
+        // CONFIGURAÇÕES OBRIGATÓRIAS
+        // ==========================================
+        
+        // 1. Link Público do Google Sheets
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy-4oB7yzepPsqDhiy2vEysOOwBmrzZUXWD6UlL6W9B5YczjqHyENHg-GJu7WBg_APVTNhHTUqLjJS/pub?gid=1700868305&single=true&output=csv";
+        
+        // 2. Link do Webhook de Conclusão da Tarefa
         const WEBHOOK_AUDITORIA_FINAL = "https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha"; 
+        
+        // 3. Link do Webhook de Criação de Nova Tarefa
         const WEBHOOK_NOVA_TAREFA = "COLOQUE_SEU_WEBHOOK_NOVO_AQUI"; 
+
 
         window.cronogramaData = [];
         window.listaSetores = [];
         window.listaAtividades = [];
+        window.listaEquipes = [];
+        window.listaClientes = [];
         window.agendaProjetada = {};
         
         let modoChuvaAtivo = false;
@@ -163,32 +178,24 @@
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
-        function dataParaString(d) {
-            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-        }
+        function dataParaString(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 
         function extrairMinutos(durStr) {
             if (!durStr || durStr === 'Avulsa') return 0;
-            durStr = durStr.toLowerCase();
-            let min = 0;
+            durStr = durStr.toLowerCase(); let min = 0;
             const hMatch = durStr.match(/(\d+)\s*(h|hr|hora|horas)/);
             if (hMatch) min += parseInt(hMatch[1], 10) * 60;
             const mMatch = durStr.match(/(\d+)\s*(m|min|minuto|minutos)/);
             if (mMatch) min += parseInt(mMatch[1], 10);
-            if (!hMatch && !mMatch) {
-                const numMatch = durStr.match(/^(\d+)$/);
-                if (numMatch) min += parseInt(numMatch[1], 10);
-            }
+            if (!hMatch && !mMatch) { const numMatch = durStr.match(/^(\d+)$/); if (numMatch) min += parseInt(numMatch[1], 10); }
             return min;
         }
 
         function formataMinutos(minutos) {
             if (minutos === 0) return "0h";
-            const h = Math.floor(minutos / 60);
-            const m = minutos % 60;
+            const h = Math.floor(minutos / 60); const m = minutos % 60;
             if (h > 0 && m > 0) return `${h}h ${m}m`;
-            if (h > 0) return `${h}h`;
-            return `${m}m`;
+            if (h > 0) return `${h}h`; return `${m}m`;
         }
 
         function toggleChuva() {
@@ -208,21 +215,24 @@
         }
 
         function verificarHorarioPico() {
-            const agora = new Date();
-            const tempoMinutos = agora.getHours() * 60 + agora.getMinutes();
-            const emHorarioPico = tempoMinutos >= 690 && tempoMinutos <= 840; 
+            const agora = new Date(); const tempoMinutos = agora.getHours() * 60 + agora.getMinutes();
             const alertBox = document.getElementById('pico-alert');
             if(alertBox) {
-                if(emHorarioPico) alertBox.classList.remove('hidden');
+                if(tempoMinutos >= 690 && tempoMinutos <= 840) alertBox.classList.remove('hidden');
                 else alertBox.classList.add('hidden');
             }
         }
-        setInterval(verificarHorarioPico, 60000);
-        verificarHorarioPico();
+        setInterval(verificarHorarioPico, 60000); verificarHorarioPico();
 
         const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
         function ehFeriado(data) { const mes = String(data.getMonth() + 1).padStart(2, '0'); const dia = String(data.getDate()).padStart(2, '0'); return feriadosNacionais.includes(`${mes}-${dia}`); }
-        function proximoDiaUtilDate(dataBase) { let novaData = new Date(dataBase); while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { novaData.setDate(novaData.getDate() + 1); } return novaData; }
+        function proximoDiaUtilDate(dataBase) { 
+            let novaData = new Date(dataBase); 
+            while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { 
+                novaData.setDate(novaData.getDate() + 1); 
+            } 
+            return novaData; 
+        }
 
         function checarRegraOriginal(freqStr, dataOriginal) {
             if(!freqStr) return false; const freq = freqStr.toLowerCase(); const diaSemana = dataOriginal.getDay(); const diaMes = dataOriginal.getDate(); const mes = dataOriginal.getMonth();
@@ -239,7 +249,6 @@
             return false;
         }
 
-        // --- SISTEMA DE PESOS PARA FREQUÊNCIA ---
         function valorFrequencia(freqStr) {
             if (!freqStr) return 99;
             const f = freqStr.toLowerCase();
@@ -257,42 +266,25 @@
             return 50; 
         }
 
-        // --- MOTOR DE ORDENAÇÃO INTELIGENTE 3.0 ---
         function ordenarTarefas(tarefas) {
             return tarefas.sort((a, b) => {
-                // 0. Emergências / Data Alvo sempre no topo
                 if (a['DataAlvo'] && !b['DataAlvo']) return -1; 
                 if (!a['DataAlvo'] && b['DataAlvo']) return 1;
 
-                const ativA = (a['Atividade'] || '').toLowerCase();
-                const ativB = (b['Atividade'] || '').toLowerCase();
-                const setorA = (a['SetorCompleto'] || '').toLowerCase();
-                const setorB = (b['SetorCompleto'] || '').toLowerCase();
-
+                const ativA = (a['Atividade'] || '').toLowerCase(); const ativB = (b['Atividade'] || '').toLowerCase();
+                const setorA = (a['SetorCompleto'] || '').toLowerCase(); const setorB = (b['SetorCompleto'] || '').toLowerCase();
                 const ehFolhaA = ativA.includes('folha') || ativA.includes('varrição');
                 const ehFolhaB = ativB.includes('folha') || ativB.includes('varrição');
                 
-                // 1. Folhas Secas nos Setores VIP (Prioridade Máxima da Manhã)
                 const setoresVIP = ['fumódromo', 'entrada de carros', 'área do totem'];
-                const ehVipA = setoresVIP.some(v => setorA.includes(v));
-                const ehVipB = setoresVIP.some(v => setorB.includes(v));
-
-                const prioVipA = ehFolhaA && ehVipA;
-                const prioVipB = ehFolhaB && ehVipB;
+                const ehVipA = setoresVIP.some(v => setorA.includes(v)); const ehVipB = setoresVIP.some(v => setorB.includes(v));
+                const prioVipA = ehFolhaA && ehVipA; const prioVipB = ehFolhaB && ehVipB;
                 
-                if (prioVipA && !prioVipB) return -1;
-                if (!prioVipA && prioVipB) return 1;
+                if (prioVipA && !prioVipB) return -1; if (!prioVipA && prioVipB) return 1;
+                if (ehFolhaA && !ehFolhaB) return -1; if (!ehFolhaA && ehFolhaB) return 1;
 
-                // 2. Folhas Secas nos demais setores (Prioridade Secundária Estética)
-                if (ehFolhaA && !ehFolhaB) return -1;
-                if (!ehFolhaA && ehFolhaB) return 1;
-
-                // 3. Desempate pela Frequência (Maior volume de trabalho vem antes)
-                const pesoFreqA = valorFrequencia(a['Frequência']);
-                const pesoFreqB = valorFrequencia(b['Frequência']);
-                
-                if (pesoFreqA < pesoFreqB) return -1;
-                if (pesoFreqA > pesoFreqB) return 1;
+                const pesoFreqA = valorFrequencia(a['Frequência']); const pesoFreqB = valorFrequencia(b['Frequência']);
+                if (pesoFreqA < pesoFreqB) return -1; if (pesoFreqA > pesoFreqB) return 1;
 
                 return 0;
             });
@@ -301,14 +293,11 @@
         function tarefaCaiHoje(tarefaObj, dataReferencia) {
             if (tarefaObj['DataAlvo']) {
                 const partes = tarefaObj['DataAlvo'].split('/');
-                if (partes.length === 3) {
-                    return dataReferencia.getDate() === parseInt(partes[0], 10) && dataReferencia.getMonth() === parseInt(partes[1], 10) - 1 && dataReferencia.getFullYear() === parseInt(partes[2], 10);
-                }
+                if (partes.length === 3) return dataReferencia.getDate() === parseInt(partes[0], 10) && dataReferencia.getMonth() === parseInt(partes[1], 10) - 1 && dataReferencia.getFullYear() === parseInt(partes[2], 10);
             }
             if (tarefaObj['Duracao'] === 'Avulsa') return true;
 
-            const freqStr = tarefaObj['Frequência'];
-            if (!freqStr) return false;
+            const freqStr = tarefaObj['Frequência']; if (!freqStr) return false;
             if (dataReferencia.getDay() === 0 || dataReferencia.getDay() === 6 || ehFeriado(dataReferencia)) return false; 
             
             const freq = freqStr.toLowerCase();
@@ -329,44 +318,29 @@
 
         function projetarAgenda() {
             window.agendaProjetada = {};
-            let hoje = new Date();
-            hoje.setHours(0,0,0,0);
+            let hoje = new Date(); hoje.setHours(0,0,0,0);
             let diasProjeto = 30; 
-
             let tarefasBrutas = {};
 
             for(let i=0; i < diasProjeto; i++) {
-                let d = new Date(hoje);
-                d.setDate(hoje.getDate() + i);
-                let dStr = dataParaString(d);
-
-                let doDia = window.cronogramaData.filter(t => {
-                    if (!t['Atividade']) return false;
-                    return tarefaCaiHoje(t, d);
-                }).map(t => ({...t}));
-
+                let d = new Date(hoje); d.setDate(hoje.getDate() + i); let dStr = dataParaString(d);
+                let doDia = window.cronogramaData.filter(t => t['Atividade'] && tarefaCaiHoje(t, d)).map(t => ({...t}));
                 tarefasBrutas[dStr] = ordenarTarefas(doDia);
                 window.agendaProjetada[dStr] = { tarefas: [], minutos: 0 };
             }
 
             for(let i=0; i < diasProjeto; i++) {
-                let d = new Date(hoje);
-                d.setDate(hoje.getDate() + i);
-                let dStr = dataParaString(d);
-
+                let d = new Date(hoje); d.setDate(hoje.getDate() + i); let dStr = dataParaString(d);
                 if (d.getDay() === 0 || d.getDay() === 6 || ehFeriado(d)) continue;
 
-                let fila = tarefasBrutas[dStr] || [];
-                let minNoDia = 0;
-                const LIMITE = 360; 
-
+                let fila = tarefasBrutas[dStr] || []; let minNoDia = 0; const LIMITE = 360; 
                 let ehHoje = i === 0;
 
                 while(fila.length > 0) {
                     let t = fila.shift();
 
                     if (ehHoje && modoChuvaAtivo && t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) {
-                        let prox = proximoDiaUtilDate(d);
+                        let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox);
                         let proxStr = dataParaString(prox);
                         if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t); 
                         continue;
@@ -375,22 +349,19 @@
                     let minT = extrairMinutos(t['Duracao']);
 
                     if (minNoDia + minT <= LIMITE || minT === 0) {
-                        minNoDia += minT;
-                        window.agendaProjetada[dStr].tarefas.push(t);
+                        minNoDia += minT; window.agendaProjetada[dStr].tarefas.push(t);
                     } else {
                         let espaco = LIMITE - minNoDia;
                         if (espaco >= 20) { 
                             let t1 = {...t, 'Duracao': formataMinutos(espaco), 'Atividade': t['Atividade'] + ' (Parte 1)'};
                             let t2 = {...t, 'Duracao': formataMinutos(minT - espaco), 'Atividade': t['Atividade'] + ' (Continuação)'};
+                            minNoDia += espaco; window.agendaProjetada[dStr].tarefas.push(t1);
                             
-                            minNoDia += espaco;
-                            window.agendaProjetada[dStr].tarefas.push(t1);
-
-                            let prox = proximoDiaUtilDate(d);
+                            let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox);
                             let proxStr = dataParaString(prox);
                             if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t2);
                         } else {
-                            let prox = proximoDiaUtilDate(d);
+                            let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox);
                             let proxStr = dataParaString(prox);
                             if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t);
                         }
@@ -408,7 +379,6 @@
                 } else { if (char === '"') { insideQuotes = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } else if (char === '\n' || char === '\r') { if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } currentRow = []; currentCell = ''; if(char === '\r' && text[i+1] === '\n') i++; } else { currentCell += char; } }
             }
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-            
             if(rows.length === 0) throw new Error("Planilha vazia");
             
             let headerIndex = -1;
@@ -423,11 +393,11 @@
 
             const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim().toLowerCase()); 
             const dataCronograma = [];
-            let mestreSetores = new Set();
-            let mestreAtividades = new Set();
+            let mestreSetores = new Set(); let mestreAtividades = new Set();
+            let mestreEquipes = new Set(); let mestreClientes = new Set();
             
             let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1, colDataAlvoRotina = -1, colChuvaRotina = -1;
-            let colSetorMestre = -1, colAmbienteMestre = -1, colAtivMestre = -1;
+            let colSetorMestre = -1, colAmbienteMestre = -1, colAtivMestre = -1, colEquipeMestre = -1, colClienteMestre = -1;
             
             for(let j=0; j<headers.length; j++) {
                 const h = headers[j]; if (!h) continue;
@@ -444,6 +414,8 @@
                     if (h === 'setor') colSetorMestre = j;
                     else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteMestre = j;
                     else if (h.includes('ativ') || h.includes('taref') || h.includes('desc')) colAtivMestre = j;
+                    else if (h.includes('equipe') || h.includes('funcionári') || h.includes('colaborador')) colEquipeMestre = j;
+                    else if (h.includes('cliente') || h.includes('posto')) colClienteMestre = j;
                 }
             }
 
@@ -468,17 +440,28 @@
                     mestreSetores.add((s && a) ? `${s} (${a})` : s);
                 }
                 if (colAtivMestre !== -1 && row[colAtivMestre]) mestreAtividades.add(row[colAtivMestre]);
+                if (colEquipeMestre !== -1 && row[colEquipeMestre] && row[colEquipeMestre].length > 2) mestreEquipes.add(row[colEquipeMestre].trim());
+                if (colClienteMestre !== -1 && row[colClienteMestre] && row[colClienteMestre].length > 2) mestreClientes.add(row[colClienteMestre].trim());
             }
             
             if (mestreSetores.size === 0) dataCronograma.forEach(t => mestreSetores.add(t['SetorCompleto']));
             if (mestreAtividades.size === 0) dataCronograma.forEach(t => mestreAtividades.add(t['Atividade']));
+            if (mestreEquipes.size === 0) { mestreEquipes.add("Adriano"); mestreEquipes.add("Glauco"); }
+            if (mestreClientes.size === 0) { mestreClientes.add("Edifício Miss Silvia"); }
 
-            return { cronograma: dataCronograma, setores: Array.from(mestreSetores).filter(Boolean).sort(), atividades: Array.from(mestreAtividades).filter(Boolean).sort() };
+            return { 
+                cronograma: dataCronograma, 
+                setores: Array.from(mestreSetores).filter(Boolean).sort(), 
+                atividades: Array.from(mestreAtividades).filter(Boolean).sort(),
+                equipes: Array.from(mestreEquipes).filter(Boolean).sort(),
+                clientes: Array.from(mestreClientes).filter(Boolean).sort()
+            };
         }
 
         async function inicializarApp() {
             initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
             try {
+                if(CSV_URL === "COLOQUE_SEU_LINK_DO_CSV_AQUI") throw new Error("Link do CSV ausente no código.");
                 const response = await fetch(CSV_URL); 
                 if (!response.ok) throw new Error("Erro HTTP: " + response.status);
                 const data = await response.text(); 
@@ -487,6 +470,8 @@
                 window.cronogramaData = processado.cronograma;
                 window.listaSetores = processado.setores;
                 window.listaAtividades = processado.atividades;
+                window.listaEquipes = processado.equipes;
+                window.listaClientes = processado.clientes;
                 
                 popularFiltrosModal(); 
                 projetarAgenda();
@@ -497,121 +482,68 @@
                 console.error("Erro no App:", error); 
                 document.getElementById('loader-tasks').classList.add('hidden'); 
                 document.getElementById('empty-state-tasks').classList.remove('hidden'); 
-                alert("Falha de internet ao ler o Google Sheets.");
+                alert("Falha de internet ao ler o Google Sheets.\nLembre-se de colar o SEU link gerado na variável CSV_URL no código.");
             }
         }
 
         function popularFiltrosModal() {
-            if(document.getElementById('setores-list') && window.listaSetores && window.listaSetores.length > 0) {
-                document.getElementById('setores-list').innerHTML = window.listaSetores.map(s => `<option value="${s}">`).join('');
+            if(document.getElementById('setores-list') && window.listaSetores) document.getElementById('setores-list').innerHTML = window.listaSetores.map(s => `<option value="${s}">`).join('');
+            if(document.getElementById('tarefas-list') && window.listaAtividades) document.getElementById('tarefas-list').innerHTML = window.listaAtividades.map(t => `<option value="${t}">`).join('');
+            
+            if(window.listaEquipes) {
+                const teamHTML = window.listaEquipes.map(e => `<label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="${e}" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">${e}</span></label>`).join('');
+                if(document.getElementById('team-checkboxes-view')) document.getElementById('team-checkboxes-view').innerHTML = teamHTML;
+                
+                const execHTML = window.listaEquipes.map(e => `<label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="${e}" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">${e}</span></label>`).join('');
+                if(document.getElementById('executors-checkboxes')) document.getElementById('executors-checkboxes').innerHTML = execHTML;
             }
-            if(document.getElementById('tarefas-list') && window.listaAtividades && window.listaAtividades.length > 0) {
-                document.getElementById('tarefas-list').innerHTML = window.listaAtividades.map(t => `<option value="${t}">`).join('');
+            if(window.listaClientes && document.getElementById('posto-trabalho')) {
+                document.getElementById('posto-trabalho').innerHTML = window.listaClientes.map(c => `<option value="${c}">📍 ${c}</option>`).join('');
             }
         }
 
         function adicionarTarefaExtra() {
-            const setorLivre = document.getElementById('input-modal-setor').value.trim();
-            const tarefaLivre = document.getElementById('input-modal-tarefa').value.trim();
-            const duracaoLivre = document.getElementById('input-modal-duracao').value.trim();
-
+            const setorLivre = document.getElementById('input-modal-setor').value.trim(); const tarefaLivre = document.getElementById('input-modal-tarefa').value.trim(); const duracaoLivre = document.getElementById('input-modal-duracao').value.trim();
             if(!setorLivre || !tarefaLivre) { alert("Por favor, preencha o Setor e a Atividade."); return; }
 
-            const btn = document.getElementById('btn-criar-extra');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline-block"></i> Avisando a Base...`;
-            btn.disabled = true;
+            const btn = document.getElementById('btn-criar-extra'); const txtOriginal = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline-block"></i> Avisando a Base...`; btn.disabled = true;
 
-            const hoje = new Date();
-            const dataAlvoStr = String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear();
-
-            const payload = {
-                setor: setorLivre,
-                tarefa: tarefaLivre,
-                data_alvo: dataAlvoStr,
-                duracao: duracaoLivre || 'Avulsa'
-            };
+            const hoje = new Date(); const dataAlvoStr = String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear();
+            const payload = { setor: setorLivre, tarefa: tarefaLivre, data_alvo: dataAlvoStr, duracao: duracaoLivre || 'Avulsa' };
 
             let req = Promise.resolve();
-            if(WEBHOOK_NOVA_TAREFA !== "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") {
-                req = fetch(WEBHOOK_NOVA_TAREFA, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-            }
+            if(WEBHOOK_NOVA_TAREFA !== "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") req = fetch(WEBHOOK_NOVA_TAREFA, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
 
             req.then(() => {
-                window.cronogramaData.unshift({
-                    'Atividade': tarefaLivre,
-                    'Frequência': 'Emergência',
-                    'SetorCompleto': setorLivre,
-                    'Duracao': duracaoLivre || 'Avulsa',
-                    'Especie': 'Personalizada',
-                    'Chuva': 'Sim', 
-                    'DataAlvo': dataAlvoStr
-                });
-
-                projetarAgenda();
-                closeExtraModal();
-                renderizarTarefasDoDia(new Date());
-                switchTab('hoje');
-                
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-                document.getElementById('input-modal-setor').value = '';
-                document.getElementById('input-modal-tarefa').value = '';
-                document.getElementById('input-modal-duracao').value = '';
-                
-                if(WEBHOOK_NOVA_TAREFA === "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") {
-                    alert("Aviso: Tarefa criada apenas no seu celular. Para que todos vejam, configure o Webhook no código do App.");
-                } else {
-                    alert("Sincronizado! A Nova Tarefa foi salva na base e todos já podem visualizá-la.");
-                }
-
-            }).catch(error => {
-                alert("Erro ao avisar a base. Verifique sua conexão.");
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-            });
+                window.cronogramaData.unshift({ 'Atividade': tarefaLivre, 'Frequência': 'Emergência', 'SetorCompleto': setorLivre, 'Duracao': duracaoLivre || 'Avulsa', 'Especie': 'Personalizada', 'Chuva': 'Sim', 'DataAlvo': dataAlvoStr });
+                projetarAgenda(); closeExtraModal(); renderizarTarefasDoDia(new Date()); switchTab('hoje');
+                btn.innerHTML = txtOriginal; btn.disabled = false;
+                document.getElementById('input-modal-setor').value = ''; document.getElementById('input-modal-tarefa').value = ''; document.getElementById('input-modal-duracao').value = '';
+                if(WEBHOOK_NOVA_TAREFA === "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") alert("Tarefa criada no celular. Configure o Webhook no código para sincronização global.");
+                else alert("Sincronizado! Tarefa salva na base.");
+            }).catch(error => { alert("Erro de conexão."); btn.innerHTML = txtOriginal; btn.disabled = false; });
         }
 
         function renderizarTarefasDoDia(dataReferencia) {
             const container = document.getElementById('task-container'); const emptyState = document.getElementById('empty-state-tasks'); container.innerHTML = '';
             
-            let dStr = dataParaString(dataReferencia);
-            let hoje = new Date(); hoje.setHours(0,0,0,0);
-            let dataRefZero = new Date(dataReferencia); dataRefZero.setHours(0,0,0,0);
-            
-            let tarefasHoje = [];
-            let cargaMinutos = 0;
+            let dStr = dataParaString(dataReferencia); let hoje = new Date(); hoje.setHours(0,0,0,0); let dataRefZero = new Date(dataReferencia); dataRefZero.setHours(0,0,0,0);
+            let tarefasHoje = []; let cargaMinutos = 0;
 
             if (dataRefZero >= hoje && window.agendaProjetada && window.agendaProjetada[dStr]) {
-                tarefasHoje = window.agendaProjetada[dStr].tarefas;
-                cargaMinutos = window.agendaProjetada[dStr].minutos;
+                tarefasHoje = window.agendaProjetada[dStr].tarefas; cargaMinutos = window.agendaProjetada[dStr].minutos;
             } else {
                 tarefasHoje = window.cronogramaData.filter(t => t['Atividade'] && tarefaCaiHoje(t, dataReferencia));
-                tarefasHoje = ordenarTarefas(tarefasHoje);
-                cargaMinutos = tarefasHoje.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
+                tarefasHoje = ordenarTarefas(tarefasHoje); cargaMinutos = tarefasHoje.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
             }
 
-            const badgeCarga = document.getElementById('badge-carga-hoje');
-            const txtCarga = document.getElementById('carga-hoje-text');
-            
+            const badgeCarga = document.getElementById('badge-carga-hoje'); const txtCarga = document.getElementById('carga-hoje-text');
             if(cargaMinutos > 0 && tarefasHoje.length > 0) {
-                badgeCarga.classList.remove('hidden');
-                txtCarga.innerHTML = formataMinutos(cargaMinutos);
-                
-                if(cargaMinutos >= 360) {
-                    badgeCarga.className = "text-xs font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm border border-red-200";
-                    badgeCarga.title = "Atenção: Carga Horária Estourada (>6h)";
-                } else {
-                    badgeCarga.className = "text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm border border-blue-200";
-                    badgeCarga.title = "Carga Horária Estimada do Dia";
-                }
-            } else {
-                badgeCarga.classList.add('hidden');
-            }
+                badgeCarga.classList.remove('hidden'); txtCarga.innerHTML = formataMinutos(cargaMinutos);
+                if(cargaMinutos > 360) { badgeCarga.className = "text-xs font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm border border-red-200"; badgeCarga.title = "Carga Horária Estourada (>6h)"; } 
+                else { badgeCarga.className = "text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm border border-blue-200"; badgeCarga.title = "Carga Horária Estimada"; }
+            } else { badgeCarga.classList.add('hidden'); }
 
             if(tarefasHoje.length === 0) { container.classList.add('hidden'); emptyState.classList.remove('hidden'); initIcons(); return; }
             container.classList.remove('hidden'); emptyState.classList.add('hidden');
@@ -623,10 +555,7 @@
                 
                 const duracaoText = t['Duracao'] ? `<span class="flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200"><i data-lucide="clock" class="w-3 h-3"></i> ${t['Duracao']}</span>` : '';
                 const especieText = t['Especie'] && t['Especie'].toLowerCase() !== 'todas' ? `<span class="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-100"><i data-lucide="leaf" class="w-3 h-3"></i> ${t['Especie']}</span>` : '';
-                
-                const rainBadge = (t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) 
-                    ? `<span class="flex items-center gap-1 text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100" title="Não realizar com chuva"><i data-lucide="cloud-off" class="w-3 h-3"></i> Sem Chuva</span>` : '';
-                
+                const rainBadge = (t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) ? `<span class="flex items-center gap-1 text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100" title="Não realizar com chuva"><i data-lucide="cloud-off" class="w-3 h-3"></i> Sem Chuva</span>` : '';
                 const tagsExtras = (duracaoText || especieText || rainBadge) ? `<div class="flex gap-2 mt-2 mb-1 flex-wrap">${duracaoText}${especieText}${rainBadge}</div>` : '';
 
                 let corBadgeBg = 'bg-green-100', corBadgeText = 'text-green-800';
@@ -634,16 +563,7 @@
                 else if(atividade.toLowerCase().includes('irrig') || atividade.toLowerCase().includes('vaso')) { corBadgeBg = 'bg-blue-100'; corBadgeText = 'text-blue-800'; }
                 else if(atividade.toLowerCase().includes('aduba') || atividade.toLowerCase().includes('visita')) { corBadgeBg = 'bg-red-100'; corBadgeText = 'text-red-800'; }
 
-                html += `
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-${id}">
-                    <div class="p-4">
-                        <div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${corBadgeBg} ${corBadgeText}">${setor}</span></div><span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded" id="status-${id}">Pendente</span></div>
-                        <h3 class="text-gray-900 font-semibold ${tagsExtras ? 'mb-1' : 'mb-3'}">${atividade}</h3>
-                        ${tagsExtras}
-                        <div class="flex gap-2 mt-3" id="actions-${id}"><button onclick="iniciarTarefa(${id}, '${safeSetor}', '${safeAtividade}')" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> Iniciar</button></div>
-                        <div id="photos-${id}" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3"><div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden bg-cover bg-center" id="photo-antes-${id}"><span class="text-[9px] text-white font-bold absolute bottom-1 bg-black bg-opacity-50 px-1 rounded">ANTES</span></div></div>
-                    </div>
-                </div>`;
+                html += `<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden task-card" id="task-${id}"><div class="p-4"><div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${corBadgeBg} ${corBadgeText}">${setor}</span></div><span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 py-1 px-2 rounded" id="status-${id}">Pendente</span></div><h3 class="text-gray-900 font-semibold ${tagsExtras ? 'mb-1' : 'mb-3'}">${atividade}</h3>${tagsExtras}<div class="flex gap-2 mt-3" id="actions-${id}"><button onclick="iniciarTarefa(${id}, '${safeSetor}', '${safeAtividade}')" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> Iniciar</button></div><div id="photos-${id}" class="hidden mt-3 pt-3 border-t border-gray-100 flex gap-3"><div class="w-16 h-16 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden bg-cover bg-center" id="photo-antes-${id}"><span class="text-[9px] text-white font-bold absolute bottom-1 bg-black bg-opacity-50 px-1 rounded">ANTES</span></div></div></div></div>`;
             });
             container.innerHTML = html; initIcons();
         }
@@ -679,22 +599,13 @@
             for(let day = 1; day <= totalDiasMes; day++) {
                 let classes = "month-cell"; let dotsHtml = '';
                 const dataIteracao = new Date(ano, mes, day); const diaSemana = dataIteracao.getDay(); const feriado = ehFeriado(dataIteracao);
-
                 if(day === diaAtual) { classes += " today selected"; } 
                 if(feriado || diaSemana === 0 || diaSemana === 6) { classes += " bg-gray-50 opacity-75"; }
 
                 if (window.cronogramaData.length > 0) {
                     let hasRotina=false, hasIrrig=false, hasRoca=false, hasAduba=false;
-                    
-                    let dStr = dataParaString(dataIteracao);
-                    let hojeZero = new Date(); hojeZero.setHours(0,0,0,0);
-                    let tarefasDoDiaCal = [];
-                    
-                    if (dataIteracao >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) {
-                        tarefasDoDiaCal = window.agendaProjetada[dStr].tarefas;
-                    } else {
-                        tarefasDoDiaCal = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataIteracao));
-                    }
+                    let dStr = dataParaString(dataIteracao); let hojeZero = new Date(); hojeZero.setHours(0,0,0,0);
+                    let tarefasDoDiaCal = (dataIteracao >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) ? window.agendaProjetada[dStr].tarefas : window.cronogramaData.filter(t => tarefaCaiHoje(t, dataIteracao));
 
                     tarefasDoDiaCal.forEach(t => {
                         const ativ = (t['Atividade'] || '').toLowerCase();
@@ -703,10 +614,7 @@
                         if(ativ.includes('roça') || ativ.includes('mata') || ativ.includes('poda')) hasRoca = true;
                         if(ativ.includes('aduba') || ativ.includes('visita')) hasAduba = true;
                     });
-                    if(hasRotina) dotsHtml += `<div class="dot bg-green-500"></div>`;
-                    if(hasIrrig) dotsHtml += `<div class="dot bg-blue-400"></div>`;
-                    if(hasRoca) dotsHtml += `<div class="dot bg-orange-500"></div>`;
-                    if(hasAduba) dotsHtml += `<div class="dot bg-red-600"></div>`;
+                    if(hasRotina) dotsHtml += `<div class="dot bg-green-500"></div>`; if(hasIrrig) dotsHtml += `<div class="dot bg-blue-400"></div>`; if(hasRoca) dotsHtml += `<div class="dot bg-orange-500"></div>`; if(hasAduba) dotsHtml += `<div class="dot bg-red-600"></div>`;
                 }
                 html += `<div class="${classes}" onclick="selectMonthDate(${day}, this, ${diaSemana}, ${feriado})"><span class="day-num">${day}</span><div class="task-dots">${dotsHtml}</div></div>`;
             }
@@ -721,22 +629,17 @@
             if (feriado || diaSemana === 0 || diaSemana === 6) { document.getElementById('selected-day-count').innerHTML = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`; initIcons(); return; }
 
             const hoje = new Date(); const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
-            let dStr = dataParaString(dataClicada);
-            let hojeZero = new Date(hoje); hojeZero.setHours(0,0,0,0);
-            
-            let tarefasDoDia = [];
-            let cargaMinutos = 0;
+            let dStr = dataParaString(dataClicada); let hojeZero = new Date(hoje); hojeZero.setHours(0,0,0,0);
+            let tarefasDoDia = []; let cargaMinutos = 0;
 
             if (dataClicada >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) {
-                tarefasDoDia = window.agendaProjetada[dStr].tarefas;
-                cargaMinutos = window.agendaProjetada[dStr].minutos;
+                tarefasDoDia = window.agendaProjetada[dStr].tarefas; cargaMinutos = window.agendaProjetada[dStr].minutos;
             } else {
                 tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataClicada));
-                tarefasDoDia = ordenarTarefas(tarefasDoDia);
-                cargaMinutos = tarefasDoDia.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
+                tarefasDoDia = ordenarTarefas(tarefasDoDia); cargaMinutos = tarefasDoDia.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
             }
 
-            let alertaIcone = cargaMinutos >= 360 ? `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline ml-1" title="Carga Horária Estourada"></i>` : '';
+            let alertaIcone = cargaMinutos > 360 ? `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline ml-1" title="Carga Horária Estourada"></i>` : '';
 
             if(tarefasDoDia.length === 0) { document.getElementById('selected-day-count').innerHTML = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`; initIcons(); return; }
 
@@ -762,16 +665,8 @@
 
         let currentActiveTask=null, currentCaptureType=null, imgTempDepois=null, setorAtual="", tarefaAtual="";
         
-        function iniciarTarefa(id, setor, tarefa) { 
-            currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; 
-            currentCaptureType='antes'; 
-            document.getElementById('camera-input').click(); 
-        }
-        
-        function capturarFotoDepois() {
-            currentCaptureType = 'depois';
-            document.getElementById('camera-input').click();
-        }
+        function iniciarTarefa(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; currentCaptureType='antes'; document.getElementById('camera-input').click(); }
+        function capturarFotoDepois() { currentCaptureType = 'depois'; document.getElementById('camera-input').click(); }
 
         function abrirModalConclusao(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; document.getElementById('modal-task-title').textContent = tarefa; document.getElementById('modal-setor-title').textContent = setor; imgTempDepois=null; document.getElementById('preview-container').classList.add('hidden'); document.getElementById('obs-input').value=''; document.querySelectorAll('#executors-checkboxes input').forEach(cb => cb.checked = false); const modal = document.getElementById('conclusion-modal'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10); }
         function closeConclusionModal() { const modal = document.getElementById('conclusion-modal'); modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
@@ -786,9 +681,7 @@
                     document.getElementById(`actions-${currentActiveTask}`).innerHTML = `<button onclick="abrirModalConclusao(${currentActiveTask}, '${safeSetor}', '${safeTarefa}')" class="flex-1 bg-orange-500 text-white py-2.5 rounded-lg text-sm flex items-center justify-center gap-2"><i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade</button>`;
                     const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-white','bg-orange-50'); c.classList.replace('border-gray-200','border-orange-200'); document.getElementById(`status-${currentActiveTask}`).textContent="Em Andamento"; initIcons();
                 } else { 
-                    imgTempDepois = event.target.result; 
-                    document.getElementById('preview-container').classList.remove('hidden'); 
-                    document.getElementById('foto-preview').src = imgTempDepois; 
+                    imgTempDepois = event.target.result; document.getElementById('preview-container').classList.remove('hidden'); document.getElementById('foto-preview').src = imgTempDepois; 
                 }
             }; r.readAsDataURL(file);
         });
