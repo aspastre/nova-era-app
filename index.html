@@ -79,7 +79,7 @@
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
                 <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
                 <h3 class="text-sm font-medium text-gray-700">Calculando matriz inteligente...</h3>
-                <p class="text-xs text-gray-500 mt-1">Sincronizando regras, clima e dimensionando equipe</p>
+                <p class="text-xs text-gray-500 mt-1">Simulando transbordo, clima e nivelamento de carga (6h)</p>
             </div>
             <div class="space-y-4 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
@@ -157,44 +157,41 @@
         window.cronogramaData = [];
         window.listaSetores = [];
         window.listaAtividades = [];
+        window.agendaProjetada = {};
+        
         let modoChuvaAtivo = false;
 
         function initIcons() { try { if(typeof lucide !== 'undefined') { lucide.createIcons(); } } catch(e) {} }
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
-        // --- MOTOR DE CÁLCULO DE CARGA HORÁRIA COM LIMITE DE 6H ---
-        function calcularCargaHoraria(tarefas) {
-            let totalMinutos = 0;
-            tarefas.forEach(t => {
-                if (!t['Duracao']) return;
-                const durStr = t['Duracao'].toLowerCase();
-                let min = 0;
-                
-                const horasMatch = durStr.match(/(\d+)\s*(h|hr|hora|horas)/);
-                if (horasMatch) min += parseInt(horasMatch[1], 10) * 60;
-                
-                const minMatch = durStr.match(/(\d+)\s*(m|min|minuto|minutos)/);
-                if (minMatch) min += parseInt(minMatch[1], 10);
+        // --- SISTEMA MATEMÁTICO E FORMATAÇÃO DE DATA ---
+        function dataParaString(d) {
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
 
-                if (!horasMatch && !minMatch) {
-                    const numMatch = durStr.match(/^(\d+)$/);
-                    if (numMatch) min += parseInt(numMatch[1], 10); 
-                }
-
-                totalMinutos += min;
-            });
-
-            let texto = "0h";
-            if (totalMinutos > 0) {
-                const h = Math.floor(totalMinutos / 60);
-                const m = totalMinutos % 60;
-                if (h > 0 && m > 0) texto = `${h}h ${m}m`;
-                else if (h > 0) texto = `${h}h`;
-                else texto = `${m} min`;
+        function extrairMinutos(durStr) {
+            if (!durStr || durStr === 'Avulsa') return 0;
+            durStr = durStr.toLowerCase();
+            let min = 0;
+            const hMatch = durStr.match(/(\d+)\s*(h|hr|hora|horas)/);
+            if (hMatch) min += parseInt(hMatch[1], 10) * 60;
+            const mMatch = durStr.match(/(\d+)\s*(m|min|minuto|minutos)/);
+            if (mMatch) min += parseInt(mMatch[1], 10);
+            if (!hMatch && !mMatch) {
+                const numMatch = durStr.match(/^(\d+)$/);
+                if (numMatch) min += parseInt(numMatch[1], 10);
             }
+            return min;
+        }
 
-            return { texto: texto, totalMinutos: totalMinutos };
+        function formataMinutos(minutos) {
+            if (minutos === 0) return "0h";
+            const h = Math.floor(minutos / 60);
+            const m = minutos % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
         }
 
         function toggleChuva() {
@@ -209,6 +206,7 @@
                 btn.classList.replace('bg-blue-50', 'bg-white');
                 btn.classList.replace('border-blue-300', 'border-gray-200');
             }
+            projetarAgenda(); 
             renderizarTarefasDoDia(new Date());
         }
 
@@ -271,8 +269,12 @@
             }
         }
 
+        // --- ORDENAÇÃO: EMERGÊNCIAS (Avulsas) > FOLHAS > RESTO ---
         function ordenarTarefas(tarefas) {
             return tarefas.sort((a, b) => {
+                if (a['DataAlvo'] && !b['DataAlvo']) return -1; 
+                if (!a['DataAlvo'] && b['DataAlvo']) return 1;
+
                 const ativA = (a['Atividade'] || '').toLowerCase();
                 const ativB = (b['Atividade'] || '').toLowerCase();
                 const ehFolhaA = ativA.includes('folha') || ativA.includes('varrição');
@@ -283,6 +285,88 @@
             });
         }
 
+        // --- MOTOR DE TRANSBORDO (BIN PACKING 6H) E CHUVA DOMINÓ ---
+        function projetarAgenda() {
+            window.agendaProjetada = {};
+            let hoje = new Date();
+            hoje.setHours(0,0,0,0);
+            let diasProjeto = 30; // Projeta um mês pra frente
+
+            let tarefasBrutas = {};
+
+            // Passo 1: Distribuir cruamente
+            for(let i=0; i < diasProjeto; i++) {
+                let d = new Date(hoje);
+                d.setDate(hoje.getDate() + i);
+                let dStr = dataParaString(d);
+
+                let doDia = window.cronogramaData.filter(t => {
+                    if (!t['Atividade']) return false;
+                    return tarefaCaiHoje(t, d);
+                }).map(t => ({...t}));
+
+                tarefasBrutas[dStr] = ordenarTarefas(doDia);
+                window.agendaProjetada[dStr] = { tarefas: [], minutos: 0 };
+            }
+
+            // Passo 2: Fatiar e Transbordar
+            for(let i=0; i < diasProjeto; i++) {
+                let d = new Date(hoje);
+                d.setDate(hoje.getDate() + i);
+                let dStr = dataParaString(d);
+
+                if (d.getDay() === 0 || d.getDay() === 6 || ehFeriado(d)) continue;
+
+                let fila = tarefasBrutas[dStr] || [];
+                let minNoDia = 0;
+                const LIMITE = 360; // 6 horas
+
+                let ehHoje = i === 0;
+
+                while(fila.length > 0) {
+                    let t = fila.shift();
+
+                    // Efeito Dominó: Se chover hoje, tudo o que não pode molhar pula pra amanhã
+                    if (ehHoje && modoChuvaAtivo && t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) {
+                        let prox = proximoDiaUtilDate(d);
+                        let proxStr = dataParaString(prox);
+                        if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t); 
+                        continue;
+                    }
+
+                    let minT = extrairMinutos(t['Duracao']);
+
+                    if (minNoDia + minT <= LIMITE || minT === 0) {
+                        // Cabe inteiro
+                        minNoDia += minT;
+                        window.agendaProjetada[dStr].tarefas.push(t);
+                    } else {
+                        // Estourou o limite! Vamos fatiar.
+                        let espaco = LIMITE - minNoDia;
+                        if (espaco >= 20) { // Se sobrar pelo menos 20 min livres, fatia.
+                            let t1 = {...t, 'Duracao': formataMinutos(espaco), 'Atividade': t['Atividade'] + ' (Parte 1)'};
+                            let t2 = {...t, 'Duracao': formataMinutos(minT - espaco), 'Atividade': t['Atividade'] + ' (Continuação)'};
+                            
+                            minNoDia += espaco;
+                            window.agendaProjetada[dStr].tarefas.push(t1);
+
+                            // O pedaço que sobrou vai pro dia seguinte
+                            let prox = proximoDiaUtilDate(d);
+                            let proxStr = dataParaString(prox);
+                            if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t2);
+                        } else {
+                            // Não sobrou nem 20 min livres, joga a tarefa toda pro dia seguinte
+                            let prox = proximoDiaUtilDate(d);
+                            let proxStr = dataParaString(prox);
+                            if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t);
+                        }
+                    }
+                }
+                window.agendaProjetada[dStr].minutos = minNoDia;
+            }
+        }
+
+        // --- PARSER DUAL ---
         function parseCSVDual(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
@@ -372,6 +456,10 @@
                 window.listaAtividades = processado.atividades;
                 
                 popularFiltrosModal(); 
+                
+                // Mágica do Transbordo!
+                projetarAgenda();
+                
                 renderizarTarefasDoDia(new Date()); 
                 document.getElementById('loader-tasks').classList.add('hidden'); 
                 setTimeout(() => { openTeamModal(); }, 600); 
@@ -426,13 +514,16 @@
             req.then(() => {
                 window.cronogramaData.unshift({
                     'Atividade': tarefaLivre,
-                    'Frequência': '',
+                    'Frequência': 'Emergência',
                     'SetorCompleto': setorLivre,
                     'Duracao': duracaoLivre || 'Avulsa',
                     'Especie': 'Personalizada',
                     'Chuva': 'Sim', 
                     'DataAlvo': dataAlvoStr
                 });
+
+                // Reprojeta a carga com a nova emergência encaixada no dia!
+                projetarAgenda();
 
                 closeExtraModal();
                 renderizarTarefasDoDia(new Date());
@@ -460,27 +551,33 @@
         function renderizarTarefasDoDia(dataReferencia) {
             const container = document.getElementById('task-container'); const emptyState = document.getElementById('empty-state-tasks'); container.innerHTML = '';
             
-            let tarefasHoje = window.cronogramaData.filter(t => { 
-                if (!t['Atividade']) return false; 
-                if (modoChuvaAtivo && t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) {
-                    return false;
-                }
-                return tarefaCaiHoje(t, dataReferencia); 
-            });
-            tarefasHoje = ordenarTarefas(tarefasHoje);
+            let dStr = dataParaString(dataReferencia);
+            let hoje = new Date(); hoje.setHours(0,0,0,0);
+            let dataRefZero = new Date(dataReferencia); dataRefZero.setHours(0,0,0,0);
+            
+            let tarefasHoje = [];
+            let cargaMinutos = 0;
 
-            // Atualiza a Carga Horária e Verifica o Limite de 6 horas
+            // Se for hoje ou futuro, lê do Transbordo! Se for passado, calcula o estático.
+            if (dataRefZero >= hoje && window.agendaProjetada && window.agendaProjetada[dStr]) {
+                tarefasHoje = window.agendaProjetada[dStr].tarefas;
+                cargaMinutos = window.agendaProjetada[dStr].minutos;
+            } else {
+                tarefasHoje = window.cronogramaData.filter(t => t['Atividade'] && tarefaCaiHoje(t, dataReferencia));
+                tarefasHoje = ordenarTarefas(tarefasHoje);
+                cargaMinutos = tarefasHoje.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
+            }
+
             const badgeCarga = document.getElementById('badge-carga-hoje');
             const txtCarga = document.getElementById('carga-hoje-text');
-            const cargaCalc = calcularCargaHoraria(tarefasHoje);
             
-            if(cargaCalc.totalMinutos > 0 && tarefasHoje.length > 0) {
+            if(cargaMinutos > 0 && tarefasHoje.length > 0) {
                 badgeCarga.classList.remove('hidden');
-                txtCarga.innerHTML = cargaCalc.texto;
+                txtCarga.innerHTML = formataMinutos(cargaMinutos);
                 
-                if(cargaCalc.totalMinutos > 360) {
+                if(cargaMinutos >= 360) {
                     badgeCarga.className = "text-xs font-bold bg-red-100 text-red-800 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm border border-red-200";
-                    badgeCarga.title = "Atenção: Carga Horária acima do limite de 6h!";
+                    badgeCarga.title = "Atenção: Carga Horária Estourada (>6h)";
                 } else {
                     badgeCarga.className = "text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm border border-blue-200";
                     badgeCarga.title = "Carga Horária Estimada do Dia";
@@ -561,14 +658,23 @@
 
                 if (window.cronogramaData.length > 0) {
                     let hasRotina=false, hasIrrig=false, hasRoca=false, hasAduba=false;
-                    window.cronogramaData.forEach(t => {
+                    
+                    let dStr = dataParaString(dataIteracao);
+                    let hojeZero = new Date(); hojeZero.setHours(0,0,0,0);
+                    let tarefasDoDiaCal = [];
+                    
+                    if (dataIteracao >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) {
+                        tarefasDoDiaCal = window.agendaProjetada[dStr].tarefas;
+                    } else {
+                        tarefasDoDiaCal = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataIteracao));
+                    }
+
+                    tarefasDoDiaCal.forEach(t => {
                         const ativ = (t['Atividade'] || '').toLowerCase();
-                        if(tarefaCaiHoje(t, dataIteracao)) {
-                            if(ativ.includes('folha') || ativ.includes('limp')) hasRotina = true;
-                            if(ativ.includes('irrig') || ativ.includes('vaso')) hasIrrig = true;
-                            if(ativ.includes('roça') || ativ.includes('mata') || ativ.includes('poda')) hasRoca = true;
-                            if(ativ.includes('aduba') || ativ.includes('visita')) hasAduba = true;
-                        }
+                        if(ativ.includes('folha') || ativ.includes('limp')) hasRotina = true;
+                        if(ativ.includes('irrig') || ativ.includes('vaso')) hasIrrig = true;
+                        if(ativ.includes('roça') || ativ.includes('mata') || ativ.includes('poda')) hasRoca = true;
+                        if(ativ.includes('aduba') || ativ.includes('visita')) hasAduba = true;
                     });
                     if(hasRotina) dotsHtml += `<div class="dot bg-green-500"></div>`;
                     if(hasIrrig) dotsHtml += `<div class="dot bg-blue-400"></div>`;
@@ -588,15 +694,26 @@
             if (feriado || diaSemana === 0 || diaSemana === 6) { document.getElementById('selected-day-count').innerHTML = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`; initIcons(); return; }
 
             const hoje = new Date(); const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
-            let tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataClicada));
-            tarefasDoDia = ordenarTarefas(tarefasDoDia);
+            let dStr = dataParaString(dataClicada);
+            let hojeZero = new Date(hoje); hojeZero.setHours(0,0,0,0);
+            
+            let tarefasDoDia = [];
+            let cargaMinutos = 0;
 
-            const cargaCalc = calcularCargaHoraria(tarefasDoDia);
-            let alertaIcone = cargaCalc.totalMinutos > 360 ? `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline ml-1" title="Acima de 6h"></i>` : '';
+            if (dataClicada >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) {
+                tarefasDoDia = window.agendaProjetada[dStr].tarefas;
+                cargaMinutos = window.agendaProjetada[dStr].minutos;
+            } else {
+                tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataClicada));
+                tarefasDoDia = ordenarTarefas(tarefasDoDia);
+                cargaMinutos = tarefasDoDia.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
+            }
+
+            let alertaIcone = cargaMinutos >= 360 ? `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline ml-1" title="Carga Horária Estourada"></i>` : '';
 
             if(tarefasDoDia.length === 0) { document.getElementById('selected-day-count').innerHTML = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Sem atividades nesta data.</p></div>`; initIcons(); return; }
 
-            document.getElementById('selected-day-count').innerHTML = `${tarefasDoDia.length} Ativ <span class="mx-0.5 text-gray-300">•</span> <i data-lucide="clock" class="w-3 h-3 inline"></i> ${cargaCalc.texto} ${alertaIcone}`; 
+            document.getElementById('selected-day-count').innerHTML = `${tarefasDoDia.length} Ativ <span class="mx-0.5 text-gray-300">•</span> <i data-lucide="clock" class="w-3 h-3 inline"></i> ${formataMinutos(cargaMinutos)} ${alertaIcone}`; 
             
             let itensHtml = '';
             tarefasDoDia.forEach(t => {
