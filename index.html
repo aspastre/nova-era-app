@@ -42,7 +42,6 @@
 
     <main class="max-w-md mx-auto pb-safe pt-4 px-4" id="main-content">
         
-        <!-- BANNER DE ALERTA DE HORÁRIO DE PICO (11:30 às 14:00) -->
         <div id="pico-alert" class="hidden mb-4 bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-xl shadow-sm flex items-start gap-3">
             <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"></i>
             <div>
@@ -61,9 +60,15 @@
                 <p class="text-2xl font-bold text-gray-900" id="view-title">Tarefas de Hoje</p>
                 <p class="text-sm text-gray-500 mt-1" id="current-date">Carregando data...</p>
             </div>
-            <div class="flex gap-2 bg-gray-200 p-1 rounded-lg">
-                <button onclick="toggleView('tasks')" id="btn-tasks" class="bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all"><i data-lucide="list-todo" class="w-5 h-5"></i></button>
-                <button onclick="toggleView('calendar')" id="btn-calendar" class="px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all"><i data-lucide="calendar-days" class="w-5 h-5"></i></button>
+            <div class="flex gap-2 items-center">
+                <!-- Botão Chuva -->
+                <button onclick="toggleChuva()" id="btn-chuva" class="bg-white border border-gray-200 shadow-sm px-2.5 py-1.5 rounded-lg text-gray-400 hover:text-blue-500 transition-all flex items-center gap-1" title="Modo Chuva">
+                    <i data-lucide="cloud-rain" class="w-5 h-5"></i>
+                </button>
+                <div class="flex gap-1 bg-gray-200 p-1 rounded-lg">
+                    <button onclick="toggleView('tasks')" id="btn-tasks" class="bg-white shadow-sm px-3 py-1.5 rounded text-gray-800 flex items-center justify-center min-w-[40px] transition-all"><i data-lucide="list-todo" class="w-5 h-5"></i></button>
+                    <button onclick="toggleView('calendar')" id="btn-calendar" class="px-3 py-1.5 rounded text-gray-500 hover:text-gray-800 flex items-center justify-center min-w-[40px] transition-all"><i data-lucide="calendar-days" class="w-5 h-5"></i></button>
+                </div>
             </div>
         </div>
 
@@ -71,13 +76,13 @@
             <div id="loader-tasks" class="pt-10 pb-4 text-center">
                 <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-4"></i>
                 <h3 class="text-sm font-medium text-gray-700">Calculando matriz inteligente...</h3>
-                <p class="text-xs text-gray-500 mt-1">Sincronizando regras, SLAs e datas alvo</p>
+                <p class="text-xs text-gray-500 mt-1">Sincronizando regras, clima e datas alvo</p>
             </div>
             <div class="space-y-4 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden pt-10 pb-4 text-center">
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400 shadow-inner"><i data-lucide="coffee" class="w-8 h-8"></i></div>
                 <h3 class="text-lg font-medium text-gray-900 mb-1">Tudo limpo!</h3>
-                <p class="text-sm text-gray-500">Nenhuma tarefa agendada para esta data.</p>
+                <p class="text-sm text-gray-500">Nenhuma tarefa agendada ou permitida para esta data.</p>
             </div>
         </div>
 
@@ -91,13 +96,6 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
                 <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center"><h3 class="font-semibold text-gray-800 text-sm flex items-center gap-2"><i data-lucide="calendar-search" class="w-4 h-4 text-orange-500"></i><span id="selected-day-title">Dia Selecionado</span></h3><span class="bg-white border border-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full" id="selected-day-count">Calculando...</span></div>
                 <div class="p-3 space-y-2" id="selected-day-list"></div>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs text-gray-600 mb-6">
-                <p class="font-bold mb-2 uppercase tracking-wide">Legenda Operacional:</p>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-green-500"></div> Rotina Geral (Limpeza / Folhas - 1ª Prioridade)</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-blue-400"></div> Irrigação / Manutenção Interna</div>
-                <div class="flex items-center gap-2 mb-1"><div class="dot bg-orange-500"></div> Crítico (Roçagem / Poda)</div>
-                <div class="flex items-center gap-2"><div class="dot bg-red-600"></div> Extraordinária (Adubação / Visitas / Alvos)</div>
             </div>
         </div>
     </main>
@@ -113,7 +111,11 @@
     <!-- Modais -->
     <div id="team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center"><div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300"><div class="p-5"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-gray-900">Quem está operando?</h3><button onclick="closeTeamModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="space-y-3 mb-5" id="team-checkboxes-view"><label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Adriano" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Adriano</span></label><label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"><input type="checkbox" value="Glauco" class="w-5 h-5 text-orange-500"><span class="font-medium text-gray-800">Glauco</span></label></div><button onclick="updateTeamView()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-xl transition-colors">Confirmar Equipe</button></div></div></div>
     
-    <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div><button onclick="document.getElementById('camera-input').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
+    <div id="conclusion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl transform scale-95 transition-transform duration-300"><div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold text-gray-900">Concluir Atividade</h3><button onclick="closeConclusionModal()"><i data-lucide="x" class="text-gray-400 w-5 h-5"></i></button></div><p class="text-sm font-bold text-orange-600 mb-1" id="modal-task-title">Tarefa</p><p class="text-xs text-gray-500 mb-4" id="modal-setor-title">Setor</p><div class="space-y-4 max-h-[60vh] overflow-y-auto pb-2 pr-1"><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">1. Foto do Depois <span class="text-red-500">*</span></label><input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden"><div id="preview-container" class="hidden mb-2 relative"><img id="foto-preview" class="w-full h-32 object-cover rounded-lg border border-gray-200"><span class="text-[9px] text-white font-bold absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded">DEPOIS</span></div>
+    
+    <!-- MUDANÇA DA CORREÇÃO AQUI -->
+    <button onclick="capturarFotoDepois()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 border border-gray-300 text-sm"><i data-lucide="camera" class="w-4 h-4"></i> Capturar Foto</button>
+    </div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">2. Executou a Tarefa <span class="text-red-500">*</span></label><div class="flex flex-wrap gap-2" id="executors-checkboxes"><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Adriano" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Adriano</span></label><label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" value="Glauco" class="w-4 h-4 text-orange-500"><span class="text-xs font-semibold text-gray-700">Glauco</span></label></div></div><div><label class="block text-xs font-bold text-gray-700 mb-2 uppercase">3. Observações <span class="text-red-500">*</span></label><textarea id="obs-input" rows="2" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 outline-none focus:border-orange-500" placeholder="Detalhes da execução..."></textarea></div></div><button onclick="finalizarProcesso()" id="btn-salvar" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-xl mt-4 flex justify-center items-center gap-2 shadow-md"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Salvar e Sincronizar</button></div></div>
     
     <div id="extra-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden opacity-0 transition-opacity flex items-end sm:items-center justify-center">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl shadow-xl transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="extra-modal-content">
@@ -141,16 +143,34 @@
         window.cronogramaData = [];
         window.listaSetores = [];
         window.listaAtividades = [];
+        
+        let modoChuvaAtivo = false;
 
         function initIcons() { try { if(typeof lucide !== 'undefined') { lucide.createIcons(); } } catch(e) {} }
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', optionsDate);
 
-        // --- VERIFICAÇÃO DE HORÁRIO DE PICO (11:30 às 14:00) ---
+        // --- MODO CHUVA ---
+        function toggleChuva() {
+            modoChuvaAtivo = !modoChuvaAtivo;
+            const btn = document.getElementById('btn-chuva');
+            if (modoChuvaAtivo) {
+                btn.classList.replace('text-gray-400', 'text-blue-600');
+                btn.classList.replace('bg-white', 'bg-blue-50');
+                btn.classList.replace('border-gray-200', 'border-blue-300');
+            } else {
+                btn.classList.replace('text-blue-600', 'text-gray-400');
+                btn.classList.replace('bg-blue-50', 'bg-white');
+                btn.classList.replace('border-blue-300', 'border-gray-200');
+            }
+            renderizarTarefasDoDia(new Date());
+        }
+
+        // --- VERIFICAÇÃO DE HORÁRIO DE PICO ---
         function verificarHorarioPico() {
             const agora = new Date();
             const tempoMinutos = agora.getHours() * 60 + agora.getMinutes();
-            const emHorarioPico = tempoMinutos >= 690 && tempoMinutos <= 840; // 11:30 = 690, 14:00 = 840
+            const emHorarioPico = tempoMinutos >= 690 && tempoMinutos <= 840; 
             const alertBox = document.getElementById('pico-alert');
             if(alertBox) {
                 if(emHorarioPico) alertBox.classList.remove('hidden');
@@ -160,7 +180,6 @@
         setInterval(verificarHorarioPico, 60000);
         verificarHorarioPico();
 
-        // --- REGRAS DE NEGÓCIO E FERIADOS ---
         const feriadosNacionais = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "12-25"];
         function ehFeriado(data) { const mes = String(data.getMonth() + 1).padStart(2, '0'); const dia = String(data.getDate()).padStart(2, '0'); return feriadosNacionais.includes(`${mes}-${dia}`); }
         function proximoDiaUtilDate(dataBase) { let novaData = new Date(dataBase); while(novaData.getDay() === 0 || novaData.getDay() === 6 || ehFeriado(novaData)) { novaData.setDate(novaData.getDate() + 1); } return novaData; }
@@ -207,23 +226,18 @@
             }
         }
 
-        // --- ORDENAÇÃO INTELIGENTE (SLA) ---
         function ordenarTarefas(tarefas) {
             return tarefas.sort((a, b) => {
                 const ativA = (a['Atividade'] || '').toLowerCase();
                 const ativB = (b['Atividade'] || '').toLowerCase();
-                
-                // Prioridade 1: Varrição e Folhas Secas sempre no topo
                 const ehFolhaA = ativA.includes('folha') || ativA.includes('varrição');
                 const ehFolhaB = ativB.includes('folha') || ativB.includes('varrição');
-                
                 if (ehFolhaA && !ehFolhaB) return -1;
                 if (!ehFolhaA && ehFolhaB) return 1;
                 return 0;
             });
         }
 
-        // --- PARSER DUAL BLINDADO ---
         function parseCSVDual(text) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
@@ -243,14 +257,14 @@
                 if (rowStr.includes('setor') || rowStr.includes('local') || rowStr.includes('área') || rowStr.includes('ambiente')) score++;
                 if (score >= 2) { headerIndex = i; break; }
             }
-            if (headerIndex === -1) throw new Error("Cabeçalho não encontrado. Verifique as configurações públicas do CSV.");
+            if (headerIndex === -1) throw new Error("Cabeçalho não encontrado.");
 
             const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim().toLowerCase()); 
             const dataCronograma = [];
             let mestreSetores = new Set();
             let mestreAtividades = new Set();
             
-            let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1, colDataAlvoRotina = -1;
+            let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1, colDataAlvoRotina = -1, colChuvaRotina = -1;
             let colSetorMestre = -1, colAmbienteMestre = -1, colAtivMestre = -1;
             
             for(let j=0; j<headers.length; j++) {
@@ -262,7 +276,8 @@
                     else if (h.includes('freq')) colFreqRotina = j;
                     else if (h.includes('dura') || h.includes('tempo')) colDuracaoRotina = j;
                     else if (h.includes('espéc') || h.includes('espec') || h.includes('plant')) colEspecieRotina = j;
-                    else if (h.includes('data') || h.includes('alvo') || h.includes('data alvo')) colDataAlvoRotina = j;
+                    else if (h.includes('data') || h.includes('alvo')) colDataAlvoRotina = j;
+                    else if (h.includes('chuva') || h.includes('chover')) colChuvaRotina = j;
                 } else { 
                     if (h === 'setor') colSetorMestre = j;
                     else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteMestre = j;
@@ -279,6 +294,8 @@
                     if (colDuracaoRotina !== -1) obj['Duracao'] = row[colDuracaoRotina];
                     if (colEspecieRotina !== -1) obj['Especie'] = row[colEspecieRotina];
                     if (colDataAlvoRotina !== -1) obj['DataAlvo'] = row[colDataAlvoRotina];
+                    if (colChuvaRotina !== -1) obj['Chuva'] = row[colChuvaRotina];
+                    
                     let s = colSetorRotina !== -1 ? row[colSetorRotina] : '';
                     let a = colAmbienteRotina !== -1 ? row[colAmbienteRotina] : '';
                     if(s && a) obj['SetorCompleto'] = `${s} (${a})`; else if(s) obj['SetorCompleto'] = s; else if(a) obj['SetorCompleto'] = a; else obj['SetorCompleto'] = 'Área Geral';
@@ -317,7 +334,7 @@
                 console.error("Erro no App:", error); 
                 document.getElementById('loader-tasks').classList.add('hidden'); 
                 document.getElementById('empty-state-tasks').classList.remove('hidden'); 
-                alert("Falha de internet ao ler o Google Sheets.\nVerifique se o link CSV está correto e se o Google Sheets está publicado para a Web e sem bloqueio de organização.");
+                alert("Falha de internet ao ler o Google Sheets.");
             }
         }
 
@@ -351,7 +368,16 @@
         function renderizarTarefasDoDia(dataReferencia) {
             const container = document.getElementById('task-container'); const emptyState = document.getElementById('empty-state-tasks'); container.innerHTML = '';
             
-            let tarefasHoje = window.cronogramaData.filter(t => { if (!t['Atividade']) return false; return tarefaCaiHoje(t, dataReferencia); });
+            let tarefasHoje = window.cronogramaData.filter(t => { 
+                if (!t['Atividade']) return false; 
+                
+                // MODO CHUVA: Se a regra for "Não" e a chuva estiver ativa, oculta a tarefa
+                if (modoChuvaAtivo && t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) {
+                    return false;
+                }
+
+                return tarefaCaiHoje(t, dataReferencia); 
+            });
             tarefasHoje = ordenarTarefas(tarefasHoje);
 
             if(tarefasHoje.length === 0) { container.classList.add('hidden'); emptyState.classList.remove('hidden'); initIcons(); return; }
@@ -364,7 +390,12 @@
                 
                 const duracaoText = t['Duracao'] ? `<span class="flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200"><i data-lucide="clock" class="w-3 h-3"></i> ${t['Duracao']}</span>` : '';
                 const especieText = t['Especie'] && t['Especie'].toLowerCase() !== 'todas' ? `<span class="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-100"><i data-lucide="leaf" class="w-3 h-3"></i> ${t['Especie']}</span>` : '';
-                const tagsExtras = (duracaoText || especieText) ? `<div class="flex gap-2 mt-2 mb-1">${duracaoText}${especieText}</div>` : '';
+                
+                // Etiqueta Visual de Restrição de Chuva
+                const rainBadge = (t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) 
+                    ? `<span class="flex items-center gap-1 text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100" title="Não realizar com chuva"><i data-lucide="cloud-off" class="w-3 h-3"></i> Sem Chuva</span>` : '';
+                
+                const tagsExtras = (duracaoText || especieText || rainBadge) ? `<div class="flex gap-2 mt-2 mb-1 flex-wrap">${duracaoText}${especieText}${rainBadge}</div>` : '';
 
                 let corBadgeBg = 'bg-green-100', corBadgeText = 'text-green-800';
                 if(atividade.toLowerCase().includes('roça') || atividade.toLowerCase().includes('mata') || atividade.toLowerCase().includes('poda') || atividade.toLowerCase().includes('passagem')) { corBadgeBg = 'bg-orange-100'; corBadgeText = 'text-orange-800'; } 
@@ -473,7 +504,19 @@
         function closeExtraModal() { document.getElementById('extra-modal').classList.add('opacity-0'); document.getElementById('extra-modal-content').classList.add('translate-y-full'); setTimeout(() => document.getElementById('extra-modal').classList.add('hidden'), 300); }
 
         let currentActiveTask=null, currentCaptureType=null, imgTempDepois=null, setorAtual="", tarefaAtual="";
-        function iniciarTarefa(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; currentCaptureType='antes'; document.getElementById('camera-input').click(); }
+        
+        function iniciarTarefa(id, setor, tarefa) { 
+            currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; 
+            currentCaptureType='antes'; 
+            document.getElementById('camera-input').click(); 
+        }
+        
+        // CORREÇÃO: Função específica para chamar a foto de DEPOIS
+        function capturarFotoDepois() {
+            currentCaptureType = 'depois';
+            document.getElementById('camera-input').click();
+        }
+
         function abrirModalConclusao(id, setor, tarefa) { currentActiveTask=id; setorAtual=setor; tarefaAtual=tarefa; document.getElementById('modal-task-title').textContent = tarefa; document.getElementById('modal-setor-title').textContent = setor; imgTempDepois=null; document.getElementById('preview-container').classList.add('hidden'); document.getElementById('obs-input').value=''; document.querySelectorAll('#executors-checkboxes input').forEach(cb => cb.checked = false); const modal = document.getElementById('conclusion-modal'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); }, 10); }
         function closeConclusionModal() { const modal = document.getElementById('conclusion-modal'); modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
 
@@ -486,7 +529,11 @@
                     const safeSetor = setorAtual.replace(/'/g, "\\'"); const safeTarefa = tarefaAtual.replace(/'/g, "\\'");
                     document.getElementById(`actions-${currentActiveTask}`).innerHTML = `<button onclick="abrirModalConclusao(${currentActiveTask}, '${safeSetor}', '${safeTarefa}')" class="flex-1 bg-orange-500 text-white py-2.5 rounded-lg text-sm flex items-center justify-center gap-2"><i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade</button>`;
                     const c = document.getElementById(`task-${currentActiveTask}`); c.classList.replace('bg-white','bg-orange-50'); c.classList.replace('border-gray-200','border-orange-200'); document.getElementById(`status-${currentActiveTask}`).textContent="Em Andamento"; initIcons();
-                } else { imgTempDepois = event.target.result; document.getElementById('preview-container').classList.remove('hidden'); document.getElementById('foto-preview').src = imgTempDepois; }
+                } else { 
+                    imgTempDepois = event.target.result; 
+                    document.getElementById('preview-container').classList.remove('hidden'); 
+                    document.getElementById('foto-preview').src = imgTempDepois; 
+                }
             }; r.readAsDataURL(file);
         });
 
