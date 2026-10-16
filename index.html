@@ -152,18 +152,21 @@
 
     <script>
         // ==========================================
-        // CONFIGURAÇÕES OBRIGATÓRIAS
+        // ⚠️ LINKS OFICIAIS DO BANCO DE DADOS (CSV)
         // ==========================================
         
-        // 1. Link Público do Google Sheets
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy-4oB7yzepPsqDhiy2vEysOOwBmrzZUXWD6UlL6W9B5YczjqHyENHg-GJu7WBg_APVTNhHTUqLjJS/pub?gid=1700868305&single=true&output=csv";
+        // 1. Aba "Atividades"
+        const CSV_ATIVIDADES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRN1yS8KhREsbwrhSO8WVWfAZR4dpiiqsi_7POztsYEQ7v1UNxY-LCjO4l-HDr1Yk-cbLfyOAerTsK/pub?gid=1700868305&single=true&output=csv";
         
-        // 2. Link do Webhook de Conclusão da Tarefa
-        const WEBHOOK_AUDITORIA_FINAL = "https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha"; 
+        // 2. Aba "Configurações"
+        const CSV_CONFIG = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRN1yS8KhREsbwrhSO8WVWfAZR4dpiiqsi_7POztsYEQ7v1UNxY-LCjO4l-HDr1Yk-cbLfyOAerTsK/pub?gid=801095387&single=true&output=csv";
         
-        // 3. Link do Webhook de Criação de Nova Tarefa
-        const WEBHOOK_NOVA_TAREFA = "COLOQUE_SEU_WEBHOOK_NOVO_AQUI"; 
+        // 3. Aba "Listas"
+        const CSV_LISTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRN1yS8KhREsbwrhSO8WVWfAZR4dpiiqsi_7POztsYEQ7v1UNxY-LCjO4l-HDr1Yk-cbLfyOAerTsK/pub?gid=2138299562&single=true&output=csv";
 
+        // Webhooks do Make
+        const WEBHOOK_AUDITORIA_FINAL = "https://hook.us1.make.com/xud1bcw128vebpl9jibour3corn6x4ha"; 
+        const WEBHOOK_NOVA_TAREFA = "https://hook.us2.make.com/fwwjotbxwae0ghf4rqd71um948sfd94d";
 
         window.cronogramaData = [];
         window.listaSetores = [];
@@ -183,10 +186,8 @@
         function extrairMinutos(durStr) {
             if (!durStr || durStr === 'Avulsa') return 0;
             durStr = durStr.toLowerCase(); let min = 0;
-            const hMatch = durStr.match(/(\d+)\s*(h|hr|hora|horas)/);
-            if (hMatch) min += parseInt(hMatch[1], 10) * 60;
-            const mMatch = durStr.match(/(\d+)\s*(m|min|minuto|minutos)/);
-            if (mMatch) min += parseInt(mMatch[1], 10);
+            const hMatch = durStr.match(/(\d+)\s*(h|hr|hora|horas)/); if (hMatch) min += parseInt(hMatch[1], 10) * 60;
+            const mMatch = durStr.match(/(\d+)\s*(m|min|minuto|minutos)/); if (mMatch) min += parseInt(mMatch[1], 10);
             if (!hMatch && !mMatch) { const numMatch = durStr.match(/^(\d+)$/); if (numMatch) min += parseInt(numMatch[1], 10); }
             return min;
         }
@@ -234,34 +235,28 @@
             return novaData; 
         }
 
-        function checarRegraOriginal(freqStr, dataOriginal) {
-            if(!freqStr) return false; const freq = freqStr.toLowerCase(); const diaSemana = dataOriginal.getDay(); const diaMes = dataOriginal.getDate(); const mes = dataOriginal.getMonth();
-            if (freq.includes('diaria') || freq.includes('5x')) return diaSemana >= 1 && diaSemana <= 5;
-            if (freq.includes('4x')) return diaSemana >= 1 && diaSemana <= 4;
-            if (freq.includes('3x/semana') || freq.includes('esporádico') || freq.includes('esporadico') || freq.includes('dia sim')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
-            if (freq.includes('2x/semana')) return diaSemana === 2 || diaSemana === 4;
-            if (freq.includes('semanal') || freq.includes('1x/semana')) return diaSemana === 3; 
-            if (freq.includes('quinzenal')) return diaSemana === 3 && diaMes <= 15;
-            if (freq.includes('3x/m')) return diaMes === 10 || diaMes === 20 || diaMes === 30;
-            if (freq.includes('2x/m')) return (diaSemana === 4 && diaMes <= 7) || (diaSemana === 4 && diaMes > 14 && diaMes <= 21);
-            if (freq.includes('1x/m') || freq.includes('mensal')) return (diaSemana === 2 && diaMes <= 14);
-            if (freq.includes('quadrimestral')) return (mes === 2 || mes === 6 || mes === 10) && diaMes === 15;
+        function diaCorrespondeA(freqStr, diaSemana) {
+            const f = freqStr.toLowerCase();
+            if (f.includes('diári') || f.includes('diari') || f.includes('todos os dias') || f.includes('seg a sex') || f.includes('diariament')) return diaSemana >= 1 && diaSemana <= 5;
+            if (f.includes('seg') && diaSemana === 1) return true;
+            if (f.includes('ter') && diaSemana === 2) return true;
+            if (f.includes('qua') && diaSemana === 3) return true;
+            if (f.includes('qui') && diaSemana === 4) return true;
+            if (f.includes('sex') && diaSemana === 5) return true;
+            if (f.includes('sab') && diaSemana === 6) return true;
+            if (f.includes('dom') && diaSemana === 0) return true;
             return false;
         }
 
         function valorFrequencia(freqStr) {
-            if (!freqStr) return 99;
-            const f = freqStr.toLowerCase();
-            if (f.includes('diari') || f.includes('5x')) return 1;
-            if (f.includes('4x')) return 2;
-            if (f.includes('3x/semana') || f.includes('dia sim')) return 3;
-            if (f.includes('2x/semana')) return 4;
-            if (f.includes('semanal') || f.includes('1x/semana')) return 5;
-            if (f.includes('quinzenal')) return 6;
-            if (f.includes('3x/m')) return 7;
-            if (f.includes('2x/m')) return 8;
-            if (f.includes('1x/m') || f.includes('mensal')) return 9;
-            if (f.includes('quadrimestral')) return 10;
+            if (!freqStr) return 99; const f = freqStr.toLowerCase();
+            if (f.includes('diari') || f.includes('seg a sex')) return 1; 
+            if (f.split(',').length >= 3) return 2;
+            if (f.split(',').length === 2 || f.includes(' e ')) return 3; 
+            if (f.includes('1x/semana')) return 5; 
+            if (f.includes('quinzenal') || f.includes('2x/m')) return 6; 
+            if (f.includes('1x/m') || f.includes('mensal')) return 9; 
+            if (f.includes('quadrimestral')) return 10; 
             if (f.includes('esporadico') || f.includes('esporádico')) return 11;
             return 50; 
         }
@@ -290,59 +285,102 @@
             });
         }
 
-        function tarefaCaiHoje(tarefaObj, dataReferencia) {
-            if (tarefaObj['DataAlvo']) {
-                const partes = tarefaObj['DataAlvo'].split('/');
-                if (partes.length === 3) return dataReferencia.getDate() === parseInt(partes[0], 10) && dataReferencia.getMonth() === parseInt(partes[1], 10) - 1 && dataReferencia.getFullYear() === parseInt(partes[2], 10);
-            }
-            if (tarefaObj['Duracao'] === 'Avulsa') return true;
-
-            const freqStr = tarefaObj['Frequência']; if (!freqStr) return false;
-            if (dataReferencia.getDay() === 0 || dataReferencia.getDay() === 6 || ehFeriado(dataReferencia)) return false; 
-            
-            const freq = freqStr.toLowerCase();
-            const isBaixaFreq = freq.includes('mês') || freq.includes('mensal') || freq.includes('quadrimestral') || (freq.includes('m') && freq.length < 5) || freq.includes('semanal') || freq.includes('quinzenal');
-            
-            if (!isBaixaFreq) { return checarRegraOriginal(freqStr, dataReferencia); } 
-            else {
-                for (let i = 0; i <= 5; i++) {
-                    let pastDate = new Date(dataReferencia); pastDate.setDate(pastDate.getDate() - i);
-                    if (checarRegraOriginal(freqStr, pastDate)) {
-                        let diaUtilDaTarefa = proximoDiaUtilDate(pastDate);
-                        if (diaUtilDaTarefa.getDate() === dataReferencia.getDate() && diaUtilDaTarefa.getMonth() === dataReferencia.getMonth()) return true;
-                    }
-                }
-                return false;
-            }
-        }
-
         function projetarAgenda() {
             window.agendaProjetada = {};
             let hoje = new Date(); hoje.setHours(0,0,0,0);
-            let diasProjeto = 30; 
-            let tarefasBrutas = {};
+            let diasProjeto = 35; 
+            let diasUteis = [];
 
             for(let i=0; i < diasProjeto; i++) {
                 let d = new Date(hoje); d.setDate(hoje.getDate() + i); let dStr = dataParaString(d);
-                let doDia = window.cronogramaData.filter(t => t['Atividade'] && tarefaCaiHoje(t, d)).map(t => ({...t}));
-                tarefasBrutas[dStr] = ordenarTarefas(doDia);
-                window.agendaProjetada[dStr] = { tarefas: [], minutos: 0 };
+                let util = d.getDay() !== 0 && d.getDay() !== 6 && !ehFeriado(d);
+                window.agendaProjetada[dStr] = { data: d, util: util, tarefas: [], minutos: 0 };
+                if (util) diasUteis.push(dStr);
             }
 
+            window.cronogramaData.forEach(t => {
+                if (!t['Atividade']) return;
+                let f = (t['Frequência'] || '').toLowerCase();
+                let isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral') || f.includes('x/m');
+                let minT = extrairMinutos(t['Duracao']);
+
+                if (t['DataAlvo']) {
+                    const p = t['DataAlvo'].split('/');
+                    if (p.length === 3) {
+                        let dAlvo = new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
+                        let dStr = dataParaString(dAlvo);
+                        if(window.agendaProjetada[dStr]) { window.agendaProjetada[dStr].tarefas.push({...t}); window.agendaProjetada[dStr].minutos += minT; }
+                    }
+                } 
+                else if (t['Duracao'] === 'Avulsa' || f.includes('espor')) {
+                    // Ignora
+                }
+                else if (!isFlutuante) {
+                    diasUteis.forEach(dStr => {
+                        let dia = window.agendaProjetada[dStr].data;
+                        if (diaCorrespondeA(f, dia.getDay())) {
+                            window.agendaProjetada[dStr].tarefas.push({...t});
+                            window.agendaProjetada[dStr].minutos += minT;
+                        }
+                    });
+                }
+            });
+
+            window.cronogramaData.forEach(t => {
+                if (!t['Atividade'] || t['DataAlvo'] || t['Duracao'] === 'Avulsa') return;
+                let f = (t['Frequência'] || '').toLowerCase();
+                let isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral') || f.includes('x/m');
+                if (!isFlutuante) return;
+
+                let minT = extrairMinutos(t['Duracao']);
+                let dAtual = hoje.getDate();
+                
+                const findEmptiest = (diasArray) => {
+                    let bestDay = null; let minLoad = 99999;
+                    diasArray.forEach(dStr => {
+                        if (window.agendaProjetada[dStr].minutos < minLoad) { minLoad = window.agendaProjetada[dStr].minutos; bestDay = dStr; }
+                    });
+                    return bestDay;
+                };
+
+                if (f.includes('1x/m') || f.includes('mensal')) {
+                    let diasValidos = diasUteis.filter(dStr => window.agendaProjetada[dStr].data.getMonth() === hoje.getMonth());
+                    if (diasValidos.length === 0) diasValidos = diasUteis.filter(dStr => window.agendaProjetada[dStr].data.getMonth() === (hoje.getMonth()+1)%12); 
+                    let best = findEmptiest(diasValidos);
+                    if(best) { window.agendaProjetada[best].tarefas.push({...t}); window.agendaProjetada[best].minutos += minT; }
+                } 
+                else if (f.includes('2x/m') || f.includes('quinzenal')) {
+                    let diasQ1 = diasUteis.filter(dStr => window.agendaProjetada[dStr].data.getDate() <= 15);
+                    let diasQ2 = diasUteis.filter(dStr => window.agendaProjetada[dStr].data.getDate() > 15);
+                    if (dAtual <= 15) { let b1 = findEmptiest(diasQ1); if(b1) { window.agendaProjetada[b1].tarefas.push({...t}); window.agendaProjetada[b1].minutos += minT; } }
+                    let b2 = findEmptiest(diasQ2); if(b2) { window.agendaProjetada[b2].tarefas.push({...t}); window.agendaProjetada[b2].minutos += minT; }
+                }
+                else if (f.includes('quadrimestral')) {
+                    let mesT = window.agendaProjetada[diasUteis[0]].data.getMonth();
+                    if (mesT === 1 || mesT === 5 || mesT === 9 || mesT === 0 || mesT === 4 || mesT === 8) { 
+                        let best = findEmptiest(diasUteis.filter(dStr => window.agendaProjetada[dStr].data.getMonth() === mesT));
+                        if(best) { window.agendaProjetada[best].tarefas.push({...t}); window.agendaProjetada[best].minutos += minT; }
+                    }
+                }
+            });
+
+            const LIMITE = 360; 
             for(let i=0; i < diasProjeto; i++) {
                 let d = new Date(hoje); d.setDate(hoje.getDate() + i); let dStr = dataParaString(d);
-                if (d.getDay() === 0 || d.getDay() === 6 || ehFeriado(d)) continue;
+                if (!window.agendaProjetada[dStr].util) continue;
 
-                let fila = tarefasBrutas[dStr] || []; let minNoDia = 0; const LIMITE = 360; 
+                window.agendaProjetada[dStr].tarefas = ordenarTarefas(window.agendaProjetada[dStr].tarefas);
+                let fila = window.agendaProjetada[dStr].tarefas;
+                window.agendaProjetada[dStr].tarefas = []; 
+                let minNoDia = 0;
                 let ehHoje = i === 0;
 
                 while(fila.length > 0) {
                     let t = fila.shift();
 
                     if (ehHoje && modoChuvaAtivo && t['Chuva'] && t['Chuva'].toLowerCase().includes('n')) {
-                        let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox);
-                        let proxStr = dataParaString(prox);
-                        if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t); 
+                        let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox); let proxStr = dataParaString(prox);
+                        if(window.agendaProjetada[proxStr]) window.agendaProjetada[proxStr].tarefas.unshift(t); 
                         continue;
                     }
 
@@ -353,17 +391,15 @@
                     } else {
                         let espaco = LIMITE - minNoDia;
                         if (espaco >= 20) { 
-                            let t1 = {...t, 'Duracao': formataMinutos(espaco), 'Atividade': t['Atividade'] + ' (Parte 1)'};
-                            let t2 = {...t, 'Duracao': formataMinutos(minT - espaco), 'Atividade': t['Atividade'] + ' (Continuação)'};
+                            let t1 = {...t, 'Duracao': formataMinutos(espaco), 'Atividade': t['Atividade'] + ' (Parte)'};
+                            let t2 = {...t, 'Duracao': formataMinutos(minT - espaco), 'Atividade': t['Atividade'] + ' (Cont.)'};
                             minNoDia += espaco; window.agendaProjetada[dStr].tarefas.push(t1);
                             
-                            let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox);
-                            let proxStr = dataParaString(prox);
-                            if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t2);
+                            let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox); let proxStr = dataParaString(prox);
+                            if(window.agendaProjetada[proxStr]) window.agendaProjetada[proxStr].tarefas.unshift(t2);
                         } else {
-                            let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox);
-                            let proxStr = dataParaString(prox);
-                            if(tarefasBrutas[proxStr]) tarefasBrutas[proxStr].unshift(t);
+                            let prox = new Date(d); prox.setDate(prox.getDate() + 1); prox = proximoDiaUtilDate(prox); let proxStr = dataParaString(prox);
+                            if(window.agendaProjetada[proxStr]) window.agendaProjetada[proxStr].tarefas.unshift(t);
                         }
                     }
                 }
@@ -371,118 +407,113 @@
             }
         }
 
-        function parseCSVDual(text) {
+        function csvToJson(csv) {
             let rows = [], currentRow = [], currentCell = '', insideQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                let char = text[i];
-                if (insideQuotes) { if (char === '"') { if (text[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; } } else { currentCell += char; }
-                } else { if (char === '"') { insideQuotes = true; } else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; } else if (char === '\n' || char === '\r') { if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); } currentRow = []; currentCell = ''; if(char === '\r' && text[i+1] === '\n') i++; } else { currentCell += char; } }
+            for (let i = 0; i < csv.length; i++) {
+                let char = csv[i];
+                if (insideQuotes) {
+                    if (char === '"') {
+                        if (csv[i + 1] === '"') { currentCell += '"'; i++; } else { insideQuotes = false; }
+                    } else { currentCell += char; }
+                } else {
+                    if (char === '"') { insideQuotes = true; }
+                    else if (char === ',') { currentRow.push(currentCell.trim()); currentCell = ''; }
+                    else if (char === '\n' || char === '\r') {
+                        if(currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
+                        currentRow = []; currentCell = '';
+                        if(char === '\r' && csv[i+1] === '\n') i++;
+                    } else { currentCell += char; }
+                }
             }
             if (currentCell || currentRow.length > 0) { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-            if(rows.length === 0) throw new Error("Planilha vazia");
+            if(rows.length < 2) return [];
             
-            let headerIndex = -1;
-            for (let i = 0; i < Math.min(10, rows.length); i++) {
-                let rowStr = rows[i].join('').toLowerCase(); let score = 0;
-                if (rowStr.includes('atividad') || rowStr.includes('tarefa')) score++;
-                if (rowStr.includes('frequ') || rowStr.includes('freqü')) score++;
-                if (rowStr.includes('setor') || rowStr.includes('local') || rowStr.includes('área') || rowStr.includes('ambiente')) score++;
-                if (score >= 2) { headerIndex = i; break; }
+            const headers = rows[0].map(h => h.replace(/^\uFEFF/, '').trim());
+            const data = [];
+            for(let i = 1; i < rows.length; i++) {
+                let obj = {};
+                for(let j = 0; j < headers.length; j++) { obj[headers[j]] = rows[i][j] || ''; }
+                data.push(obj);
             }
-            if (headerIndex === -1) throw new Error("Cabeçalho não encontrado.");
-
-            const headers = rows[headerIndex].map(h => h.replace(/^\uFEFF/, '').trim().toLowerCase()); 
-            const dataCronograma = [];
-            let mestreSetores = new Set(); let mestreAtividades = new Set();
-            let mestreEquipes = new Set(); let mestreClientes = new Set();
-            
-            let colSetorRotina = -1, colAmbienteRotina = -1, colAtivRotina = -1, colFreqRotina = -1, colDuracaoRotina = -1, colEspecieRotina = -1, colDataAlvoRotina = -1, colChuvaRotina = -1;
-            let colSetorMestre = -1, colAmbienteMestre = -1, colAtivMestre = -1, colEquipeMestre = -1, colClienteMestre = -1;
-            
-            for(let j=0; j<headers.length; j++) {
-                const h = headers[j]; if (!h) continue;
-                if (j < 15) { 
-                    if (h === 'setor') colSetorRotina = j;
-                    else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteRotina = j;
-                    else if (h.includes('ativ') || h.includes('taref') || h.includes('desc')) colAtivRotina = j;
-                    else if (h.includes('freq')) colFreqRotina = j;
-                    else if (h.includes('dura') || h.includes('tempo')) colDuracaoRotina = j;
-                    else if (h.includes('espéc') || h.includes('espec') || h.includes('plant')) colEspecieRotina = j;
-                    else if (h.includes('data') || h.includes('alvo')) colDataAlvoRotina = j;
-                    else if (h.includes('chuva') || h.includes('chover')) colChuvaRotina = j;
-                } else { 
-                    if (h === 'setor') colSetorMestre = j;
-                    else if (h.includes('local') || h.includes('area') || h.includes('área') || h.includes('ambiente')) colAmbienteMestre = j;
-                    else if (h.includes('ativ') || h.includes('taref') || h.includes('desc')) colAtivMestre = j;
-                    else if (h.includes('equipe') || h.includes('funcionári') || h.includes('colaborador')) colEquipeMestre = j;
-                    else if (h.includes('cliente') || h.includes('posto')) colClienteMestre = j;
-                }
-            }
-
-            for(let i = headerIndex + 1; i < rows.length; i++) { 
-                const row = rows[i];
-                if (colAtivRotina !== -1 && row[colAtivRotina] && row[colAtivRotina].length > 2) {
-                    let obj = {};
-                    obj['Atividade'] = row[colAtivRotina];
-                    if (colFreqRotina !== -1) obj['Frequência'] = row[colFreqRotina];
-                    if (colDuracaoRotina !== -1) obj['Duracao'] = row[colDuracaoRotina];
-                    if (colEspecieRotina !== -1) obj['Especie'] = row[colEspecieRotina];
-                    if (colDataAlvoRotina !== -1) obj['DataAlvo'] = row[colDataAlvoRotina];
-                    if (colChuvaRotina !== -1) obj['Chuva'] = row[colChuvaRotina];
-                    
-                    let s = colSetorRotina !== -1 ? row[colSetorRotina] : '';
-                    let a = colAmbienteRotina !== -1 ? row[colAmbienteRotina] : '';
-                    if(s && a) obj['SetorCompleto'] = `${s} (${a})`; else if(s) obj['SetorCompleto'] = s; else if(a) obj['SetorCompleto'] = a; else obj['SetorCompleto'] = 'Área Geral';
-                    dataCronograma.push(obj);
-                }
-                if (colSetorMestre !== -1 && row[colSetorMestre]) {
-                    let s = row[colSetorMestre]; let a = colAmbienteMestre !== -1 ? row[colAmbienteMestre] : '';
-                    mestreSetores.add((s && a) ? `${s} (${a})` : s);
-                }
-                if (colAtivMestre !== -1 && row[colAtivMestre]) mestreAtividades.add(row[colAtivMestre]);
-                if (colEquipeMestre !== -1 && row[colEquipeMestre] && row[colEquipeMestre].length > 2) mestreEquipes.add(row[colEquipeMestre].trim());
-                if (colClienteMestre !== -1 && row[colClienteMestre] && row[colClienteMestre].length > 2) mestreClientes.add(row[colClienteMestre].trim());
-            }
-            
-            if (mestreSetores.size === 0) dataCronograma.forEach(t => mestreSetores.add(t['SetorCompleto']));
-            if (mestreAtividades.size === 0) dataCronograma.forEach(t => mestreAtividades.add(t['Atividade']));
-            if (mestreEquipes.size === 0) { mestreEquipes.add("Adriano"); mestreEquipes.add("Glauco"); }
-            if (mestreClientes.size === 0) { mestreClientes.add("Edifício Miss Silvia"); }
-
-            return { 
-                cronograma: dataCronograma, 
-                setores: Array.from(mestreSetores).filter(Boolean).sort(), 
-                atividades: Array.from(mestreAtividades).filter(Boolean).sort(),
-                equipes: Array.from(mestreEquipes).filter(Boolean).sort(),
-                clientes: Array.from(mestreClientes).filter(Boolean).sort()
-            };
+            return data;
         }
 
         async function inicializarApp() {
             initIcons(); document.getElementById('loader-tasks').classList.remove('hidden'); document.getElementById('task-container').classList.add('hidden'); document.getElementById('empty-state-tasks').classList.add('hidden');
             try {
-                if(CSV_URL === "COLOQUE_SEU_LINK_DO_CSV_AQUI") throw new Error("Link do CSV ausente no código.");
-                const response = await fetch(CSV_URL); 
-                if (!response.ok) throw new Error("Erro HTTP: " + response.status);
-                const data = await response.text(); 
+                if(!CSV_ATIVIDADES || CSV_ATIVIDADES === "COLOQUE_AQUI_O_LINK_CSV_DA_ABA_ATIVIDADES") throw new Error("Links CSV ausentes no código.");
                 
-                const processado = parseCSVDual(data);
-                window.cronogramaData = processado.cronograma;
-                window.listaSetores = processado.setores;
-                window.listaAtividades = processado.atividades;
-                window.listaEquipes = processado.equipes;
-                window.listaClientes = processado.clientes;
+                const [resAtiv, resConfig, resListas] = await Promise.all([
+                    fetch(CSV_ATIVIDADES), fetch(CSV_CONFIG), fetch(CSV_LISTAS)
+                ]);
+
+                if (!resAtiv.ok || !resConfig.ok || !resListas.ok) throw new Error("Falha ao baixar algumas planilhas.");
+
+                const txtAtiv = await resAtiv.text();
+                const txtConfig = await resConfig.text();
+                const txtListas = await resListas.text();
+
+                const dataAtiv = csvToJson(txtAtiv);
+                const dataConfig = csvToJson(txtConfig);
+                const dataListas = csvToJson(txtListas);
+
+                const equipesSet = new Set();
+                const clientesSet = new Set();
+                dataConfig.forEach(row => {
+                    const cliente = row['Cliente'] || '';
+                    const colab = row['Colaborador'] || '';
+                    if(cliente.toLowerCase() !== 'inativo' && cliente !== '') {
+                        clientesSet.add(cliente);
+                        if(colab) equipesSet.add(colab);
+                    }
+                });
+                window.listaEquipes = Array.from(equipesSet).sort();
+                window.listaClientes = Array.from(clientesSet).sort();
+
+                const setoresSet = new Set();
+                const atividadesSet = new Set();
+                dataListas.forEach(row => {
+                    if(row['Setor']) setoresSet.add(row['Setor']);
+                    if(row['Setor'] && row['Ambiente']) setoresSet.add(`${row['Setor']} (${row['Ambiente']})`);
+                    if(row['Atividade']) atividadesSet.add(row['Atividade']);
+                });
+
+                window.cronogramaData = [];
+                dataAtiv.forEach(row => {
+                    if(row['Atividade']) {
+                        let s = row['Setor'] || '';
+                        let a = row['Ambiente'] || '';
+                        let setorCompleto = (s && a) ? `${s} (${a})` : (s || a || 'Área Geral');
+                        
+                        window.cronogramaData.push({
+                            'Atividade': row['Atividade'],
+                            'Frequência': row['Frequencia'] || row['Frequência'] || '', 
+                            'Duracao': row['Duração'] || row['Duracao'] || '',
+                            'Especie': row['Espécie'] || row['Especie'] || 'Diversas',
+                            'DataAlvo': row['Data Alvo'] || row['DataAlvo'] || '',
+                            'Chuva': row['Chuva'] || '',
+                            'SetorCompleto': setorCompleto
+                        });
+                        
+                        setoresSet.add(setorCompleto);
+                        atividadesSet.add(row['Atividade']);
+                    }
+                });
+
+                window.listaSetores = Array.from(setoresSet).sort();
+                window.listaAtividades = Array.from(atividadesSet).sort();
                 
                 popularFiltrosModal(); 
                 projetarAgenda();
                 renderizarTarefasDoDia(new Date()); 
                 document.getElementById('loader-tasks').classList.add('hidden'); 
                 setTimeout(() => { openTeamModal(); }, 600); 
+
             } catch(error) {
                 console.error("Erro no App:", error); 
                 document.getElementById('loader-tasks').classList.add('hidden'); 
                 document.getElementById('empty-state-tasks').classList.remove('hidden'); 
-                alert("Falha de internet ao ler o Google Sheets.\nLembre-se de colar o SEU link gerado na variável CSV_URL no código.");
+                alert("Falha: Verifique os links de CSV.");
             }
         }
 
@@ -512,16 +543,13 @@
             const hoje = new Date(); const dataAlvoStr = String(hoje.getDate()).padStart(2, '0') + '/' + String(hoje.getMonth() + 1).padStart(2, '0') + '/' + hoje.getFullYear();
             const payload = { setor: setorLivre, tarefa: tarefaLivre, data_alvo: dataAlvoStr, duracao: duracaoLivre || 'Avulsa' };
 
-            let req = Promise.resolve();
-            if(WEBHOOK_NOVA_TAREFA !== "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") req = fetch(WEBHOOK_NOVA_TAREFA, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            let req = fetch(WEBHOOK_NOVA_TAREFA, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
 
             req.then(() => {
                 window.cronogramaData.unshift({ 'Atividade': tarefaLivre, 'Frequência': 'Emergência', 'SetorCompleto': setorLivre, 'Duracao': duracaoLivre || 'Avulsa', 'Especie': 'Personalizada', 'Chuva': 'Sim', 'DataAlvo': dataAlvoStr });
                 projetarAgenda(); closeExtraModal(); renderizarTarefasDoDia(new Date()); switchTab('hoje');
                 btn.innerHTML = txtOriginal; btn.disabled = false;
                 document.getElementById('input-modal-setor').value = ''; document.getElementById('input-modal-tarefa').value = ''; document.getElementById('input-modal-duracao').value = '';
-                if(WEBHOOK_NOVA_TAREFA === "COLOQUE_SEU_WEBHOOK_NOVO_AQUI") alert("Tarefa criada no celular. Configure o Webhook no código para sincronização global.");
-                else alert("Sincronizado! Tarefa salva na base.");
             }).catch(error => { alert("Erro de conexão."); btn.innerHTML = txtOriginal; btn.disabled = false; });
         }
 
@@ -531,11 +559,8 @@
             let dStr = dataParaString(dataReferencia); let hoje = new Date(); hoje.setHours(0,0,0,0); let dataRefZero = new Date(dataReferencia); dataRefZero.setHours(0,0,0,0);
             let tarefasHoje = []; let cargaMinutos = 0;
 
-            if (dataRefZero >= hoje && window.agendaProjetada && window.agendaProjetada[dStr]) {
+            if (window.agendaProjetada && window.agendaProjetada[dStr] && window.agendaProjetada[dStr].util) {
                 tarefasHoje = window.agendaProjetada[dStr].tarefas; cargaMinutos = window.agendaProjetada[dStr].minutos;
-            } else {
-                tarefasHoje = window.cronogramaData.filter(t => t['Atividade'] && tarefaCaiHoje(t, dataReferencia));
-                tarefasHoje = ordenarTarefas(tarefasHoje); cargaMinutos = tarefasHoje.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
             }
 
             const badgeCarga = document.getElementById('badge-carga-hoje'); const txtCarga = document.getElementById('carga-hoje-text');
@@ -604,8 +629,8 @@
 
                 if (window.cronogramaData.length > 0) {
                     let hasRotina=false, hasIrrig=false, hasRoca=false, hasAduba=false;
-                    let dStr = dataParaString(dataIteracao); let hojeZero = new Date(); hojeZero.setHours(0,0,0,0);
-                    let tarefasDoDiaCal = (dataIteracao >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) ? window.agendaProjetada[dStr].tarefas : window.cronogramaData.filter(t => tarefaCaiHoje(t, dataIteracao));
+                    let dStr = dataParaString(dataIteracao); 
+                    let tarefasDoDiaCal = (window.agendaProjetada && window.agendaProjetada[dStr] && window.agendaProjetada[dStr].util) ? window.agendaProjetada[dStr].tarefas : [];
 
                     tarefasDoDiaCal.forEach(t => {
                         const ativ = (t['Atividade'] || '').toLowerCase();
@@ -629,15 +654,12 @@
             if (feriado || diaSemana === 0 || diaSemana === 6) { document.getElementById('selected-day-count').innerHTML = 'Livre'; list.innerHTML = `<div class="p-4 text-center text-gray-400"><p class="text-xs">Fim de semana ou Feriado.</p></div>`; initIcons(); return; }
 
             const hoje = new Date(); const dataClicada = new Date(hoje.getFullYear(), hoje.getMonth(), day);
-            let dStr = dataParaString(dataClicada); let hojeZero = new Date(hoje); hojeZero.setHours(0,0,0,0);
+            let dStr = dataParaString(dataClicada);
             let tarefasDoDia = []; let cargaMinutos = 0;
 
-            if (dataClicada >= hojeZero && window.agendaProjetada && window.agendaProjetada[dStr]) {
+            if (window.agendaProjetada && window.agendaProjetada[dStr] && window.agendaProjetada[dStr].util) {
                 tarefasDoDia = window.agendaProjetada[dStr].tarefas; cargaMinutos = window.agendaProjetada[dStr].minutos;
-            } else {
-                tarefasDoDia = window.cronogramaData.filter(t => tarefaCaiHoje(t, dataClicada));
-                tarefasDoDia = ordenarTarefas(tarefasDoDia); cargaMinutos = tarefasDoDia.reduce((acc, t) => acc + extrairMinutos(t['Duracao']), 0);
-            }
+            } 
 
             let alertaIcone = cargaMinutos > 360 ? `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline ml-1" title="Carga Horária Estourada"></i>` : '';
 
