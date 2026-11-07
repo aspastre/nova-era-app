@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>Miss Silvia • Portal de Paisagismo Nova Era</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 5.5rem); }
+        
+        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background-color: #e2e8f0; border: 1px solid #e2e8f0; border-radius: 0.75rem; overflow: hidden; }
+        .month-header { text-align: center; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; padding: 8px 0; background-color: #f8fafc; }
+        .month-cell { background-color: white; aspect-ratio: 1 / 1.05; padding: 5px; display: flex; flex-direction: column; cursor: pointer; transition: all 0.15s; }
+        .month-cell.empty { background-color: #f8fafc; cursor: default; }
+        .month-cell:not(.empty):hover { background-color: #f0fdf4; }
+        .month-cell.today .day-num { background-color: #10b981; color: white; border-radius: 9999px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+        .month-cell.selected { background-color: #f0fdf4; box-shadow: inset 0 0 0 2px #10b981; }
+        .day-num { font-size: 12px; font-weight: 700; color: #334155; align-self: flex-start; }
+        .task-dots { margin-top: auto; display: flex; flex-wrap: wrap; gap: 3px; }
+        .dot { width: 6px; height: 6px; border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 relative min-h-screen select-none">
+
+    <!-- CABEÇALHO EXECUTIVO DO CLIENTE -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 20 L20 80 L35 80 L35 45 L70 70 L80 60 L45 35 Z" fill="url(#grad1)"/>
+                    <path d="M55 25 L85 45 L95 35 L65 15 Z" fill="url(#grad1)"/>
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF9A44;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FC6076;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <h1 class="font-extrabold text-sm tracking-tight text-white">Edifício Miss Silvia</h1>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">AO VIVO</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium">Portal de Fiscalização • Nova Era Paisagismo</p>
+                </div>
+            </div>
+            <button onclick="carregarPortalCliente()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl border border-slate-700" title="Atualizar">
+                <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto pb-safe pt-3.5 px-3.5">
+
+        <!-- STATUS DA EQUIPE NO LOCAL E CLIMA -->
+        <div id="status-posto-card" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div id="posto-badge-icon" class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <p id="posto-status-titulo" class="text-xs font-extrabold text-slate-900">Verificando status da equipe...</p>
+                    <p id="posto-status-sub" class="text-[11px] text-slate-500">Sincronizando dados do turno de hoje</p>
+                </div>
+            </div>
+            <span id="clima-badge" class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1">
+                ☀️ Tempo Seco
+            </span>
+        </div>
+
+        <!-- RESUMO DE PROGRESSO DO DIA -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-4">
+            <div class="flex justify-between items-end mb-2">
+                <div>
+                    <p class="text-[10px] font-extrabold text-orange-600 uppercase tracking-wider">Acompanhamento Diário</p>
+                    <h2 class="text-lg font-extrabold text-slate-900" id="view-title">Entregas & Auditoria</h2>
+                    <p class="text-xs text-slate-500 capitalize" id="current-date"></p>
+                </div>
+                <div class="text-right">
+                    <span id="pct-numero" class="text-xl font-extrabold text-emerald-600">0%</span>
+                    <p id="contagem-tarefas" class="text-[10px] font-bold text-slate-500">0 de 0 hoje</p>
+                </div>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div id="barra-progresso-cliente" class="h-full bg-gradient-to-r from-orange-500 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 1: GALERIA DE ENTREGAS (ANTES/DEPOIS)  -->
+        <!-- ========================================== -->
+        <div id="tab-view-entregas" class="space-y-3">
+            <!-- Pendências / Em Execução Hoje -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="clock" class="w-4 h-4 text-orange-500"></i> Programadas para Hoje
+                    </h3>
+                    <span class="text-[10px] font-bold text-slate-500">Status em tempo real</span>
+                </div>
+                <div id="lista-programadas-hoje" class="divide-y divide-slate-100 p-2"></div>
+            </div>
+
+            <!-- Feed Fotográfico de Atividades Concluídas -->
+            <div>
+                <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider px-1 mb-2 flex items-center gap-1.5">
+                    <i data-lucide="camera" class="w-4 h-4 text-emerald-600"></i> Histórico Recente (Antes e Depois)
+                </h3>
+                <div id="feed-auditoria-fotos" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 2: CALENDÁRIO MENSAL DO CONDOMÍNIO     -->
+        <!-- ========================================== -->
+        <div id="tab-view-calendario" class="hidden space-y-4">
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-600">Cronograma Mensal Previsto</span>
+                <span id="cal-mes-ano" class="text-xs font-extrabold text-slate-900 capitalize"></span>
+            </div>
+
+            <div class="month-grid shadow-sm" id="month-days-container"></div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                        <i data-lucide="calendar-check" class="w-4 h-4 text-emerald-600"></i>
+                        <span id="selected-day-title">Dia Selecionado</span>
+                    </h3>
+                    <span class="bg-white border border-slate-200 text-slate-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full" id="selected-day-count">0 ativ.</span>
+                </div>
+                <div class="p-3 space-y-2" id="selected-day-list"></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 3: CANAL DIRETO (SOLICITAÇÕES JOELMA)  -->
+        <!-- ========================================== -->
+        <div id="tab-view-solicitacoes" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[65vh]">
+                <div class="bg-slate-900 text-white px-4 py-3 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xs font-extrabold">Canal Direto • Supervisão & Equipe</h3>
+                        <p class="text-[10px] text-slate-400">Seus pedidos aparecem instantaneamente para a equipe no prédio</p>
+                    </div>
+                    <i data-lucide="messages-square" class="w-5 h-5 text-orange-400"></i>
+                </div>
+
+                <div id="chat-cliente-box" class="flex-1 p-3.5 overflow-y-auto space-y-2.5 bg-slate-50"></div>
+
+                <div class="p-3 bg-white border-t border-slate-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="input-nome-cliente" value="Joelma (Supervisão Miss Silvia)" class="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 outline-none w-2/3">
+                        <label class="flex items-center gap-1 text-[10px] font-extrabold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200 cursor-pointer">
+                            <input type="checkbox" id="chk-prioridade-cliente" class="rounded text-red-600"> Prioridade / Evento
+                        </label>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-msg-cliente" onkeypress="if(event.key==='Enter') enviarSolicitacaoCliente()" placeholder="Digite uma orientação ou pedido especial..." class="flex-1 bg-slate-100 text-xs rounded-xl px-3.5 py-2.5 outline-none border border-transparent focus:border-orange-500 focus:bg-white">
+                        <button onclick="enviarSolicitacaoCliente()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-sm">
+                            <i data-lucide="send" class="w-4 h-4"></i> Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL DE ZOOM DAS FOTOS (LIGHTBOX) -->
+    <div id="lightbox-modal" onclick="fecharZoomFoto()" class="fixed inset-0 bg-slate-950/90 z-50 hidden flex flex-col items-center justify-center p-4">
+        <img id="lightbox-img" class="max-w-full max-h-[82vh] rounded-xl shadow-2xl border border-slate-700 object-contain">
+        <p id="lightbox-caption" class="text-xs font-bold text-white mt-3 bg-slate-900/80 px-3 py-1.5 rounded-full"></p>
+        <p class="text-[10px] text-slate-400 mt-1">Toque em qualquer lugar para fechar</p>
+    </div>
+
+    <!-- NAVEGAÇÃO INFERIOR DO CLIENTE -->
+    <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+        <div class="max-w-md mx-auto grid grid-cols-3 px-2 pb-3 pt-1.5">
+            <button onclick="trocarAbaCliente('entregas')" id="nav-entregas" class="flex flex-col items-center py-1.5 text-emerald-600 transition-colors">
+                <i data-lucide="check-circle-2" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-bold">Entregas & Fotos</span>
+            </button>
+            <button onclick="trocarAbaCliente('calendario')" id="nav-calendario" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-emerald-600 transition-colors">
+                <i data-lucide="calendar-days" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-bold">Cronograma</span>
+            </button>
+            <button onclick="trocarAbaCliente('solicitacoes')" id="nav-solicitacoes" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-emerald-600 transition-colors relative">
+                <i data-lucide="message-Square-plus" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] font-bold">Solicitações</span>
+                <span id="dot-msg-cliente" class="hidden w-2 h-2 rounded-full bg-red-500 absolute top-1.5 right-10"></span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // =========================================================================
+        // CONFIGURAÇÃO TRAVADA PARA O CONDOMÍNIO MISS SILVIA
+        // =========================================================================
+        const CLIENTE_FIXO = "Miss Silvia";
+        const SUPABASE_URL = "https://vocrljiimyknofyhdatg.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_o0WnhKjaTBmvfO7Joh6QJA_VzzW_2Zc";
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let cronogramaDB = [];
+        let execucoesDB = [];
+        let feriadosDB = [];
+        let agendaMensal = {};
+
+        function initIcons() { try { if (typeof lucide !== 'undefined') lucide.createIcons(); } catch (e) {} }
+        function dataISO(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+        async function carregarPortalCliente() {
+            const inicioMes = dataISO(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+            const hojeStr = dataISO();
+
+            const [resCrono, resExec, resFer, resPres] = await Promise.all([
+                sb.from('cronograma_mestre').select('*').eq('cliente', CLIENTE_FIXO).eq('ativo', true),
+                sb.from('execucoes_auditoria').select('*').eq('cliente', CLIENTE_FIXO).gte('data_referencia', inicioMes).order('dh_envio_servidor', { ascending: false }),
+                sb.from('feriados_config').select('*'),
+                sb.from('presenca_posto').select('*').eq('cliente', CLIENTE_FIXO).eq('data_turno', hojeStr).order('dh_checkin_aparelho', { ascending: false }).limit(1)
+            ]);
+
+            cronogramaDB = resCrono.data || [];
+            execucoesDB = resExec.data || [];
+            feriadosDB = (resFer.data || []).map(f => f.data_feriado);
+
+            atualizarStatusPresenca(resPres.data?.[0] || null);
+            calcularAgendaCliente();
+            renderizarEntregasCliente();
+            renderizarCalendarioCliente();
+            carregarChatCliente();
+        }
+
+        function atualizarStatusPresenca(presenca) {
+            const titulo = document.getElementById('posto-status-titulo');
+            const sub = document.getElementById('posto-status-sub');
+            const clima = document.getElementById('clima-badge');
+
+            if (presenca) {
+                const h = new Date(presenca.dh_checkin_aparelho).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                titulo.textContent = `🟢 Equipe em Operação (desde ${h})`;
+                sub.textContent = `Profissionais no local: ${presenca.equipe_presente}`;
+                if (presenca.modo_chuva_ativo) {
+                    clima.textContent = "🌧️ Modo Chuva";
+                    clima.className = "text-[10px] font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-lg border border-blue-200";
+                }
+            } else {
+                titulo.textContent = "Cronograma Programado Ativo";
+                sub.textContent = "Acompanhe as entregas e evidências abaixo";
+            }
+        }
+
+        function diaCorrespondeFrequencia(freqStr, diaSemana) {
+            const f = (freqStr || '').toLowerCase();
+            if (f.includes('diári') || f.includes('diari') || f.includes('seg a sex') || f.includes('5x')) return diaSemana >= 1 && diaSemana <= 5;
+            if (f.includes('seg') && diaSemana === 1) return true;
+            if (f.includes('ter') && diaSemana === 2) return true;
+            if (f.includes('qua') && diaSemana === 3) return true;
+            if (f.includes('qui') && diaSemana === 4) return true;
+            if (f.includes('sex') && diaSemana === 5) return true;
+            return false;
+        }
+
+        function calcularAgendaCliente() {
+            agendaMensal = {};
+            const agora = new Date();
+            const ano = agora.getFullYear(), mes = agora.getMonth();
+            const totalDias = new Date(ano, mes + 1, 0).getDate();
+            const diasUteis = [];
+
+            for (let dia = 1; dia <= totalDias; dia++) {
+                const d = new Date(ano, mes, dia);
+                const dStr = dataISO(d);
+                const util = d.getDay() !== 0 && d.getDay() !== 6 && !feriadosDB.includes(dStr);
+                agendaMensal[dStr] = { data: d, util: util, tarefas: [], minutos: 0 };
+                if (util) diasUteis.push(dStr);
+            }
+
+            cronogramaDB.forEach(t => {
+                const f = (t.frequencia || '').toLowerCase();
+                const isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral');
+                const minT = Number(t.duracao_minutos) || 30;
+
+                if (t.data_alvo && agendaMensal[t.data_alvo]) {
+                    agendaMensal[t.data_alvo].tarefas.push({ ...t });
+                    agendaMensal[t.data_alvo].minutos += minT;
+                } else if (!isFlutuante) {
+                    diasUteis.forEach(dStr => {
+                        if (diaCorrespondeFrequencia(f, agendaMensal[dStr].data.getDay())) {
+                            agendaMensal[dStr].tarefas.push({ ...t });
+                            agendaMensal[dStr].minutos += minT;
+                        }
+                    });
+                }
+            });
+
+            const hojeStr = dataISO(agora);
+            const diasFuturos = diasUteis.filter(d => d >= hojeStr);
+
+            cronogramaDB.forEach(t => {
+                if (t.data_alvo) return;
+                const f = (t.frequencia || '').toLowerCase();
+                const isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral');
+                if (!isFlutuante) return;
+
+                const minTotal = Number(t.duracao_minutos) || 60;
+                const jaFeito = execucoesDB.filter(e => e.tarefa_id === t.id || (e.setor === t.setor && e.atividade.startsWith(t.atividade)))
+                    .reduce((a, b) => a + (Number(b.duracao_real_min) || 0), 0);
+                let rest = Math.max(0, minTotal - jaFeito);
+                if (rest === 0) return;
+
+                const fatia = minTotal > 240 ? 120 : rest;
+                let guard = 0;
+                while (rest > 0 && diasFuturos.length > 0 && guard < 30) {
+                    guard++;
+                    let melhor = diasFuturos[0];
+                    diasFuturos.forEach(d => { if (agendaMensal[d].minutos < agendaMensal[melhor].minutos) melhor = d; });
+                    const alocar = Math.min(rest, fatia);
+                    agendaMensal[melhor].tarefas.push({ ...t, duracao_minutos: alocar });
+                    agendaMensal[melhor].minutos += alocar;
+                    rest -= alocar;
+                }
+            });
+        }
+
+        function renderizarEntregasCliente() {
+            const hojeStr = dataISO();
+            const tarefasHoje = agendaMensal[hojeStr]?.tarefas || [];
+            const execsHoje = execucoesDB.filter(e => e.data_referencia === hojeStr);
+
+            let concluidasHoje = 0;
+            const listaHojeEl = document.getElementById('lista-programadas-hoje');
+
+            if (tarefasHoje.length === 0) {
+                listaHojeEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhuma rotina fixa prevista para a data de hoje.</p>`;
+            } else {
+                listaHojeEl.innerHTML = tarefasHoje.map(t => {
+                    const feita = execsHoje.find(e => e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade));
+                    if (feita) concluidasHoje++;
+                    return `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl ${feita ? 'bg-emerald-50/60' : ''}">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full ${feita ? 'bg-emerald-500' : 'bg-amber-400'}"></span>
+                            <div>
+                                <p class="text-xs font-bold ${feita ? 'text-slate-500 line-through' : 'text-slate-800'}">${t.atividade}</p>
+                                <p class="text-[10px] text-slate-500">${t.setor} • ${t.especie || 'Geral'}</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${feita ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                            ${feita ? 'Concluído' : 'Programado'}
+                        </span>
+                    </div>`;
+                }).join('');
+            }
+
+            const pct = tarefasHoje.length > 0 ? Math.round((concluidasHoje / tarefasHoje.length) * 100) : (execsHoje.length > 0 ? 100 : 0);
+            document.getElementById('pct-numero').textContent = `${pct}%`;
+            document.getElementById('contagem-tarefas').textContent = `${concluidasHoje} de ${tarefasHoje.length} hoje`;
+            document.getElementById('barra-progresso-cliente').style.width = `${pct}%`;
+
+            // Feed de Fotos Antes e Depois
+            const feedEl = document.getElementById('feed-auditoria-fotos');
+            if (execucoesDB.length === 0) {
+                feedEl.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center border border-slate-200 text-xs text-slate-400">As fotos de Antes e Depois aparecerão aqui assim que as atividades forem concluídas.</div>`;
+                return;
+            }
+
+            feedEl.innerHTML = execucoesDB.slice(0, 20).map(e => {
+                const dataFmt = new Date(e.dh_envio_servidor).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                return `
+                <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">${e.setor}</span>
+                            <h4 class="text-sm font-extrabold text-slate-900 mt-1">${e.atividade}</h4>
+                        </div>
+                        <span class="text-[10px] font-semibold text-slate-400">${dataFmt}</span>
+                    </div>
+                    <p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-3">"${e.observacao}"</p>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div onclick="abrirZoomFoto('${e.foto_antes_url || ''}', 'ANTES • ${e.setor}')" class="relative h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 cursor-pointer">
+                            ${e.foto_antes_url ? `<img src="${e.foto_antes_url}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-[10px] text-slate-400">Sem foto</div>`}
+                            <span class="absolute bottom-1.5 left-1.5 bg-slate-900/80 text-white text-[9px] font-extrabold px-2 py-0.5 rounded">ANTES</span>
+                        </div>
+                        <div onclick="abrirZoomFoto('${e.foto_depois_url || ''}', 'DEPOIS • ${e.setor}')" class="relative h-32 bg-slate-100 rounded-xl overflow-hidden border-2 border-emerald-400 cursor-pointer">
+                            ${e.foto_depois_url ? `<img src="${e.foto_depois_url}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-[10px] text-slate-400">Sem foto</div>`}
+                            <span class="absolute bottom-1.5 left-1.5 bg-emerald-700 text-white text-[9px] font-extrabold px-2 py-0.5 rounded">DEPOIS</span>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
+                        <span>👷 Equipe: ${e.equipe_executora}</span>
+                        <span class="text-emerald-700 font-bold">✓ Verificado</span>
+                    </div>
+                </div>`;
+            }).join('');
+            initIcons();
+        }
+
+        function abrirZoomFoto(url, legenda) {
+            if (!url) return;
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox-caption').textContent = legenda;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+        }
+        function fecharZoomFoto() { document.getElementById('lightbox-modal').classList.add('hidden'); }
+
+        function renderizarCalendarioCliente() {
+            const container = document.getElementById('month-days-container');
+            const hoje = new Date();
+            const ano = hoje.getFullYear(), mes = hoje.getMonth(), diaAtual = hoje.getDate();
+            document.getElementById('cal-mes-ano').textContent = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            let html = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => `<div class="month-header">${d}</div>`).join('');
+            const primeiroDia = new Date(ano, mes, 1).getDay();
+            const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+            for (let i = 0; i < primeiroDia; i++) html += `<div class="month-cell empty"></div>`;
+
+            for (let day = 1; day <= totalDias; day++) {
+                const dStr = dataISO(new Date(ano, mes, day));
+                const ag = agendaMensal[dStr];
+                let classes = "month-cell";
+                if (day === diaAtual) classes += " today selected";
+                if (!ag || !ag.util) classes += " bg-slate-50 opacity-60";
+
+                let dots = '';
+                if (ag && ag.tarefas.length > 0) dots = `<div class="dot bg-emerald-500"></div><div class="dot bg-blue-500"></div>`;
+                html += `<div class="${classes}" onclick="verDiaCalendarioCliente('${dStr}', ${day}, this)"><span class="day-num">${day}</span><div class="task-dots">${dots}</div></div>`;
+            }
+            container.innerHTML = html;
+            verDiaCalendarioCliente(dataISO(hoje), diaAtual, null);
+        }
+
+        function verDiaCalendarioCliente(dStr, day, el) {
+            if (el) {
+                document.querySelectorAll('.month-cell.selected').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+            }
+            document.getElementById('selected-day-title').textContent = `Programação • Dia ${day}`;
+            const ag = agendaMensal[dStr];
+            const list = document.getElementById('selected-day-list');
+            if (!ag || !ag.util || ag.tarefas.length === 0) {
+                document.getElementById('selected-day-count').textContent = "Sem rotina fixa";
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Fim de semana, feriado ou livre.</p>`;
+                return;
+            }
+            document.getElementById('selected-day-count').textContent = `${ag.tarefas.length} atividades`;
+            list.innerHTML = ag.tarefas.map(t => `
+                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">${t.atividade}</p>
+                        <p class="text-[10px] text-slate-500">${t.setor} • ${t.especie || 'Geral'}</p>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">${t.frequencia}</span>
+                </div>`).join('');
+        }
+
+        async function carregarChatCliente() {
+            const { data } = await sb.from('mensagens_chat')
+                .select('*')
+                .eq('cliente', CLIENTE_FIXO)
+                .eq('canal', 'CLIENTE')
+                .order('criado_em', { ascending: true });
+
+            const box = document.getElementById('chat-cliente-box');
+            if (!data || data.length === 0) {
+                box.innerHTML = `<p class="text-center text-xs text-slate-400 py-8">Envie abaixo qualquer solicitação especial para a equipe.</p>`;
+                return;
+            }
+            box.innerHTML = data.map(m => {
+                const isCliente = m.autor_perfil === 'CLIENTE';
+                const dh = new Date(m.criado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const tagUrg = m.urgente ? `<span class="bg-red-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase mr-1">Prioridade</span>` : '';
+                return `
+                <div class="flex flex-col ${isCliente ? 'items-end' : 'items-start'}">
+                    <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 ${isCliente ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-800'} shadow-sm">
+                        <div class="flex items-center gap-1 mb-0.5">
+                            ${tagUrg}
+                            <span class="text-[10px] font-extrabold ${isCliente ? 'text-orange-400' : 'text-emerald-600'}">${m.autor_nome}</span>
+                            <span class="text-[9px] opacity-60">• ${dh}</span>
+                        </div>
+                        <p class="text-xs leading-relaxed">${m.mensagem}</p>
+                    </div>
+                </div>`;
+            }).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function enviarSolicitacaoCliente() {
+            const input = document.getElementById('input-msg-cliente');
+            const texto = input.value.trim();
+            if (!texto) return;
+            const autor = document.getElementById('input-nome-cliente').value.trim() || 'Joelma (Miss Silvia)';
+            const urgente = document.getElementById('chk-prioridade-cliente').checked;
+            input.value = '';
+            document.getElementById('chk-prioridade-cliente').checked = false;
+
+            await sb.from('mensagens_chat').insert([{
+                cliente: CLIENTE_FIXO,
+                canal: 'CLIENTE',
+                autor_nome: autor,
+                autor_perfil: 'CLIENTE',
+                mensagem: texto,
+                urgente: urgente
+            }]);
+            carregarChatCliente();
+        }
+
+        function trocarAbaCliente(aba) {
+            ['entregas', 'calendario', 'solicitacoes'].forEach(a => {
+                document.getElementById(`tab-view-${a}`).classList.toggle('hidden', a !== aba);
+                document.getElementById(`nav-${a}`).className = (a === aba)
+                    ? "flex flex-col items-center py-1.5 text-emerald-600 transition-colors relative"
+                    : "flex flex-col items-center py-1.5 text-slate-400 hover:text-emerald-600 transition-colors relative";
+            });
+            if (aba === 'solicitacoes') {
+                document.getElementById('dot-msg-cliente').classList.add('hidden');
+                carregarChatCliente();
+            }
+        }
+
+        sb.channel('portal-miss-silvia')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'execucoes_auditoria' }, () => carregarPortalCliente())
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens_chat' }, payload => {
+                if (payload.new.cliente === CLIENTE_FIXO && payload.new.canal === 'CLIENTE') {
+                    document.getElementById('dot-msg-cliente').classList.remove('hidden');
+                    carregarChatCliente();
+                }
+            })
+            .subscribe();
+
+        window.onload = () => {
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+            initIcons();
+            carregarPortalCliente();
+        };
+    </script>
+</body>
+</html>
