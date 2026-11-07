@@ -59,7 +59,7 @@
 
             <div class="flex items-center gap-2">
                 <button id="btn-sync-queue" onclick="sincronizarFilaOffline()" class="hidden bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-2.5 py-1.5 rounded-full flex items-center gap-1 shadow animate-pulse">
-                    <i data-lucide="RefreshCw" class="w-3.5 h-3.5"></i> <span id="sync-count">0</span>
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span id="sync-count">0</span>
                 </button>
                 <button onclick="openTeamModal()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-orange-400 text-xs font-bold rounded-full py-1.5 px-3 transition-colors">
                     <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
@@ -72,7 +72,7 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="max-w-md mx-auto pb-safe pt-3 px-3.5" id="main-content">
 
-        <!-- BANNER DE PRESENÇA DO POSTO (CHECK-IN SUBSOLO / SUPERFÍCIE) -->
+        <!-- BANNER DE PRESENÇA DO POSTO (COM TRAVA DE FIM DE SEMANA / FERIADO) -->
         <div id="checkin-banner" class="mb-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <div id="checkin-icon-box" class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
@@ -149,7 +149,7 @@
                     <i data-lucide="check-check" class="w-7 h-7"></i>
                 </div>
                 <h3 class="text-base font-bold text-slate-900">Cronograma em dia!</h3>
-                <p class="text-xs text-slate-500 mt-1">Nenhuma atividade pendente ou permitida para o clima atual.</p>
+                <p class="text-xs text-slate-500 mt-1" id="empty-state-sub">Nenhuma atividade pendente ou permitida para o clima atual.</p>
             </div>
         </div>
 
@@ -158,7 +158,7 @@
         <!-- ========================================== -->
         <div id="calendar-view" class="hidden">
             <div class="flex justify-between items-center mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm">
-                <span class="text-xs font-bold text-slate-500 px-2">Matriz Mensal (Dia 1 ao Fim do Mês)</span>
+                <span class="text-xs font-bold text-slate-500 px-2">Matriz Mensal (Teto Rígido: 6h/dia)</span>
                 <div class="text-right px-2">
                     <h3 class="font-extrabold text-sm text-slate-800 capitalize" id="mes-titulo">Novembro 2026</h3>
                 </div>
@@ -168,7 +168,7 @@
 
             <div class="flex justify-center gap-4 mb-4 text-[10px] font-bold text-slate-600">
                 <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Prioridade VIP</span>
-                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Rotina</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Rotina / Fatiada</span>
                 <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Concluída</span>
             </div>
 
@@ -189,7 +189,6 @@
         <!-- ========================================== -->
         <div id="chat-view" class="hidden">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[68vh]">
-                <!-- Seletor de Canais -->
                 <div class="grid grid-cols-3 gap-1 p-1.5 bg-slate-100 border-b border-slate-200">
                     <button onclick="selecionarCanalChat('EQUIPE')" id="btn-canal-EQUIPE" class="py-2 px-2 rounded-xl text-[11px] font-bold bg-white text-slate-900 shadow-sm transition-all">
                         💬 Equipe (7d)
@@ -206,10 +205,8 @@
                     <span>Conversa rápida da equipe local (limpeza automática após 7 dias)</span>
                 </div>
 
-                <!-- Lista de Mensagens -->
                 <div id="chat-messages-box" class="flex-1 p-3 overflow-y-auto space-y-2.5 bg-slate-50/50"></div>
 
-                <!-- Input de Mensagem -->
                 <div class="p-2.5 bg-white border-t border-slate-200 flex items-center gap-2">
                     <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 px-2 py-2 rounded-lg border border-red-100 cursor-pointer flex-shrink-0">
                         <input type="checkbox" id="chat-urgente" class="rounded text-red-600"> Urgente
@@ -226,7 +223,7 @@
         <!-- VISÃO 4: PAINEL DO GESTOR (ADRIANO/RAMOS)  -->
         <!-- ========================================== -->
         <div id="gestao-view" class="hidden space-y-4">
-            <!-- Bloqueio por PIN -->
+            <!-- Bloqueio por PIN (Sem expor a senha no placeholder) -->
             <div id="gestao-lock" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm text-center">
                 <div class="w-12 h-12 rounded-2xl bg-slate-900 text-orange-400 flex items-center justify-center mx-auto mb-3">
                     <i data-lucide="shield-lock" class="w-6 h-6"></i>
@@ -234,7 +231,7 @@
                 <h3 class="text-base font-extrabold text-slate-900">Acesso Restrito • Supervisão</h3>
                 <p class="text-xs text-slate-500 mt-1 mb-4">Exclusivo para Gestão Nova Era (Adriano / Ramos)</p>
                 <div class="flex gap-2 max-w-xs mx-auto">
-                    <input type="password" id="pin-input" maxlength="6" placeholder="PIN (Padrão: 2026)" class="flex-1 text-center font-extrabold tracking-widest bg-slate-100 border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-orange-500">
+                    <input type="password" id="pin-input" maxlength="6" onkeypress="if(event.key==='Enter') desbloquearGestao()" placeholder="Digite o PIN de acesso" class="flex-1 text-center font-extrabold tracking-widest bg-slate-100 border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-orange-500">
                     <button onclick="desbloquearGestao()" class="bg-slate-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl">Entrar</button>
                 </div>
             </div>
@@ -252,6 +249,25 @@
                         <p class="text-[10px] font-bold text-slate-400 uppercase">Conformidade & SLA</p>
                         <p class="text-lg font-extrabold text-slate-900 mt-0.5" id="kpi-conformidade">100%</p>
                         <p class="text-[11px] font-semibold text-amber-600 mt-0.5" id="kpi-alertas-count">0 divergências</p>
+                    </div>
+                </div>
+
+                <!-- CONTROLE DE PLANTÃO / FIM DE SEMANA E FERIADOS (EXCLUSIVO RAMOS/ADRIANO) -->
+                <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-sm space-y-2.5">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] font-extrabold text-orange-400 uppercase tracking-wider">Controle de Posto & Plantão</p>
+                            <h4 class="text-xs font-bold text-white mt-0.5" id="gestao-status-plantao">Status do Dia: Verificando...</h4>
+                        </div>
+                        <i data-lucide="calendar-clock" class="w-5 h-5 text-orange-400"></i>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="autorizarPlantaoExcepcional()" id="btn-liberar-plantao" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-[11px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+                            <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Liberar Plantão Hoje
+                        </button>
+                        <button onclick="encerrarOuBloquearPostoHoje()" class="bg-slate-800 hover:bg-red-950 hover:text-red-300 text-slate-300 border border-slate-700 font-bold text-[11px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5">
+                            <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar / Limpar Hoje
+                        </button>
                     </div>
                 </div>
 
@@ -353,7 +369,6 @@
             <p class="text-xs font-extrabold text-orange-600" id="modal-task-title">Tarefa</p>
             <p class="text-[11px] text-slate-500 mb-3" id="modal-setor-title">Setor</p>
 
-            <!-- Bloco de Fatiamento (Para tarefas longas como Valet 24h) -->
             <div id="box-fatiamento" class="hidden mb-3 bg-blue-50 border border-blue-200 rounded-xl p-2.5">
                 <label class="block text-[11px] font-extrabold text-blue-900 mb-1">Frações de Tarefa Longa — Tempo dedicado agora:</label>
                 <div class="grid grid-cols-4 gap-1.5">
@@ -365,7 +380,6 @@
             </div>
 
             <div class="space-y-3.5">
-                <!-- 1. Captura de Foto (Ao Vivo vs Contingência EXIF) -->
                 <div>
                     <label class="block text-[11px] font-extrabold text-slate-700 mb-1.5 uppercase">1. Evidência do Depois <span class="text-red-500">*</span></label>
                     <div id="preview-container" class="hidden mb-2 relative">
@@ -382,7 +396,6 @@
                     </div>
                 </div>
 
-                <!-- Justificativa de Contingência (Aparece só se vier da Galeria/EXIF) -->
                 <div id="box-contingencia" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-2.5">
                     <label class="block text-[10px] font-extrabold text-amber-900 uppercase mb-1">Motivo do Envio Posterior (Galeria):</label>
                     <select id="select-contingencia" class="w-full bg-white border border-amber-300 rounded-lg p-1.5 text-xs font-semibold text-slate-800">
@@ -392,13 +405,11 @@
                     </select>
                 </div>
 
-                <!-- 2. Quem Executou -->
                 <div>
                     <label class="block text-[11px] font-extrabold text-slate-700 mb-1.5 uppercase">2. Quem Executou <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-1.5" id="executors-checkboxes"></div>
                 </div>
 
-                <!-- 3. Observações + Chips de 1 Toque -->
                 <div>
                     <label class="block text-[11px] font-extrabold text-slate-700 mb-1 uppercase">3. Observações Técnicas <span class="text-red-500">*</span></label>
                     <div id="chips-obs-rapidas" class="flex flex-wrap gap-1 mb-2"></div>
@@ -444,22 +455,21 @@
 
     <script>
         // =========================================================================
-        // 1. CONFIGURAÇÃO OFICIAL DO SUPABASE (NOVA ERA ERP)
+        // 1. CONFIGURAÇÃO OFICIAL DO SUPABASE (NOVA ERA ERP v8.1)
         // =========================================================================
         const SUPABASE_URL = "https://vocrljiimyknofyhdatg.supabase.co";
         const SUPABASE_KEY = "sb_publishable_o0WnhKjaTBmvfO7Joh6QJA_VzzW_2Zc";
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Link CSV legado apenas para o botão de Importação em Massa do Gestor
         const CSV_ATIVIDADES_LEGADO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRN1yS8KhREsbwrhSO8WVWfAZR4dpiiqsi_7POztsYEQ7v1UNxY-LCjO4l-HDr1Yk-cbLfyOAerTsK/pub?gid=1700868305&single=true&output=csv";
 
-        // Estado Global
         window.clientesDB = [];
         window.colaboradoresDB = [];
         window.cronogramaDB = [];
         window.execucoesMesDB = [];
         window.feriadosDB = [];
         window.obsRapidasDB = [];
+        window.presencaHojeDB = null;
         window.agendaProjetada = {};
 
         let clienteAtivo = localStorage.getItem('novaera_cliente_ativo') || 'Miss Silvia';
@@ -470,10 +480,24 @@
 
         let modoChuvaAtivo = false;
         let canalChatAtivo = 'EQUIPE';
+        let tabAtual = 'hoje';
         let gpsAtual = { lat: null, lng: null, acc: null, distCliente: null, suspeitoFake: false };
 
         function initIcons() { try { if (typeof lucide !== 'undefined') lucide.createIcons(); } catch (e) {} }
         function dataISO(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+        function ehFeriado(d) { return window.feriadosDB.includes(dataISO(d)); }
+        function diaUtil(d) { return d.getDay() !== 0 && d.getDay() !== 6 && !ehFeriado(d); }
+
+        // Verifica se hoje é Fim de Semana/Feriado SEM liberação do Ramos
+        function postoBloqueadoHoje() {
+            const hoje = new Date();
+            if (diaUtil(hoje)) return false; // Segunda a Sexta (não feriado) é liberado
+            if (window.presencaHojeDB && (window.presencaHojeDB.modo_checkin === 'PLANTAO_AUTORIZADO' || window.presencaHojeDB.status_validacao === 'AUTORIZADO_GESTAO' || window.presencaHojeDB.status_validacao === 'PLANTAO_ATIVO')) {
+                return false; // Ramos/Adriano liberou o plantão!
+            }
+            return true;
+        }
 
         // =========================================================================
         // 2. GEOFENCING HARVERSINE + DETECTOR DE FAKE GPS (JITTER)
@@ -494,7 +518,6 @@
             let ultimaLat = null, ultimaLng = null;
             navigator.geolocation.watchPosition(pos => {
                 const { latitude, longitude, accuracy, altitude } = pos.coords;
-                // Heurística anti-Fake GPS: precisão inteira cravada em 1 ou 5m e coordenada travada sem jitter
                 let fakeDetectado = false;
                 if (ultimaLat !== null) {
                     const jitter = Math.abs(latitude - ultimaLat) + Math.abs(longitude - ultimaLng);
@@ -506,7 +529,6 @@
                 gpsAtual.acc = Math.round(accuracy || 0);
                 gpsAtual.suspeitoFake = fakeDetectado;
 
-                // Auto-selecionar cliente se estiver dentro do raio
                 let menorDist = 999999, clienteMaisProximo = null;
                 window.clientesDB.forEach(c => {
                     const d = calcularDistanciaMetros(latitude, longitude, Number(c.latitude), Number(c.longitude));
@@ -533,15 +555,25 @@
         }
 
         // =========================================================================
-        // 3. CHECK-IN DE POSTO ATIVO (COM SUPORTE AO SUBSOLO -2)
+        // 3. CHECK-IN DE POSTO + TRAVA DE FIM DE SEMANA / PLANTÃO DO RAMOS
         // =========================================================================
         async function registrarPresencaPosto() {
+            if (postoBloqueadoHoje()) {
+                alert("🔒 Operação bloqueada em finais de semana e feriados. Solicite a liberação de plantão à Supervisão (Ramos).");
+                return;
+            }
+
             const btn = document.getElementById('btn-checkin-action');
             btn.disabled = true; btn.textContent = "Registrando...";
             const hojeStr = dataISO();
             const noSubsolo = !navigator.onLine || gpsAtual.lat === null;
-            const statusVal = noSubsolo ? 'AGUARDANDO_VALIDACAO_SUPERFICIE' : (gpsAtual.suspeitoFake ? 'SINAL_GPS_ATIPICO' : 'VALIDADO');
-            const modoChk = noSubsolo ? 'SUBSOLO_OFFLINE' : 'SUPERFICIE_GPS';
+            const eraPlantaoAutorizado = window.presencaHojeDB && window.presencaHojeDB.status_validacao === 'AUTORIZADO_GESTAO';
+
+            const statusVal = eraPlantaoAutorizado
+                ? 'PLANTAO_ATIVO'
+                : (noSubsolo ? 'AGUARDANDO_VALIDACAO_SUPERFICIE' : (gpsAtual.suspeitoFake ? 'SINAL_GPS_ATIPICO' : 'VALIDADO'));
+
+            const modoChk = eraPlantaoAutorizado ? 'PLANTAO_AUTORIZADO' : (noSubsolo ? 'SUBSOLO_OFFLINE' : 'SUPERFICIE_GPS');
 
             const registro = {
                 data_turno: hojeStr,
@@ -558,17 +590,49 @@
                 distancia_metros: gpsAtual.distCliente
             };
 
+            window.presencaHojeDB = registro;
             localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(registro));
-            atualizarBannerCheckin(registro);
+            atualizarBannerCheckin();
 
             if (navigator.onLine) {
+                await sb.from('presenca_posto').delete().eq('data_turno', hojeStr).eq('cliente', clienteAtivo);
                 await sb.from('presenca_posto').insert([registro]);
             }
         }
 
+        // Função Exclusiva do Gestor (Ramos/Adriano) para liberar Sábado/Domingo/Feriado
+        async function autorizarPlantaoExcepcional() {
+            const hojeStr = dataISO();
+            const regAutorizacao = {
+                data_turno: hojeStr,
+                cliente: clienteAtivo,
+                equipe_presente: 'Aguardando Equipe (Liberado pela Supervisão)',
+                qtd_operadores: 1,
+                modo_checkin: 'PLANTAO_AUTORIZADO',
+                status_validacao: 'AUTORIZADO_GESTAO',
+                dh_checkin_aparelho: new Date().toISOString()
+            };
+            await sb.from('presenca_posto').delete().eq('data_turno', hojeStr).eq('cliente', clienteAtivo);
+            await sb.from('presenca_posto').insert([regAutorizacao]);
+            window.presencaHojeDB = regAutorizacao;
+            localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(regAutorizacao));
+            recalcularTudo();
+            alert(`🔓 Plantão autorizado hoje para ${clienteAtivo}! O botão de Ativar Posto já está liberado para os operadores.`);
+        }
+
+        // Função Exclusiva do Gestor para limpar check-in de teste ou fechar o posto
+        async function encerrarOuBloquearPostoHoje() {
+            const hojeStr = dataISO();
+            await sb.from('presenca_posto').delete().eq('data_turno', hojeStr).eq('cliente', clienteAtivo);
+            window.presencaHojeDB = null;
+            localStorage.removeItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`);
+            recalcularTudo();
+            alert(`🔒 Registros de presença de hoje limpos e posto fechado para ${clienteAtivo}.`);
+        }
+
         async function validarCheckinSubsoloPendente() {
             const hojeStr = dataISO();
-            const salvo = JSON.parse(localStorage.getItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`) || 'null');
+            const salvo = window.presencaHojeDB;
             if (salvo && salvo.status_validacao === 'AGUARDANDO_VALIDACAO_SUPERFICIE' && gpsAtual.lat !== null && navigator.onLine) {
                 salvo.status_validacao = gpsAtual.suspeitoFake ? 'SINAL_GPS_ATIPICO' : 'VALIDADO';
                 salvo.dh_validacao_superficie = new Date().toISOString();
@@ -576,24 +640,60 @@
                 salvo.lng_validacao = gpsAtual.lng;
                 salvo.distancia_metros = gpsAtual.distCliente;
                 localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(salvo));
-                atualizarBannerCheckin(salvo);
+                atualizarBannerCheckin();
                 await sb.from('presenca_posto').insert([salvo]);
             }
         }
 
-        function atualizarBannerCheckin(reg) {
+        function atualizarBannerCheckin() {
             const box = document.getElementById('checkin-banner');
             const title = document.getElementById('checkin-title');
             const sub = document.getElementById('checkin-subtitle');
             const btn = document.getElementById('btn-checkin-action');
             const iconBox = document.getElementById('checkin-icon-box');
+            const fab = document.getElementById('fab-add');
 
+            // 1. Verificar se hoje é Fim de Semana / Feriado bloqueado
+            if (postoBloqueadoHoje()) {
+                box.className = "mb-3 bg-slate-200/80 border border-slate-300 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                iconBox.className = "w-9 h-9 rounded-xl bg-slate-300 text-slate-700 flex items-center justify-center flex-shrink-0";
+                iconBox.innerHTML = `<i data-lucide="lock" class="w-5 h-5"></i>`;
+                title.textContent = "🔒 Posto Fechado (Fim de Semana / Feriado)";
+                sub.textContent = "Ativação restrita à autorização da Supervisão (Ramos)";
+                btn.classList.add('hidden');
+                if (fab) fab.classList.add('hidden');
+                initIcons();
+                return;
+            }
+
+            if (fab && tabAtual === 'hoje') fab.classList.remove('hidden');
+            const reg = window.presencaHojeDB;
+
+            // 2. Se o Ramos liberou o plantão mas o operador ainda não confirmou chegada
+            if (reg && reg.status_validacao === 'AUTORIZADO_GESTAO') {
+                box.className = "mb-3 bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                iconBox.className = "w-9 h-9 rounded-xl bg-amber-200 text-amber-800 flex items-center justify-center flex-shrink-0";
+                iconBox.innerHTML = `<i data-lucide="unlock" class="w-5 h-5"></i>`;
+                title.textContent = "🔓 Plantão Autorizado pela Supervisão";
+                sub.textContent = `Equipe: ${equipeLogada.join(', ')} • Toque ao lado para iniciar`;
+                btn.classList.remove('hidden'); btn.disabled = false; btn.textContent = "Ativar Plantão";
+                initIcons();
+                return;
+            }
+
+            // 3. Dia útil normal aguardando ativação
             if (!reg) {
+                box.className = "mb-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                iconBox.className = "w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0";
+                iconBox.innerHTML = `<i data-lucide="radio" class="w-5 h-5"></i>`;
                 title.textContent = "Posto Aguardando Ativação";
                 sub.textContent = `Equipe: ${equipeLogada.join(', ')}`;
                 btn.classList.remove('hidden'); btn.disabled = false; btn.textContent = "Ativar Posto";
+                initIcons();
                 return;
             }
+
+            // 4. Posto já ativo
             const hora = new Date(reg.dh_checkin_aparelho).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             btn.classList.add('hidden');
             if (reg.status_validacao === 'AGUARDANDO_VALIDACAO_SUPERFICIE') {
@@ -607,22 +707,25 @@
                 title.textContent = `🟢 Posto Ativo desde ${hora}`;
                 sub.textContent = `Operando: ${reg.equipe_presente}`;
             }
+            initIcons();
         }
 
         // =========================================================================
-        // 4. CARREGAMENTO DO SUPABASE E MOTOR DE AGENDAMENTO ("TETRIS" MENSAL)
+        // 4. CARREGAMENTO DO SUPABASE E MOTOR DE AGENDAMENTO (TETO RÍGIDO 6.0H)
         // =========================================================================
         async function carregarDadosSupabase() {
             document.getElementById('loader-tasks').classList.remove('hidden');
             try {
+                const hojeStr = dataISO();
                 const inicioMes = dataISO(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-                const [resCli, resColab, resCrono, resExec, resFer, resObs] = await Promise.all([
+                const [resCli, resColab, resCrono, resExec, resFer, resObs, resPres] = await Promise.all([
                     sb.from('clientes').select('*').eq('ativo', true),
                     sb.from('colaboradores').select('*').eq('ativo', true),
                     sb.from('cronograma_mestre').select('*').eq('ativo', true),
                     sb.from('execucoes_auditoria').select('*').gte('data_referencia', inicioMes).order('dh_envio_servidor', { ascending: false }),
                     sb.from('feriados_config').select('*'),
-                    sb.from('obs_rapidas').select('*').order('ordem', { ascending: true })
+                    sb.from('obs_rapidas').select('*').order('ordem', { ascending: true }),
+                    sb.from('presenca_posto').select('*').eq('data_turno', hojeStr).eq('cliente', clienteAtivo).order('dh_checkin_aparelho', { ascending: false }).limit(1)
                 ]);
 
                 if (resCli.data) window.clientesDB = resCli.data;
@@ -631,6 +734,11 @@
                 if (resExec.data) window.execucoesMesDB = resExec.data;
                 if (resFer.data) window.feriadosDB = resFer.data.map(f => f.data_feriado);
                 if (resObs.data) window.obsRapidasDB = resObs.data;
+
+                window.presencaHojeDB = (resPres.data && resPres.data.length > 0) ? resPres.data[0] : null;
+                if (!window.presencaHojeDB) {
+                    localStorage.removeItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`);
+                }
 
                 popularMenusIniciais();
                 recalcularTudo();
@@ -651,13 +759,11 @@
             }
             document.getElementById('header-team-text').textContent = equipeLogada.length === 1 ? equipeLogada[0].split(' ')[0] : `${equipeLogada[0].split(' ')[0]} +${equipeLogada.length - 1}`;
 
-            // Chips de Observação Rápida
             const chipsBox = document.getElementById('chips-obs-rapidas');
             if (chipsBox && window.obsRapidasDB.length > 0) {
                 chipsBox.innerHTML = window.obsRapidasDB.map(o => `<button type="button" onclick="document.getElementById('obs-input').value='${o.texto}'" class="text-[10px] font-semibold bg-slate-100 hover:bg-orange-100 hover:text-orange-800 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors">${o.texto}</button>`).join('');
             }
 
-            // Equipe no Modal
             const colabs = window.colaboradoresDB.length > 0 ? window.colaboradoresDB : [{ nome: 'Adriano Pastre' }, { nome: 'Edinei' }, { nome: 'Ramos' }];
             document.getElementById('team-checkboxes-view').innerHTML = colabs.map(c => {
                 const checked = equipeLogada.includes(c.nome) ? 'checked' : '';
@@ -668,13 +774,7 @@
                 const checked = equipeLogada.includes(c.nome) ? 'checked' : '';
                 return `<label class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-xl cursor-pointer"><input type="checkbox" value="${c.nome}" ${checked} class="w-3.5 h-3.5 text-orange-500 rounded"><span class="text-xs font-bold text-slate-700">${c.nome}</span></label>`;
             }).join('');
-
-            const salvoCheckin = JSON.parse(localStorage.getItem(`novaera_checkin_${dataISO()}_${clienteAtivo}`) || 'null');
-            atualizarBannerCheckin(salvoCheckin);
         }
-
-        function ehFeriado(d) { return window.feriadosDB.includes(dataISO(d)); }
-        function diaUtil(d) { return d.getDay() !== 0 && d.getDay() !== 6 && !ehFeriado(d); }
 
         function diaCorrespondeFrequencia(freqStr, diaSemana) {
             const f = (freqStr || '').toLowerCase();
@@ -687,6 +787,13 @@
             if (f.includes('qui') && diaSemana === 4) return true;
             if (f.includes('sex') && diaSemana === 5) return true;
             return false;
+        }
+
+        function formatarMinutosStr(min) {
+            const h = Math.floor(min / 60), m = min % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
         }
 
         function projetarMatrizMensal() {
@@ -705,10 +812,10 @@
             }
 
             const cliObj = window.clientesDB.find(c => c.nome === clienteAtivo);
-            const LIMITE_DIARIO = (cliObj ? Number(cliObj.teto_diario_horas) : 6) * 60;
+            const LIMITE_DIARIO = (cliObj ? Number(cliObj.teto_diario_horas) : 6) * 60; // 360 min (6.0h)
             const tarefasCliente = window.cronogramaDB.filter(t => t.cliente === clienteAtivo);
 
-            // 1. Alocar tarefas fixas e com Data Alvo
+            // 1. Alocar tarefas fixas e com Data Alvo (mesmo em sábado se tiver data_alvo de plantão)
             tarefasCliente.forEach(t => {
                 const f = (t.frequencia || '').toLowerCase();
                 const isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral');
@@ -728,7 +835,7 @@
                 }
             });
 
-            // 2. Alocar tarefas flutuantes e fatiadas descontando horas já realizadas no mês!
+            // 2. Alocar tarefas flutuantes e fatiadas respeitando o TETO RÍGIDO DE 6.0H (360 min)
             const hojeStr = dataISO(agora);
             const diasUteisFuturosOuHoje = diasUteisMes.filter(dStr => dStr >= hojeStr);
 
@@ -743,22 +850,29 @@
                 const minJaRealizados = execsDestaTarefa.reduce((acc, cur) => acc + (Number(cur.duracao_real_min) || 0), 0);
                 let minRestantes = Math.max(0, minTotalMes - minJaRealizados);
 
-                if (minRestantes === 0) return; // Já concluída no mês!
+                if (minRestantes === 0) return;
 
-                // Se for tarefa gigante (> 180 min, ex: Valet 24h), fatia em blocos de até 120 min nos dias mais leves
-                const fatiaMax = minTotalMes > 240 ? 120 : minRestantes;
+                const fatiaIdeal = minTotalMes > 240 ? 120 : minRestantes;
                 let segurançaLoop = 0;
-                while (minRestantes > 0 && diasUteisFuturosOuHoje.length > 0 && segurançaLoop < 30) {
+
+                while (minRestantes > 0 && diasUteisFuturosOuHoje.length > 0 && segurançaLoop < 45) {
                     segurançaLoop++;
-                    let melhorDia = diasUteisFuturosOuHoje[0];
-                    diasUteisFuturosOuHoje.forEach(dStr => {
+                    // Procura o dia útil com mais espaço livre abaixo do teto de 360 min
+                    let candidatosComFolga = diasUteisFuturosOuHoje.filter(dStr => (LIMITE_DIARIO - window.agendaProjetada[dStr].minutos) >= 15);
+                    if (candidatosComFolga.length === 0) break; // Todos os dias úteis do mês já cravaram 6.0h!
+
+                    let melhorDia = candidatosComFolga[0];
+                    candidatosComFolga.forEach(dStr => {
                         if (window.agendaProjetada[dStr].minutos < window.agendaProjetada[melhorDia].minutos) melhorDia = dStr;
                     });
-                    const alocar = Math.min(minRestantes, fatiaMax);
+
+                    const espacoLivreNoDia = LIMITE_DIARIO - window.agendaProjetada[melhorDia].minutos;
+                    const alocar = Math.min(minRestantes, fatiaIdeal, espacoLivreNoDia);
+
                     window.agendaProjetada[melhorDia].tarefas.push({
                         ...t,
                         duracao_minutos: alocar,
-                        duracao_str: `${Math.floor(alocar / 60) > 0 ? Math.floor(alocar / 60) + 'h ' : ''}${alocar % 60 > 0 ? (alocar % 60) + 'm' : ''}`.trim(),
+                        duracao_str: formatarMinutosStr(alocar),
                         total_mes_min: minTotalMes,
                         realizado_mes_min: minJaRealizados
                     });
@@ -767,7 +881,7 @@
                 }
             });
 
-            // 3. Ordenar por Prioridade (1 = VIP Manhã primeiro) e aplicar Modo Chuva
+            // 3. Ordenar por Prioridade (1 = VIP Manhã) e aplicar Modo Chuva
             Object.keys(window.agendaProjetada).forEach(dStr => {
                 let lista = window.agendaProjetada[dStr].tarefas;
                 if (dStr === hojeStr && modoChuvaAtivo) {
@@ -780,6 +894,7 @@
         }
 
         function recalcularTudo() {
+            atualizarBannerCheckin();
             projetarMatrizMensal();
             renderizarTarefasHoje();
             renderFullMonthCalendar();
@@ -793,9 +908,12 @@
         function renderizarTarefasHoje() {
             const container = document.getElementById('task-container');
             const emptyState = document.getElementById('empty-state-tasks');
+            const emptySub = document.getElementById('empty-state-sub');
             const hojeStr = dataISO();
+            const bloqueado = postoBloqueadoHoje();
+
             const diaAgenda = window.agendaProjetada[hojeStr] || { tarefas: [], minutos: 0 };
-            const tarefasHoje = diaAgenda.tarefas;
+            const tarefasHoje = bloqueado ? [] : diaAgenda.tarefas;
 
             const execsHoje = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && e.data_referencia === hojeStr);
             const totalDia = tarefasHoje.length;
@@ -813,7 +931,6 @@
                 const badgePrio = t.prioridade === 1 ? `<span class="text-[9px] font-extrabold bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded uppercase">Prioridade Manhã</span>` : '';
                 const badgeChuva = t.permite_chuva === false ? `<span class="text-[9px] font-bold bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded border border-sky-200">☀️ Tempo Seco</span>` : '';
 
-                // Barra de Progresso Mensal para Tarefas Fatiadas (ex: Valet 24h)
                 let barraFatiadaHtml = '';
                 if (t.total_mes_min && t.total_mes_min > 180) {
                     const pctMes = Math.min(100, Math.round(((t.realizado_mes_min || 0) / t.total_mes_min) * 100));
@@ -881,7 +998,6 @@
                 }
             });
 
-            // Atualizar barra superior
             const pctDia = totalDia > 0 ? Math.round((concluidasCount / totalDia) * 100) : 0;
             document.getElementById('progresso-texto').textContent = `${concluidasCount} de ${totalDia} atividades concluídas`;
             document.getElementById('progresso-barra').style.width = `${pctDia}%`;
@@ -891,6 +1007,8 @@
             if (totalDia === 0) {
                 container.classList.add('hidden');
                 emptyState.classList.remove('hidden');
+                if (bloqueado) emptySub.textContent = "Expediente suspenso (Fim de Semana / Feriado). Apenas a Supervisão pode liberar plantão.";
+                else emptySub.textContent = "Nenhuma atividade pendente ou permitida para o clima atual.";
             } else {
                 emptyState.classList.add('hidden');
                 container.classList.remove('hidden');
@@ -904,11 +1022,15 @@
         // =========================================================================
         let tarefaSelecionadaObj = null;
         let chaveTarefaAtiva = null;
-        let etapaCaptura = 'antes'; // 'antes' ou 'depois'
-        let origemCaptura = 'CAMERA_APP'; // 'CAMERA_APP' ou 'GALERIA_EXIF'
+        let etapaCaptura = 'antes';
+        let origemCaptura = 'CAMERA_APP';
         let dadosFotoDepois = null;
 
         function iniciarTarefa(tarefaObj, chave, origem) {
+            if (postoBloqueadoHoje()) {
+                alert("🔒 Posto fechado hoje. Solicite liberação de plantão à Supervisão.");
+                return;
+            }
             tarefaSelecionadaObj = tarefaObj;
             chaveTarefaAtiva = chave;
             etapaCaptura = 'antes';
@@ -931,7 +1053,6 @@
         }
 
         async function registrarRejeicaoSilenciosa(motivo, detalhes, modeloAparelho) {
-            // Exibe apenas o erro genérico 422 para não ensinar o operador a burlar
             alert("⚠️ Falha ao processar o arquivo de imagem (Erro 422). Por favor, tente capturar novamente.");
             const log = {
                 cliente: clienteAtivo,
@@ -960,7 +1081,6 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                        // Tarja Tática Chumbada nos Pixels
                         const barH = 38;
                         ctx.fillStyle = "rgba(15, 23, 42, 0.82)";
                         ctx.fillRect(0, canvas.height - barH, canvas.width, barH);
@@ -980,7 +1100,6 @@
             if (!file) return;
             const hash = await calcularHashSHA256(file);
 
-            // 1. Verificar duplicidade de foto (Hash SHA-256)
             if (hashesConhecidos.has(hash)) {
                 await registrarRejeicaoSilenciosa('HASH_DUPLICADO', `Hash SHA-256 repetido: ${hash.slice(0, 16)}`, null);
                 return;
@@ -989,7 +1108,6 @@
             let dhCapturaExif = new Date();
             let modeloCamera = "Camera Nativa Web";
 
-            // 2. Se veio da Galeria, exigir metadados EXIF originais e data de hoje
             if (origem === 'GALERIA_EXIF') {
                 let exif = null;
                 try { exif = await exifr.parse(file); } catch (e) {}
@@ -1002,7 +1120,6 @@
                 dhCapturaExif = new Date(exif.DateTimeOriginal || exif.CreateDate);
                 modeloCamera = [exif.Make, exif.Model].filter(Boolean).join(' ') || 'EXIF Verificado';
 
-                // Checar se a foto é do dia de hoje
                 if (dataISO(dhCapturaExif) !== dataISO(new Date())) {
                     await registrarRejeicaoSilenciosa('FOTO_DATA_ANTIGA', `EXIF Data Original: ${dhCapturaExif.toLocaleString('pt-BR')}`, modeloCamera);
                     return;
@@ -1110,7 +1227,6 @@
             const duracaoEstMin = Number(tarefaSelecionadaObj.duracao_minutos) || 30;
             const deltaEnvioMin = Math.max(0, Math.round((dhAgora - dhFimExif) / 60000));
 
-            // Classificação Neutras de Governança (Sem termos acusatórios)
             let flag = 'CONFORME';
             if (gpsAtual.suspeitoFake) flag = 'SINAL_GPS_ATIPICO';
             else if (gpsAtual.distCliente !== null && gpsAtual.distCliente > 450) flag = 'FORA_PERIMETRO';
@@ -1157,7 +1273,6 @@
 
                 window.execucoesMesDB.unshift(payload);
             } catch (err) {
-                // Salva na Fila Offline do Aparelho se estiver no subsolo -2
                 filaOffline.push({ payload, fotoAntesB64: dadosAndamento.foto_antes, fotoDepoisB64: dadosFotoDepois.base64 });
                 localStorage.setItem('novaera_fila_offline', JSON.stringify(filaOffline));
                 window.execucoesMesDB.unshift(payload);
@@ -1283,6 +1398,9 @@
 
         function iniciarRealtimeSupabase() {
             sb.channel('novaera-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'presenca_posto' }, () => {
+                    carregarDadosSupabase();
+                })
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens_chat' }, payload => {
                     if (payload.new.cliente === clienteAtivo) {
                         document.getElementById('chat-unread-dot').classList.remove('hidden');
@@ -1296,7 +1414,7 @@
         }
 
         // =========================================================================
-        // 9. PAINEL DO GESTOR (FTE, CAIXA-PRETA, WHATSAPP & IMPORTADOR CSV)
+        // 9. PAINEL DO GESTOR (FTE, PLANTÃO, CAIXA-PRETA, WHATSAPP & CSV)
         // =========================================================================
         function desbloquearGestao() {
             const pin = document.getElementById('pin-input').value.trim();
@@ -1314,7 +1432,16 @@
         async function atualizarPainelGestao() {
             if (document.getElementById('gestao-content').classList.contains('hidden')) return;
 
-            // Cálculo de Horas Planejadas no Mês vs Realizadas
+            // Atualizar Status do Controle de Plantão / Fim de Semana
+            const stPlantao = document.getElementById('gestao-status-plantao');
+            if (postoBloqueadoHoje()) {
+                stPlantao.textContent = "🔒 Posto Bloqueado Hoje (Fim de Semana / Feriado)";
+            } else if (window.presencaHojeDB) {
+                stPlantao.textContent = `🟢 Posto Liberado / Ativo (${window.presencaHojeDB.equipe_presente})`;
+            } else {
+                stPlantao.textContent = "🔓 Dia Útil Normal (Aguardando Check-in da Equipe)";
+            }
+
             let minPlanejadosMes = 0;
             Object.values(window.agendaProjetada).forEach(d => { minPlanejadosMes += d.minutos; });
             const execsCli = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo);
@@ -1332,7 +1459,6 @@
             document.getElementById('kpi-conformidade').textContent = `${pctConf}%`;
             document.getElementById('kpi-alertas-count').textContent = `${divergentes.length} registros c/ flag`;
 
-            // Lista de Execuções Auditadas
             const listEl = document.getElementById('gestao-execucoes-list');
             listEl.innerHTML = execsCli.slice(0, 25).map(e => {
                 const corFlag = e.flag_auditoria === 'CONFORME' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900';
@@ -1347,7 +1473,6 @@
                 </div>`;
             }).join('') || `<p class="p-4 text-xs text-slate-400 text-center">Nenhuma execução registrada no mês.</p>`;
 
-            // Carregar Caixa-Preta (Logs de Rejeição Erro 422)
             const { data: logsRej } = await sb.from('logs_rejeicao').select('*').eq('cliente', clienteAtivo).order('dh_tentativa', { ascending: false }).limit(20);
             document.getElementById('badge-rejeicoes').textContent = (logsRej || []).length;
             document.getElementById('gestao-rejeicoes-list').innerHTML = (logsRej || []).map(l => {
@@ -1458,12 +1583,13 @@
             document.getElementById('selected-day-title').textContent = `Dia ${day}`;
             const ag = window.agendaProjetada[dStr];
             const list = document.getElementById('selected-day-list');
-            if (!ag || !ag.util || ag.tarefas.length === 0) {
+            if (!ag || (!ag.util && ag.tarefas.length === 0) || ag.tarefas.length === 0) {
                 document.getElementById('selected-day-count').textContent = 'Livre';
                 list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Sem rotinas programadas.</p>`;
                 return;
             }
-            document.getElementById('selected-day-count').textContent = `${ag.tarefas.length} ativ • ${(ag.minutos / 60).toFixed(1)}h`;
+            const hDia = (ag.minutos / 60).toFixed(1).replace('.0', '');
+            document.getElementById('selected-day-count').textContent = `${ag.tarefas.length} ativ • ${hDia}h`;
             list.innerHTML = ag.tarefas.map(t => `
                 <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-xl border border-slate-100">
                     <div>
@@ -1475,6 +1601,10 @@
         }
 
         async function adicionarTarefaExtra() {
+            if (postoBloqueadoHoje()) {
+                alert("🔒 Posto fechado hoje. Solicite liberação de plantão à Supervisão.");
+                return;
+            }
             const setor = document.getElementById('input-modal-setor').value.trim();
             const ativ = document.getElementById('input-modal-tarefa').value.trim();
             const dur = document.getElementById('input-modal-duracao').value.trim() || '30m';
@@ -1499,6 +1629,7 @@
         }
 
         function switchTab(tab) {
+            tabAtual = tab;
             ['hoje', 'calendario', 'chat', 'gestao'].forEach(t => {
                 document.getElementById(`tab-${t}`).className = (t === tab)
                     ? "flex flex-col items-center py-1.5 text-orange-500 transition-colors relative"
@@ -1508,7 +1639,7 @@
             document.getElementById('calendar-view').classList.toggle('hidden', tab !== 'calendario');
             document.getElementById('chat-view').classList.toggle('hidden', tab !== 'chat');
             document.getElementById('gestao-view').classList.toggle('hidden', tab !== 'gestao');
-            document.getElementById('fab-add').classList.toggle('hidden', tab !== 'hoje');
+            document.getElementById('fab-add').classList.toggle('hidden', tab !== 'hoje' || postoBloqueadoHoje());
 
             const titulos = { hoje: 'Cronograma de Hoje', calendario: 'Matriz Mensal', chat: 'Comunicador Interno', gestao: 'Governança & FTE' };
             document.getElementById('view-title').textContent = titulos[tab];
@@ -1516,6 +1647,7 @@
                 document.getElementById('chat-unread-dot').classList.add('hidden');
                 carregarMensagensChat();
             }
+            if (tab === 'gestao') atualizarPainelGestao();
         }
 
         function toggleChuva() {
@@ -1535,7 +1667,7 @@
         function trocarClienteManual(novoCli) {
             clienteAtivo = novoCli;
             localStorage.setItem('novaera_cliente_ativo', clienteAtivo);
-            recalcularTudo();
+            carregarDadosSupabase();
         }
 
         function openTeamModal() { document.getElementById('team-modal').classList.remove('hidden'); }
@@ -1546,6 +1678,7 @@
             equipeLogada = selecionados;
             localStorage.setItem('novaera_equipe_logada', JSON.stringify(equipeLogada));
             popularMenusIniciais();
+            atualizarBannerCheckin();
             closeTeamModal();
         }
 
