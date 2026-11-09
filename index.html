@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Nova Era • ERP de Campo</title>
+    <title>Nova Era • ERP de Campo v8.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -72,28 +72,33 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="max-w-md mx-auto pb-safe pt-3 px-3.5" id="main-content">
 
-        <!-- BANNER DE PRESENÇA DO POSTO (COM TRAVA DE FIM DE SEMANA / FERIADO) -->
-        <div id="checkin-banner" class="mb-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
+        <!-- BANNER DE PRESENÇA DO POSTO (ATIVAR / ENCERRAR TURNO) -->
+        <div id="checkin-banner" class="mb-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
                 <div id="checkin-icon-box" class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
                     <i data-lucide="radio" class="w-5 h-5"></i>
                 </div>
-                <div>
-                    <p id="checkin-title" class="text-xs font-bold text-slate-800">Posto Aguardando Ativação</p>
-                    <p id="checkin-subtitle" class="text-[11px] text-slate-500">Confirme a chegada da equipe no local</p>
+                <div class="truncate">
+                    <p id="checkin-title" class="text-xs font-bold text-slate-800 truncate">Posto Aguardando Ativação</p>
+                    <p id="checkin-subtitle" class="text-[11px] text-slate-500 truncate">Confirme a chegada da equipe no local</p>
                 </div>
             </div>
-            <button id="btn-checkin-action" onclick="registrarPresencaPosto()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition-all flex-shrink-0">
-                Ativar Posto
-            </button>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+                <button id="btn-checkin-action" onclick="registrarPresencaPosto()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition-all">
+                    Ativar Posto
+                </button>
+                <button id="btn-checkout-action" onclick="encerrarTurnoOperador()" class="hidden bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold px-2.5 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1">
+                    <i data-lucide="flag" class="w-3.5 h-3.5 text-orange-400"></i> Encerrar Dia
+                </button>
+            </div>
         </div>
 
         <!-- ALERTA DE HORÁRIO DE PICO (11:30 - 14:00) -->
         <div id="pico-alert" class="hidden mb-3 bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-xl shadow-sm flex items-start gap-2.5">
             <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0"></i>
             <div>
-                <p class="text-xs font-bold text-amber-900 uppercase">Janela de Alto Fluxo (11:30 - 14:00)</p>
-                <p class="text-[11px] text-amber-700">Evite sopradores ou roçagens ruidosas em áreas de circulação.</p>
+                <p class="text-xs font-bold text-amber-900 uppercase">Janela de Alto Fluxo / Almoço (11:30 - 14:00)</p>
+                <p class="text-[11px] text-amber-700">Utilize o botão "Pausar" nas atividades em curso caso interrompa para almoço ou fluxo de pedestres.</p>
             </div>
         </div>
 
@@ -112,9 +117,9 @@
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <button onclick="toggleChuva()" id="btn-chuva" class="bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-xl text-slate-500 hover:text-blue-600 transition-all flex items-center gap-1 text-xs font-bold" title="Ativar/Desativar Modo Chuva">
+                    <button onclick="toggleChuva()" id="btn-chuva" class="bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-xl text-slate-600 hover:text-blue-600 transition-all flex items-center gap-1 text-xs font-bold" title="Registrar início/fim de período de chuva">
                         <i data-lucide="cloud-rain" class="w-4 h-4"></i>
-                        <span id="txt-chuva" class="hidden sm:inline">Seco</span>
+                        <span id="txt-chuva">Seco</span>
                     </button>
                     <button onclick="carregarDadosSupabase()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl border border-slate-200" title="Atualizar Dados">
                         <i data-lucide="rotate-cw" class="w-4 h-4"></i>
@@ -122,11 +127,14 @@
                 </div>
             </div>
 
-            <!-- BARRA DE PROGRESSO E CAPACIDADE DO DIA -->
+            <!-- BARRA DE PROGRESSO, CAPACIDADE E ACUMULADOR DE CHUVA -->
             <div class="pt-2 border-t border-slate-100">
                 <div class="flex justify-between items-center text-[11px] font-semibold mb-1.5">
                     <span id="progresso-texto" class="text-slate-600">0 de 0 concluídas</span>
-                    <span id="carga-hoje-badge" class="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-bold">0h / 6h</span>
+                    <div class="flex items-center gap-1.5">
+                        <span id="chuva-acumulada-badge" class="hidden text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md">🌧️ 0m</span>
+                        <span id="carga-hoje-badge" class="text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-bold">0h / 6h</span>
+                    </div>
                 </div>
                 <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div id="progresso-barra" class="h-full bg-gradient-to-r from-orange-500 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
@@ -141,7 +149,7 @@
             <div id="loader-tasks" class="py-12 text-center">
                 <i data-lucide="loader-2" class="w-8 h-8 mx-auto animate-spin text-orange-500 mb-3"></i>
                 <h3 class="text-sm font-bold text-slate-700">Sincronizando com Supabase...</h3>
-                <p class="text-xs text-slate-500 mt-1">Calculando matriz mensal e histórico de auditoria</p>
+                <p class="text-xs text-slate-500 mt-1">Verificando atividades em andamento, transbordos e matriz</p>
             </div>
             <div class="space-y-3 hidden" id="task-container"></div>
             <div id="empty-state-tasks" class="hidden py-12 text-center bg-white rounded-2xl border border-slate-200 p-6">
@@ -158,7 +166,7 @@
         <!-- ========================================== -->
         <div id="calendar-view" class="hidden">
             <div class="flex justify-between items-center mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm">
-                <span class="text-xs font-bold text-slate-500 px-2">Matriz Mensal (Teto Rígido: 6h/dia)</span>
+                <span class="text-xs font-bold text-slate-500 px-2">Matriz Mensal (Teto Rígido)</span>
                 <div class="text-right px-2">
                     <h3 class="font-extrabold text-sm text-slate-800 capitalize" id="mes-titulo">Novembro 2026</h3>
                 </div>
@@ -220,10 +228,10 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- VISÃO 4: PAINEL DO GESTOR (ADRIANO/RAMOS)  -->
+        <!-- VISÃO 4: PAINEL DO GESTOR (4 SUB-ABAS)     -->
         <!-- ========================================== -->
-        <div id="gestao-view" class="hidden space-y-4">
-            <!-- Bloqueio por PIN (Sem expor a senha no placeholder) -->
+        <div id="gestao-view" class="hidden space-y-3.5">
+            <!-- Bloqueio por PIN -->
             <div id="gestao-lock" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm text-center">
                 <div class="w-12 h-12 rounded-2xl bg-slate-900 text-orange-400 flex items-center justify-center mx-auto mb-3">
                     <i data-lucide="shield-lock" class="w-6 h-6"></i>
@@ -237,70 +245,246 @@
             </div>
 
             <!-- Conteúdo Desbloqueado da Gestão -->
-            <div id="gestao-content" class="hidden space-y-4">
-                <!-- KPIs de FTE e Auditoria -->
-                <div class="grid grid-cols-2 gap-2.5">
-                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Carga Mensal / FTE</p>
-                        <p class="text-lg font-extrabold text-slate-900 mt-0.5" id="kpi-fte-horas">0h / 0h</p>
-                        <p class="text-[11px] font-semibold text-emerald-600 mt-0.5" id="kpi-fte-pessoas">FTE Estimado: 1.0 op.</p>
-                    </div>
-                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Conformidade & SLA</p>
-                        <p class="text-lg font-extrabold text-slate-900 mt-0.5" id="kpi-conformidade">100%</p>
-                        <p class="text-[11px] font-semibold text-amber-600 mt-0.5" id="kpi-alertas-count">0 divergências</p>
-                    </div>
+            <div id="gestao-content" class="hidden space-y-3.5">
+                
+                <!-- MENU DE 4 SUB-ABAS DA GESTÃO -->
+                <div class="grid grid-cols-4 gap-1 bg-slate-200/80 p-1 rounded-2xl border border-slate-300/60">
+                    <button onclick="selecionarSubAbaGestao('auditoria')" id="subtab-btn-auditoria" class="py-2 px-1 rounded-xl text-[10px] font-extrabold bg-slate-900 text-white shadow-sm transition-all">
+                        📊 Auditoria
+                    </button>
+                    <button onclick="selecionarSubAbaGestao('tarefas')" id="subtab-btn-tarefas" class="py-2 px-1 rounded-xl text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all">
+                        📋 Tarefas
+                    </button>
+                    <button onclick="selecionarSubAbaGestao('equipe')" id="subtab-btn-equipe" class="py-2 px-1 rounded-xl text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all">
+                        👷 Equipe
+                    </button>
+                    <button onclick="selecionarSubAbaGestao('contratos')" id="subtab-btn-contratos" class="py-2 px-1 rounded-xl text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all">
+                        🏢 Contratos
+                    </button>
                 </div>
 
-                <!-- CONTROLE DE PLANTÃO / FIM DE SEMANA E FERIADOS (EXCLUSIVO RAMOS/ADRIANO) -->
-                <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-sm space-y-2.5">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-[10px] font-extrabold text-orange-400 uppercase tracking-wider">Controle de Posto & Plantão</p>
-                            <h4 class="text-xs font-bold text-white mt-0.5" id="gestao-status-plantao">Status do Dia: Verificando...</h4>
+                <!-- SUB-ABA 1: AUDITORIA, FTE E TURNO -->
+                <div id="subtab-auditoria" class="space-y-3.5">
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Carga Mensal / FTE</p>
+                            <p class="text-lg font-extrabold text-slate-900 mt-0.5" id="kpi-fte-horas">0h / 0h</p>
+                            <p class="text-[11px] font-semibold text-emerald-600 mt-0.5" id="kpi-fte-pessoas">FTE Técnico: 1.0 op.</p>
                         </div>
-                        <i data-lucide="calendar-clock" class="w-5 h-5 text-orange-400"></i>
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Clima & Conformidade</p>
+                            <p class="text-lg font-extrabold text-slate-900 mt-0.5" id="kpi-conformidade">100%</p>
+                            <p class="text-[11px] font-semibold text-blue-600 mt-0.5" id="kpi-chuva-resumo">Chuva hoje: 0m</p>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="autorizarPlantaoExcepcional()" id="btn-liberar-plantao" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-[11px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
-                            <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Liberar Plantão Hoje
+
+                    <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-sm space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] font-extrabold text-orange-400 uppercase tracking-wider">Controle de Posto & Plantão</p>
+                                <h4 class="text-xs font-bold text-white mt-0.5" id="gestao-status-plantao">Status do Dia: Verificando...</h4>
+                            </div>
+                            <i data-lucide="calendar-clock" class="w-5 h-5 text-orange-400"></i>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="autorizarPlantaoExcepcional()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-[11px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+                                <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Liberar Plantão Hoje
+                            </button>
+                            <button onclick="encerrarOuBloquearPostoHoje()" class="bg-slate-800 hover:bg-red-950 hover:text-red-300 text-slate-300 border border-slate-700 font-bold text-[11px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5">
+                                <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar / Limpar Hoje
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                        <p class="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">Relatórios & Importação</p>
+                        <button onclick="copiarResumoWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="share-2" class="w-4 h-4"></i> Copiar Relatório do Turno (WhatsApp)
                         </button>
-                        <button onclick="encerrarOuBloquearPostoHoje()" class="bg-slate-800 hover:bg-red-950 hover:text-red-300 text-slate-300 border border-slate-700 font-bold text-[11px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5">
-                            <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar / Limpar Hoje
+                        <button onclick="importarPlanilhaGoogleCSV()" id="btn-import-csv" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-300">
+                            <i data-lucide="database-backup" class="w-4 h-4 text-orange-500"></i> Sincronizar Grade da Planilha Google (CSV)
                         </button>
                     </div>
-                </div>
 
-                <!-- Ações Táticas do Gestor -->
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                    <p class="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">Ferramentas de Governança</p>
-                    <button onclick="copiarResumoWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-sm">
-                        <i data-lucide="share-2" class="w-4 h-4"></i> Copiar Relatório do Turno (WhatsApp)
-                    </button>
-                    <button onclick="importarPlanilhaGoogleCSV()" id="btn-import-csv" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-300">
-                        <i data-lucide="database-backup" class="w-4 h-4 text-orange-500"></i> Sincronizar Grade da Planilha Google (CSV)
-                    </button>
-                </div>
-
-                <!-- Histórico de Execuções e Flags -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex justify-between items-center">
-                        <h4 class="text-xs font-extrabold text-slate-800">Últimas Execuções Auditadas</h4>
-                        <span class="text-[10px] font-bold text-slate-500">Tempo Real vs. SLA</span>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                            <h4 class="text-xs font-extrabold text-slate-800">Execuções & Atividades em Curso</h4>
+                            <span class="text-[10px] font-bold text-slate-500">Tempo Líquido vs. SLA</span>
+                        </div>
+                        <div id="gestao-execucoes-list" class="divide-y divide-slate-100 max-h-72 overflow-y-auto"></div>
                     </div>
-                    <div id="gestao-execucoes-list" class="divide-y divide-slate-100 max-h-72 overflow-y-auto"></div>
+
+                    <div class="bg-white rounded-2xl border border-red-200 shadow-sm overflow-hidden">
+                        <div class="bg-red-50 px-3.5 py-2.5 border-b border-red-100 flex justify-between items-center">
+                            <h4 class="text-xs font-extrabold text-red-900 flex items-center gap-1.5">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-red-600"></i> Caixa-Preta • Fotos Rejeitadas (Erro 422)
+                            </h4>
+                            <span id="badge-rejeicoes" class="text-[10px] font-extrabold bg-red-200 text-red-900 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="gestao-rejeicoes-list" class="divide-y divide-slate-100 max-h-60 overflow-y-auto"></div>
+                    </div>
                 </div>
 
-                <!-- Caixa-Preta: Tentativas Rejeitadas (Erro 422 Silencioso) -->
-                <div class="bg-white rounded-2xl border border-red-200 shadow-sm overflow-hidden">
-                    <div class="bg-red-50 px-3.5 py-2.5 border-b border-red-100 flex justify-between items-center">
-                        <h4 class="text-xs font-extrabold text-red-900 flex items-center gap-1.5">
-                            <i data-lucide="shield-alert" class="w-4 h-4 text-red-600"></i> Caixa-Preta • Fotos Rejeitadas (Erro 422)
-                        </h4>
-                        <span id="badge-rejeicoes" class="text-[10px] font-extrabold bg-red-200 text-red-900 px-2 py-0.5 rounded-full">0</span>
+                <!-- SUB-ABA 2: GESTÃO DE TAREFAS E RECORRÊNCIA DO CONTRATO -->
+                <div id="subtab-tarefas" class="hidden space-y-3.5">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-extrabold text-slate-900 uppercase" id="form-tarefa-titulo">Cadastrar / Editar Tarefa no Contrato</h4>
+                            <button onclick="limparFormTarefaGestao()" class="text-[10px] font-bold text-orange-600 underline">Limpar / Nova</button>
+                        </div>
+                        <input type="hidden" id="edit-tarefa-id">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Setor / Local</label>
+                                <input type="text" id="edit-tarefa-setor" placeholder="Ex: Fumódromo" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Espécie / Alvo</label>
+                                <input type="text" id="edit-tarefa-especie" placeholder="Ex: Grama Amendoim" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Descrição da Atividade</label>
+                            <input type="text" id="edit-tarefa-nome" placeholder="Ex: Poda de contenção e limpeza" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Recorrência</label>
+                                <select id="edit-tarefa-freq" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-semibold">
+                                    <option value="Seg a Sex">Seg a Sex</option>
+                                    <option value="Seg, Qua, Sex">Seg, Qua, Sex</option>
+                                    <option value="Ter, Qui">Ter, Qui</option>
+                                    <option value="Seg">Toda Segunda</option>
+                                    <option value="Ter">Toda Terça</option>
+                                    <option value="Qua">Toda Quarta</option>
+                                    <option value="Qui">Toda Quinta</option>
+                                    <option value="Sex">Toda Sexta</option>
+                                    <option value="Quinzenal">Quinzenal</option>
+                                    <option value="1x/mês">1x/mês (Mensal)</option>
+                                    <option value="Quadrimestral">Quadrimestral</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">SLA (Minutos)</label>
+                                <input type="number" id="edit-tarefa-min" placeholder="Ex: 60" value="45" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Prioridade</label>
+                                <select id="edit-tarefa-prio" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-semibold">
+                                    <option value="1">1 • VIP Manhã</option>
+                                    <option value="2" selected>2 • Rotina</option>
+                                    <option value="3">3 • Baixa</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="edit-tarefa-chuva" checked class="rounded text-orange-500 w-4 h-4"> Permite fazer com chuva
+                            </label>
+                            <button onclick="salvarTarefaGestao()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm">
+                                Salvar na Grade
+                            </button>
+                        </div>
                     </div>
-                    <div id="gestao-rejeicoes-list" class="divide-y divide-slate-100 max-h-60 overflow-y-auto"></div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                            <h4 class="text-xs font-extrabold text-slate-800">Grade de Atividades do Contrato</h4>
+                            <span class="text-[10px] text-slate-500">Toque em Editar ou Pausar</span>
+                        </div>
+                        <div id="gestao-lista-tarefas-crud" class="divide-y divide-slate-100 max-h-96 overflow-y-auto"></div>
+                    </div>
                 </div>
+
+                <!-- SUB-ABA 3: GESTÃO DE EFETIVO (EQUIPE / REALOCAÇÃO / SOFT DELETE) -->
+                <div id="subtab-equipe" class="hidden space-y-3.5">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <h4 class="text-xs font-extrabold text-slate-900 uppercase">Adicionar Colaborador</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="novo-colab-nome" placeholder="Nome (ex: Leandro)" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            <select id="novo-colab-posto" class="bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-semibold"></select>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="novo-colab-perfil" class="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold flex-1">
+                                <option value="OPERADOR">Operador de Campo</option>
+                                <option value="SUPERVISOR">Supervisor (Ramos)</option>
+                                <option value="GESTOR">Gestor</option>
+                            </select>
+                            <button onclick="adicionarColaboradorGestao()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-sm">
+                                + Cadastrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                            <h4 class="text-xs font-extrabold text-slate-800">Quadro de Operadores (Ativos e Inativos)</h4>
+                            <span class="text-[10px] text-slate-500">Realocação imediata</span>
+                        </div>
+                        <div id="gestao-lista-equipe-crud" class="divide-y divide-slate-100"></div>
+                    </div>
+                </div>
+
+                <!-- SUB-ABA 4: GESTÃO DE CONTRATOS / CLIENTES -->
+                <div id="subtab-contratos" class="hidden space-y-3.5">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-extrabold text-slate-900 uppercase">Configurar Contrato / Cliente</h4>
+                            <button onclick="limparFormContratoGestao()" class="text-[10px] font-bold text-orange-600 underline">+ Novo Cliente</button>
+                        </div>
+                        <input type="hidden" id="edit-cli-id">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Nome do Condomínio/Posto</label>
+                                <input type="text" id="edit-cli-nome" placeholder="Ex: Miss Silvia" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Endereço</label>
+                                <input type="text" id="edit-cli-end" placeholder="Av. Faria Lima, 4100" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Teto Diário (h)</label>
+                                <input type="number" step="0.5" id="edit-cli-teto" value="6" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Raio GPS (m)</label>
+                                <input type="number" id="edit-cli-raio" value="300" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">PIN Gestão</label>
+                                <input type="text" id="edit-cli-pin" value="2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Latitude</label>
+                                <input type="text" id="edit-cli-lat" placeholder="-23.5888" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Longitude</label>
+                                <input type="text" id="edit-cli-lng" placeholder="-46.6819" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button type="button" onclick="usarGpsAtualNoContrato()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-[11px] py-2.5 px-3 rounded-xl flex-1 flex items-center justify-center gap-1">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-orange-500"></i> Usar Meu GPS Atual
+                            </button>
+                            <button type="button" onclick="salvarContratoGestao()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-sm">
+                                Salvar Contrato
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200">
+                            <h4 class="text-xs font-extrabold text-slate-800">Contratos Cadastrados</h4>
+                        </div>
+                        <div id="gestao-lista-contratos-crud" class="divide-y divide-slate-100"></div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -338,13 +522,13 @@
     <input type="file" accept="image/*" capture="environment" id="camera-live-input" class="hidden">
     <input type="file" accept="image/*" id="gallery-exif-input" class="hidden">
 
-    <!-- MODAL 1: IDENTIFICAÇÃO DA EQUIPE (MEMÓRIA PERSISTENTE) -->
+    <!-- MODAL 1: IDENTIFICAÇÃO DA EQUIPE -->
     <div id="team-modal" class="fixed inset-0 bg-slate-950/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl p-5">
             <div class="flex justify-between items-center mb-3">
                 <div>
                     <h3 class="text-base font-extrabold text-slate-900">Quem está operando hoje?</h3>
-                    <p class="text-xs text-slate-500">Sua seleção fica salva neste aparelho</p>
+                    <p class="text-xs text-slate-500">Apenas operadores ativos neste contrato</p>
                 </div>
                 <button onclick="closeTeamModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
@@ -359,9 +543,31 @@
         </div>
     </div>
 
-    <!-- MODAL 2: CONCLUSÃO DE TAREFA + AUDITORIA EXIF -->
+    <!-- MODAL 1.5: PAUSAR ATIVIDADE (ALMOÇO / ALTO FLUXO / CHUVA) -->
+    <div id="pause-modal" class="fixed inset-0 bg-slate-950/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                    <i data-lucide="pause-circle" class="w-5 h-5 text-amber-500"></i> Pausar Cronômetro da Tarefa
+                </h3>
+                <button onclick="fecharModalPausa()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
+            </div>
+            <p class="text-xs text-slate-500">O tempo em pausa será descontado automaticamente do cálculo de execução e aparecerá para o cliente.</p>
+            <select id="select-motivo-pausa" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-800">
+                <option value="Intervalo de Almoço / Refeição">🍽️ Intervalo de Almoço / Refeição</option>
+                <option value="Alto Fluxo de Pedestres no Local">🚶 Alto Fluxo de Pedestres no Local</option>
+                <option value="Interrupção por Chuva Momentânea">🌧️ Interrupção por Chuva Momentânea</option>
+                <option value="Apoio Emergencial em Outro Setor">🛠️ Apoio Emergencial em Outro Setor</option>
+            </select>
+            <button onclick="confirmarPausaTarefa()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs shadow-sm">
+                Confirmar Pausa Agora
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CONCLUSÃO DE TAREFA + ENTREGA PARCIAL + AUDITORIA EXIF -->
     <div id="conclusion-modal" class="fixed inset-0 bg-slate-950/75 z-50 hidden flex items-center justify-center p-3.5">
-        <div class="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-start mb-1">
                 <h3 class="text-base font-extrabold text-slate-900">Concluir Atividade</h3>
                 <button onclick="closeConclusionModal()"><i data-lucide="x" class="text-slate-400 w-5 h-5"></i></button>
@@ -370,7 +576,7 @@
             <p class="text-[11px] text-slate-500 mb-3" id="modal-setor-title">Setor</p>
 
             <div id="box-fatiamento" class="hidden mb-3 bg-blue-50 border border-blue-200 rounded-xl p-2.5">
-                <label class="block text-[11px] font-extrabold text-blue-900 mb-1">Frações de Tarefa Longa — Tempo dedicado agora:</label>
+                <label class="block text-[11px] font-extrabold text-blue-900 mb-1">Frações de Tarefa Longa — Tempo líquido dedicado agora:</label>
                 <div class="grid grid-cols-4 gap-1.5">
                     <button type="button" onclick="setMinutosParciais(60)" class="bg-white border border-blue-200 rounded-lg py-1 text-xs font-bold text-blue-800">1h</button>
                     <button type="button" onclick="setMinutosParciais(120)" class="bg-white border border-blue-200 rounded-lg py-1 text-xs font-bold text-blue-800">2h</button>
@@ -403,6 +609,17 @@
                         <option value="Sem sinal de internet no subsolo/setor">📵 Sem sinal de internet no subsolo/setor</option>
                         <option value="Foto registrada por colega de equipe">📱 Foto registrada por colega de equipe</option>
                     </select>
+                </div>
+
+                <!-- Opção de Entrega Parcial (Gera Continuação no Dia Seguinte) -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input type="checkbox" id="chk-entrega-parcial" class="mt-0.5 rounded text-orange-500 w-4 h-4">
+                        <div>
+                            <span class="block text-xs font-extrabold text-slate-800">Entrega Parcial (Continuar no próximo turno)</span>
+                            <span class="block text-[10px] text-slate-500">Contabiliza as horas de hoje e mantém o saldo restante no topo de amanhã.</span>
+                        </div>
+                    </label>
                 </div>
 
                 <div>
@@ -438,13 +655,13 @@
                         <datalist id="setores-list"></datalist>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Duração</label>
-                        <input id="input-modal-duracao" class="w-full bg-slate-50 border border-slate-300 text-xs rounded-xl p-2.5 outline-none focus:border-orange-500" placeholder="Ex: 45m">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Minutos</label>
+                        <input type="number" id="input-modal-duracao" value="45" class="w-full bg-slate-50 border border-slate-300 text-xs rounded-xl p-2.5 outline-none focus:border-orange-500" placeholder="45">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">Descrição da Atividade</label>
-                    <input id="input-modal-tarefa" class="w-full bg-slate-50 border border-slate-300 text-xs rounded-xl p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Limpeza emergencial pós-evento">
+                    <input id="input-modal-tarefa" class="w-full bg-slate-50 border border-slate-300 text-xs rounded-xl p-2.5 outline-none focus:border-orange-500" placeholder="Ex: Poda da grama amendoim">
                 </div>
                 <button id="btn-criar-extra" onclick="adicionarTarefaExtra()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-sm">
                     Inserir no Cronograma de Hoje
@@ -455,7 +672,7 @@
 
     <script>
         // =========================================================================
-        // 1. CONFIGURAÇÃO OFICIAL DO SUPABASE (NOVA ERA ERP v8.1)
+        // 1. CONFIGURAÇÃO OFICIAL DO SUPABASE (NOVA ERA ERP v8.2)
         // =========================================================================
         const SUPABASE_URL = "https://vocrljiimyknofyhdatg.supabase.co";
         const SUPABASE_KEY = "sb_publishable_o0WnhKjaTBmvfO7Joh6QJA_VzzW_2Zc";
@@ -464,8 +681,8 @@
         const CSV_ATIVIDADES_LEGADO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRN1yS8KhREsbwrhSO8WVWfAZR4dpiiqsi_7POztsYEQ7v1UNxY-LCjO4l-HDr1Yk-cbLfyOAerTsK/pub?gid=1700868305&single=true&output=csv";
 
         window.clientesDB = [];
-        window.colaboradoresDB = [];
-        window.cronogramaDB = [];
+        window.colaboradoresTodosDB = [];
+        window.cronogramaTodosDB = [];
         window.execucoesMesDB = [];
         window.feriadosDB = [];
         window.obsRapidasDB = [];
@@ -474,33 +691,46 @@
 
         let clienteAtivo = localStorage.getItem('novaera_cliente_ativo') || 'Miss Silvia';
         let equipeLogada = JSON.parse(localStorage.getItem('novaera_equipe_logada') || '["Adriano Pastre"]');
-        let tarefasEmAndamento = JSON.parse(localStorage.getItem('novaera_tarefas_andamento') || '{}');
+        let tarefasEmAndamentoLocal = JSON.parse(localStorage.getItem('novaera_tarefas_andamento') || '{}');
         let filaOffline = JSON.parse(localStorage.getItem('novaera_fila_offline') || '[]');
         let hashesConhecidos = new Set(JSON.parse(localStorage.getItem('novaera_hashes_fotos') || '[]'));
 
         let modoChuvaAtivo = false;
         let canalChatAtivo = 'EQUIPE';
         let tabAtual = 'hoje';
+        let subAbaGestaoAtual = 'auditoria';
         let gpsAtual = { lat: null, lng: null, acc: null, distCliente: null, suspeitoFake: false };
 
         function initIcons() { try { if (typeof lucide !== 'undefined') lucide.createIcons(); } catch (e) {} }
         function dataISO(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+        function formatarMinutosStr(min) {
+            const mTotal = Math.max(1, Math.round(Number(min) || 0));
+            const h = Math.floor(mTotal / 60), m = mTotal % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
+        }
 
         function ehFeriado(d) { return window.feriadosDB.includes(dataISO(d)); }
         function diaUtil(d) { return d.getDay() !== 0 && d.getDay() !== 6 && !ehFeriado(d); }
 
-        // Verifica se hoje é Fim de Semana/Feriado SEM liberação do Ramos
+        function proximoDiaUtilISO() {
+            const d = new Date();
+            do { d.setDate(d.getDate() + 1); } while (!diaUtil(d));
+            return dataISO(d);
+        }
+
         function postoBloqueadoHoje() {
             const hoje = new Date();
-            if (diaUtil(hoje)) return false; // Segunda a Sexta (não feriado) é liberado
-            if (window.presencaHojeDB && (window.presencaHojeDB.modo_checkin === 'PLANTAO_AUTORIZADO' || window.presencaHojeDB.status_validacao === 'AUTORIZADO_GESTAO' || window.presencaHojeDB.status_validacao === 'PLANTAO_ATIVO')) {
-                return false; // Ramos/Adriano liberou o plantão!
+            if (diaUtil(hoje)) return false;
+            if (window.presencaHojeDB && ['PLANTAO_AUTORIZADO', 'AUTORIZADO_GESTAO', 'PLANTAO_ATIVO'].includes(window.presencaHojeDB.status_validacao || window.presencaHojeDB.modo_checkin)) {
+                return false;
             }
             return true;
         }
 
         // =========================================================================
-        // 2. GEOFENCING HARVERSINE + DETECTOR DE FAKE GPS (JITTER)
+        // 2. GEOFENCING HARVERSINE + DETECTOR DE FAKE GPS
         // =========================================================================
         function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
@@ -511,10 +741,7 @@
         }
 
         function monitorarGPS() {
-            if (!navigator.geolocation) {
-                document.getElementById('gps-status-text').innerHTML = `<i data-lucide="map-pin-off" class="w-3 h-3 text-red-400"></i> GPS indisponível`;
-                initIcons(); return;
-            }
+            if (!navigator.geolocation) return;
             let ultimaLat = null, ultimaLng = null;
             navigator.geolocation.watchPosition(pos => {
                 const { latitude, longitude, accuracy, altitude } = pos.coords;
@@ -524,7 +751,6 @@
                     if (jitter === 0 && (accuracy === 1 || accuracy === 5 || altitude === 0)) fakeDetectado = true;
                 }
                 ultimaLat = latitude; ultimaLng = longitude;
-
                 gpsAtual.lat = latitude; gpsAtual.lng = longitude;
                 gpsAtual.acc = Math.round(accuracy || 0);
                 gpsAtual.suspeitoFake = fakeDetectado;
@@ -537,13 +763,7 @@
 
                 if (clienteMaisProximo) {
                     gpsAtual.distCliente = menorDist;
-                    if (menorDist <= (clienteMaisProximo.raio_metros || 350) && clienteAtivo !== clienteMaisProximo.nome) {
-                        clienteAtivo = clienteMaisProximo.nome;
-                        localStorage.setItem('novaera_cliente_ativo', clienteAtivo);
-                        document.getElementById('posto-trabalho').value = clienteAtivo;
-                        recalcularTudo();
-                    }
-                    const corGps = menorDist <= 350 ? 'text-emerald-400' : 'text-amber-400';
+                    const corGps = menorDist <= (clienteMaisProximo.raio_metros || 350) ? 'text-emerald-400' : 'text-amber-400';
                     document.getElementById('gps-status-text').innerHTML = `<i data-lucide="locate-fixed" class="w-3 h-3 ${corGps}"></i> ${clienteAtivo} • a ${menorDist}m (±${gpsAtual.acc}m)`;
                     initIcons();
                     validarCheckinSubsoloPendente();
@@ -555,25 +775,28 @@
         }
 
         // =========================================================================
-        // 3. CHECK-IN DE POSTO + TRAVA DE FIM DE SEMANA / PLANTÃO DO RAMOS
+        // 3. ATIVAÇÃO, ENCERRAMENTO DO DIA E ACUMULADOR DE CHUVA INTERMITENTE
         // =========================================================================
+        function calcularMinutosChuvaHoje() {
+            if (!window.presencaHojeDB) return 0;
+            let base = Number(window.presencaHojeDB.minutos_chuva_acumulados) || 0;
+            if (window.presencaHojeDB.modo_chuva_ativo && window.presencaHojeDB.dh_inicio_chuva_atual) {
+                const delta = Math.max(0, Math.round((Date.now() - new Date(window.presencaHojeDB.dh_inicio_chuva_atual).getTime()) / 60000));
+                base += delta;
+            }
+            return base;
+        }
+
         async function registrarPresencaPosto() {
             if (postoBloqueadoHoje()) {
-                alert("🔒 Operação bloqueada em finais de semana e feriados. Solicite a liberação de plantão à Supervisão (Ramos).");
+                alert("🔒 Operação bloqueada em finais de semana e feriados. Solicite liberação à Supervisão (Ramos).");
                 return;
             }
-
             const btn = document.getElementById('btn-checkin-action');
-            btn.disabled = true; btn.textContent = "Registrando...";
+            btn.disabled = true; btn.textContent = "Ativando...";
             const hojeStr = dataISO();
             const noSubsolo = !navigator.onLine || gpsAtual.lat === null;
-            const eraPlantaoAutorizado = window.presencaHojeDB && window.presencaHojeDB.status_validacao === 'AUTORIZADO_GESTAO';
-
-            const statusVal = eraPlantaoAutorizado
-                ? 'PLANTAO_ATIVO'
-                : (noSubsolo ? 'AGUARDANDO_VALIDACAO_SUPERFICIE' : (gpsAtual.suspeitoFake ? 'SINAL_GPS_ATIPICO' : 'VALIDADO'));
-
-            const modoChk = eraPlantaoAutorizado ? 'PLANTAO_AUTORIZADO' : (noSubsolo ? 'SUBSOLO_OFFLINE' : 'SUPERFICIE_GPS');
+            const eraPlantao = window.presencaHojeDB && window.presencaHojeDB.status_validacao === 'AUTORIZADO_GESTAO';
 
             const registro = {
                 data_turno: hojeStr,
@@ -581,57 +804,134 @@
                 equipe_presente: equipeLogada.join(', '),
                 qtd_operadores: equipeLogada.length,
                 ausencias_motivo: document.getElementById('input-ausencia-motivo')?.value || null,
-                modo_checkin: modoChk,
-                status_validacao: statusVal,
+                modo_checkin: eraPlantao ? 'PLANTAO_AUTORIZADO' : (noSubsolo ? 'SUBSOLO_OFFLINE' : 'SUPERFICIE_GPS'),
+                status_validacao: eraPlantao ? 'PLANTAO_ATIVO' : (noSubsolo ? 'AGUARDANDO_VALIDACAO_SUPERFICIE' : 'VALIDADO'),
                 dh_checkin_aparelho: new Date().toISOString(),
                 dh_validacao_superficie: noSubsolo ? null : new Date().toISOString(),
                 lat_validacao: gpsAtual.lat,
                 lng_validacao: gpsAtual.lng,
-                distancia_metros: gpsAtual.distCliente
+                distancia_metros: gpsAtual.distCliente,
+                modo_chuva_ativo: false,
+                minutos_chuva_acumulados: 0
             };
-
-            window.presencaHojeDB = registro;
-            localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(registro));
-            atualizarBannerCheckin();
 
             if (navigator.onLine) {
                 await sb.from('presenca_posto').delete().eq('data_turno', hojeStr).eq('cliente', clienteAtivo);
-                await sb.from('presenca_posto').insert([registro]);
+                const { data } = await sb.from('presenca_posto').insert([registro]).select();
+                window.presencaHojeDB = data?.[0] || registro;
+            } else {
+                window.presencaHojeDB = registro;
+            }
+            localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(window.presencaHojeDB));
+            recalcularTudo();
+        }
+
+        async function encerrarTurnoOperador() {
+            const abertas = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && ['EM_ANDAMENTO', 'PAUSADO'].includes(e.status_execucao));
+            const msg = abertas.length > 0
+                ? `Você possui ${abertas.length} atividade(s) em andamento/pausada. Elas ficarão salvas em Transbordo para amanhã.\n\nDeseja encerrar o expediente do posto hoje?`
+                : `Confirmar o encerramento do expediente de hoje no posto ${clienteAtivo}?`;
+            if (!confirm(msg)) return;
+
+            const agoraISO = new Date().toISOString();
+            const minChuvaFinal = calcularMinutosChuvaHoje();
+            if (window.presencaHojeDB) {
+                window.presencaHojeDB.status_validacao = 'TURNO_ENCERRADO';
+                window.presencaHojeDB.dh_checkout_posto = agoraISO;
+                window.presencaHojeDB.modo_chuva_ativo = false;
+                window.presencaHojeDB.minutos_chuva_acumulados = minChuvaFinal;
+                window.presencaHojeDB.dh_inicio_chuva_atual = null;
+                modoChuvaAtivo = false;
+
+                if (navigator.onLine && window.presencaHojeDB.id) {
+                    await sb.from('presenca_posto').update({
+                        status_validacao: 'TURNO_ENCERRADO',
+                        dh_checkout_posto: agoraISO,
+                        modo_chuva_ativo: false,
+                        minutos_chuva_acumulados: minChuvaFinal,
+                        dh_inicio_chuva_atual: null
+                    }).eq('id', window.presencaHojeDB.id);
+                }
+            }
+            recalcularTudo();
+        }
+
+        async function toggleChuva() {
+            modoChuvaAtivo = !modoChuvaAtivo;
+            const agoraISO = new Date().toISOString();
+
+            if (window.presencaHojeDB) {
+                if (modoChuvaAtivo) {
+                    window.presencaHojeDB.modo_chuva_ativo = true;
+                    window.presencaHojeDB.dh_inicio_chuva_atual = agoraISO;
+                } else {
+                    const totalAcumulado = calcularMinutosChuvaHoje();
+                    window.presencaHojeDB.modo_chuva_ativo = false;
+                    window.presencaHojeDB.minutos_chuva_acumulados = totalAcumulado;
+                    window.presencaHojeDB.dh_inicio_chuva_atual = null;
+                }
+                if (navigator.onLine && window.presencaHojeDB.id) {
+                    await sb.from('presenca_posto').update({
+                        modo_chuva_ativo: window.presencaHojeDB.modo_chuva_ativo,
+                        minutos_chuva_acumulados: window.presencaHojeDB.minutos_chuva_acumulados,
+                        dh_inicio_chuva_atual: window.presencaHojeDB.dh_inicio_chuva_atual
+                    }).eq('id', window.presencaHojeDB.id);
+                }
+            }
+            atualizarVisualBotaoChuva();
+            recalcularTudo();
+        }
+
+        function atualizarVisualBotaoChuva() {
+            const btn = document.getElementById('btn-chuva');
+            const txt = document.getElementById('txt-chuva');
+            const badgeChuva = document.getElementById('chuva-acumulada-badge');
+            const minChuva = calcularMinutosChuvaHoje();
+
+            if (modoChuvaAtivo) {
+                btn.className = "bg-blue-600 text-white px-2.5 py-2 rounded-xl transition-all flex items-center gap-1 text-xs font-bold shadow-sm animate-pulse";
+                txt.textContent = "Chovendo";
+            } else {
+                btn.className = "bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-xl text-slate-600 transition-all flex items-center gap-1 text-xs font-bold";
+                txt.textContent = "Seco";
+            }
+
+            if (minChuva > 0 || modoChuvaAtivo) {
+                badgeChuva.classList.remove('hidden');
+                badgeChuva.textContent = `🌦️ Chuva: ${formatarMinutosStr(minChuva)}`;
+            } else {
+                badgeChuva.classList.add('hidden');
             }
         }
 
-        // Função Exclusiva do Gestor (Ramos/Adriano) para liberar Sábado/Domingo/Feriado
         async function autorizarPlantaoExcepcional() {
             const hojeStr = dataISO();
             const regAutorizacao = {
                 data_turno: hojeStr,
                 cliente: clienteAtivo,
-                equipe_presente: 'Aguardando Equipe (Liberado pela Supervisão)',
+                equipe_presente: 'Aguardando Equipe (Plantão Liberado)',
                 qtd_operadores: 1,
                 modo_checkin: 'PLANTAO_AUTORIZADO',
                 status_validacao: 'AUTORIZADO_GESTAO',
                 dh_checkin_aparelho: new Date().toISOString()
             };
             await sb.from('presenca_posto').delete().eq('data_turno', hojeStr).eq('cliente', clienteAtivo);
-            await sb.from('presenca_posto').insert([regAutorizacao]);
-            window.presencaHojeDB = regAutorizacao;
-            localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(regAutorizacao));
+            const { data } = await sb.from('presenca_posto').insert([regAutorizacao]).select();
+            window.presencaHojeDB = data?.[0] || regAutorizacao;
             recalcularTudo();
-            alert(`🔓 Plantão autorizado hoje para ${clienteAtivo}! O botão de Ativar Posto já está liberado para os operadores.`);
+            alert(`🔓 Plantão autorizado hoje para ${clienteAtivo}!`);
         }
 
-        // Função Exclusiva do Gestor para limpar check-in de teste ou fechar o posto
         async function encerrarOuBloquearPostoHoje() {
             const hojeStr = dataISO();
             await sb.from('presenca_posto').delete().eq('data_turno', hojeStr).eq('cliente', clienteAtivo);
             window.presencaHojeDB = null;
             localStorage.removeItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`);
             recalcularTudo();
-            alert(`🔒 Registros de presença de hoje limpos e posto fechado para ${clienteAtivo}.`);
+            alert(`🔒 Registros de presença de hoje limpos para ${clienteAtivo}.`);
         }
 
         async function validarCheckinSubsoloPendente() {
-            const hojeStr = dataISO();
             const salvo = window.presencaHojeDB;
             if (salvo && salvo.status_validacao === 'AGUARDANDO_VALIDACAO_SUPERFICIE' && gpsAtual.lat !== null && navigator.onLine) {
                 salvo.status_validacao = gpsAtual.suspeitoFake ? 'SINAL_GPS_ATIPICO' : 'VALIDADO';
@@ -639,9 +939,8 @@
                 salvo.lat_validacao = gpsAtual.lat;
                 salvo.lng_validacao = gpsAtual.lng;
                 salvo.distancia_metros = gpsAtual.distCliente;
-                localStorage.setItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`, JSON.stringify(salvo));
+                if (salvo.id) await sb.from('presenca_posto').update(salvo).eq('id', salvo.id);
                 atualizarBannerCheckin();
-                await sb.from('presenca_posto').insert([salvo]);
             }
         }
 
@@ -649,69 +948,74 @@
             const box = document.getElementById('checkin-banner');
             const title = document.getElementById('checkin-title');
             const sub = document.getElementById('checkin-subtitle');
-            const btn = document.getElementById('btn-checkin-action');
+            const btnIn = document.getElementById('btn-checkin-action');
+            const btnOut = document.getElementById('btn-checkout-action');
             const iconBox = document.getElementById('checkin-icon-box');
             const fab = document.getElementById('fab-add');
 
-            // 1. Verificar se hoje é Fim de Semana / Feriado bloqueado
+            btnOut.classList.add('hidden');
+
             if (postoBloqueadoHoje()) {
-                box.className = "mb-3 bg-slate-200/80 border border-slate-300 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                box.className = "mb-3 bg-slate-200/80 border border-slate-300 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-2";
                 iconBox.className = "w-9 h-9 rounded-xl bg-slate-300 text-slate-700 flex items-center justify-center flex-shrink-0";
                 iconBox.innerHTML = `<i data-lucide="lock" class="w-5 h-5"></i>`;
                 title.textContent = "🔒 Posto Fechado (Fim de Semana / Feriado)";
                 sub.textContent = "Ativação restrita à autorização da Supervisão (Ramos)";
-                btn.classList.add('hidden');
+                btnIn.classList.add('hidden');
                 if (fab) fab.classList.add('hidden');
-                initIcons();
-                return;
+                initIcons(); return;
             }
 
             if (fab && tabAtual === 'hoje') fab.classList.remove('hidden');
             const reg = window.presencaHojeDB;
 
-            // 2. Se o Ramos liberou o plantão mas o operador ainda não confirmou chegada
             if (reg && reg.status_validacao === 'AUTORIZADO_GESTAO') {
-                box.className = "mb-3 bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                box.className = "mb-3 bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-2";
                 iconBox.className = "w-9 h-9 rounded-xl bg-amber-200 text-amber-800 flex items-center justify-center flex-shrink-0";
                 iconBox.innerHTML = `<i data-lucide="unlock" class="w-5 h-5"></i>`;
                 title.textContent = "🔓 Plantão Autorizado pela Supervisão";
-                sub.textContent = `Equipe: ${equipeLogada.join(', ')} • Toque ao lado para iniciar`;
-                btn.classList.remove('hidden'); btn.disabled = false; btn.textContent = "Ativar Plantão";
-                initIcons();
-                return;
+                sub.textContent = `Equipe: ${equipeLogada.join(', ')}`;
+                btnIn.classList.remove('hidden'); btnIn.disabled = false; btnIn.textContent = "Ativar Plantão";
+                initIcons(); return;
             }
 
-            // 3. Dia útil normal aguardando ativação
             if (!reg) {
-                box.className = "mb-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                box.className = "mb-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-2";
                 iconBox.className = "w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0";
                 iconBox.innerHTML = `<i data-lucide="radio" class="w-5 h-5"></i>`;
                 title.textContent = "Posto Aguardando Ativação";
                 sub.textContent = `Equipe: ${equipeLogada.join(', ')}`;
-                btn.classList.remove('hidden'); btn.disabled = false; btn.textContent = "Ativar Posto";
-                initIcons();
-                return;
+                btnIn.classList.remove('hidden'); btnIn.disabled = false; btnIn.textContent = "Ativar Posto";
+                initIcons(); return;
             }
 
-            // 4. Posto já ativo
-            const hora = new Date(reg.dh_checkin_aparelho).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            btn.classList.add('hidden');
-            if (reg.status_validacao === 'AGUARDANDO_VALIDACAO_SUPERFICIE') {
-                box.className = "mb-3 bg-amber-50 border border-amber-200 rounded-2xl p-3 shadow-sm flex items-center justify-between";
-                iconBox.className = "w-9 h-9 rounded-xl bg-amber-200 text-amber-800 flex items-center justify-center flex-shrink-0";
-                title.textContent = `Check-in Subsolo (-2) às ${hora}`;
-                sub.textContent = "Aguardando subida ao térreo para validação GPS";
+            const horaIn = new Date(reg.dh_checkin_aparelho).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            btnIn.classList.add('hidden');
+
+            if (reg.status_validacao === 'TURNO_ENCERRADO') {
+                const horaOut = reg.dh_checkout_posto ? new Date(reg.dh_checkout_posto).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+                box.className = "mb-3 bg-slate-800 text-white border border-slate-700 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-2";
+                iconBox.className = "w-9 h-9 rounded-xl bg-slate-700 text-emerald-400 flex items-center justify-center flex-shrink-0";
+                iconBox.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i>`;
+                title.className = "text-xs font-bold text-white truncate";
+                title.textContent = `🏁 Expediente Encerrado (${horaIn} às ${horaOut})`;
+                sub.className = "text-[11px] text-slate-300 truncate";
+                sub.textContent = `Equipe: ${reg.equipe_presente}`;
             } else {
-                box.className = "mb-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-3 shadow-sm flex items-center justify-between";
+                box.className = "mb-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-2";
                 iconBox.className = "w-9 h-9 rounded-xl bg-emerald-200 text-emerald-800 flex items-center justify-center flex-shrink-0";
-                title.textContent = `🟢 Posto Ativo desde ${hora}`;
+                iconBox.innerHTML = `<i data-lucide="radio" class="w-5 h-5"></i>`;
+                title.className = "text-xs font-bold text-slate-800 truncate";
+                title.textContent = `🟢 Posto Ativo desde ${horaIn}`;
+                sub.className = "text-[11px] text-slate-600 truncate";
                 sub.textContent = `Operando: ${reg.equipe_presente}`;
+                btnOut.classList.remove('hidden');
             }
             initIcons();
         }
 
         // =========================================================================
-        // 4. CARREGAMENTO DO SUPABASE E MOTOR DE AGENDAMENTO (TETO RÍGIDO 6.0H)
+        // 4. CARREGAMENTO DO SUPABASE E MOTOR DE AGENDAMENTO + TRANSBORDO
         // =========================================================================
         async function carregarDadosSupabase() {
             document.getElementById('loader-tasks').classList.remove('hidden');
@@ -719,9 +1023,9 @@
                 const hojeStr = dataISO();
                 const inicioMes = dataISO(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
                 const [resCli, resColab, resCrono, resExec, resFer, resObs, resPres] = await Promise.all([
-                    sb.from('clientes').select('*').eq('ativo', true),
-                    sb.from('colaboradores').select('*').eq('ativo', true),
-                    sb.from('cronograma_mestre').select('*').eq('ativo', true),
+                    sb.from('clientes').select('*').order('nome', { ascending: true }),
+                    sb.from('colaboradores').select('*').order('nome', { ascending: true }),
+                    sb.from('cronograma_mestre').select('*').order('prioridade', { ascending: true }),
                     sb.from('execucoes_auditoria').select('*').gte('data_referencia', inicioMes).order('dh_envio_servidor', { ascending: false }),
                     sb.from('feriados_config').select('*'),
                     sb.from('obs_rapidas').select('*').order('ordem', { ascending: true }),
@@ -729,23 +1033,22 @@
                 ]);
 
                 if (resCli.data) window.clientesDB = resCli.data;
-                if (resColab.data) window.colaboradoresDB = resColab.data;
-                if (resCrono.data) window.cronogramaDB = resCrono.data;
+                if (resColab.data) window.colaboradoresTodosDB = resColab.data;
+                if (resCrono.data) window.cronogramaTodosDB = resCrono.data;
                 if (resExec.data) window.execucoesMesDB = resExec.data;
                 if (resFer.data) window.feriadosDB = resFer.data.map(f => f.data_feriado);
                 if (resObs.data) window.obsRapidasDB = resObs.data;
 
                 window.presencaHojeDB = (resPres.data && resPres.data.length > 0) ? resPres.data[0] : null;
-                if (!window.presencaHojeDB) {
-                    localStorage.removeItem(`novaera_checkin_${hojeStr}_${clienteAtivo}`);
-                }
+                modoChuvaAtivo = Boolean(window.presencaHojeDB?.modo_chuva_ativo);
 
                 popularMenusIniciais();
+                atualizarVisualBotaoChuva();
                 recalcularTudo();
                 monitorarGPS();
                 iniciarRealtimeSupabase();
             } catch (err) {
-                console.error("Modo Offline ou falha de rede:", err);
+                console.error("Modo Offline ou falha:", err);
                 recalcularTudo();
             } finally {
                 document.getElementById('loader-tasks').classList.add('hidden');
@@ -753,10 +1056,21 @@
         }
 
         function popularMenusIniciais() {
+            const clientesAtivos = window.clientesDB.filter(c => c.ativo !== false);
             const selPosto = document.getElementById('posto-trabalho');
-            if (window.clientesDB.length > 0) {
-                selPosto.innerHTML = window.clientesDB.map(c => `<option value="${c.nome}" ${c.nome === clienteAtivo ? 'selected' : ''}>${c.nome}</option>`).join('');
+            const selColabPosto = document.getElementById('novo-colab-posto');
+            if (clientesAtivos.length > 0) {
+                const opts = clientesAtivos.map(c => `<option value="${c.nome}" ${c.nome === clienteAtivo ? 'selected' : ''}>${c.nome}</option>`).join('');
+                selPosto.innerHTML = opts;
+                if (selColabPosto) selColabPosto.innerHTML = opts;
             }
+
+            // Filtra apenas colaboradores ATIVOS e alocados neste cliente (ou Gestores/Supervisores)
+            const colabsAtivosPosto = window.colaboradoresTodosDB.filter(c => c.ativo !== false && (!c.cliente_padrao || c.cliente_padrao === clienteAtivo || c.perfil !== 'OPERADOR'));
+            const nomesValidos = colabsAtivosPosto.map(c => c.nome);
+            equipeLogada = equipeLogada.filter(n => nomesValidos.includes(n));
+            if (equipeLogada.length === 0 && nomesValidos.length > 0) equipeLogada = [nomesValidos[0]];
+
             document.getElementById('header-team-text').textContent = equipeLogada.length === 1 ? equipeLogada[0].split(' ')[0] : `${equipeLogada[0].split(' ')[0]} +${equipeLogada.length - 1}`;
 
             const chipsBox = document.getElementById('chips-obs-rapidas');
@@ -764,13 +1078,18 @@
                 chipsBox.innerHTML = window.obsRapidasDB.map(o => `<button type="button" onclick="document.getElementById('obs-input').value='${o.texto}'" class="text-[10px] font-semibold bg-slate-100 hover:bg-orange-100 hover:text-orange-800 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors">${o.texto}</button>`).join('');
             }
 
-            const colabs = window.colaboradoresDB.length > 0 ? window.colaboradoresDB : [{ nome: 'Adriano Pastre' }, { nome: 'Edinei' }, { nome: 'Ramos' }];
-            document.getElementById('team-checkboxes-view').innerHTML = colabs.map(c => {
+            document.getElementById('team-checkboxes-view').innerHTML = colabsAtivosPosto.map(c => {
                 const checked = equipeLogada.includes(c.nome) ? 'checked' : '';
-                return `<label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50"><input type="checkbox" value="${c.nome}" ${checked} class="w-4 h-4 text-orange-500 rounded"><span class="text-xs font-bold text-slate-800">${c.nome}</span></label>`;
+                return `<label class="flex items-center justify-between p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" value="${c.nome}" ${checked} class="w-4 h-4 text-orange-500 rounded">
+                        <span class="text-xs font-bold text-slate-800">${c.nome}</span>
+                    </div>
+                    <span class="text-[10px] font-semibold text-slate-400">${c.perfil}</span>
+                </label>`;
             }).join('');
 
-            document.getElementById('executors-checkboxes').innerHTML = colabs.map(c => {
+            document.getElementById('executors-checkboxes').innerHTML = colabsAtivosPosto.map(c => {
                 const checked = equipeLogada.includes(c.nome) ? 'checked' : '';
                 return `<label class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-xl cursor-pointer"><input type="checkbox" value="${c.nome}" ${checked} class="w-3.5 h-3.5 text-orange-500 rounded"><span class="text-xs font-bold text-slate-700">${c.nome}</span></label>`;
             }).join('');
@@ -789,16 +1108,10 @@
             return false;
         }
 
-        function formatarMinutosStr(min) {
-            const h = Math.floor(min / 60), m = min % 60;
-            if (h > 0 && m > 0) return `${h}h ${m}m`;
-            if (h > 0) return `${h}h`;
-            return `${m}m`;
-        }
-
         function projetarMatrizMensal() {
             window.agendaProjetada = {};
             const agora = new Date();
+            const hojeStr = dataISO(agora);
             const ano = agora.getFullYear(), mes = agora.getMonth();
             const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
             const diasUteisMes = [];
@@ -812,19 +1125,30 @@
             }
 
             const cliObj = window.clientesDB.find(c => c.nome === clienteAtivo);
-            const LIMITE_DIARIO = (cliObj ? Number(cliObj.teto_diario_horas) : 6) * 60; // 360 min (6.0h)
-            const tarefasCliente = window.cronogramaDB.filter(t => t.cliente === clienteAtivo);
+            const LIMITE_DIARIO = (cliObj ? Number(cliObj.teto_diario_horas) : 6) * 60;
+            const tarefasCliente = window.cronogramaTodosDB.filter(t => t.cliente === clienteAtivo && t.ativo !== false);
 
-            // 1. Alocar tarefas fixas e com Data Alvo (mesmo em sábado se tiver data_alvo de plantão)
+            // 0. TRANSBORDO AUTOMÁTICO: Tarefas manuais/data_alvo de dias anteriores não concluídas ou execuções abertas
+            tarefasCliente.forEach(t => {
+                if (t.data_alvo && t.data_alvo < hojeStr) {
+                    const foiConcluida = window.execucoesMesDB.some(e => e.cliente === clienteAtivo && e.status_execucao === 'CONCLUIDO' && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade)));
+                    if (!foiConcluida && window.agendaProjetada[hojeStr]) {
+                        window.agendaProjetada[hojeStr].tarefas.push({ ...t, is_transbordo: true, prioridade: 0 });
+                        window.agendaProjetada[hojeStr].minutos += (Number(t.duracao_minutos) || 30);
+                    }
+                }
+            });
+
+            // 1. Alocar tarefas fixas e com Data Alvo de hoje/futuro
             tarefasCliente.forEach(t => {
                 const f = (t.frequencia || '').toLowerCase();
                 const isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral');
                 const minT = Number(t.duracao_minutos) || 30;
 
-                if (t.data_alvo && window.agendaProjetada[t.data_alvo]) {
+                if (t.data_alvo && t.data_alvo >= hojeStr && window.agendaProjetada[t.data_alvo]) {
                     window.agendaProjetada[t.data_alvo].tarefas.push({ ...t });
                     window.agendaProjetada[t.data_alvo].minutos += minT;
-                } else if (!isFlutuante) {
+                } else if (!t.data_alvo && !isFlutuante) {
                     diasUteisMes.forEach(dStr => {
                         const dObj = window.agendaProjetada[dStr].data;
                         if (diaCorrespondeFrequencia(f, dObj.getDay())) {
@@ -835,10 +1159,8 @@
                 }
             });
 
-            // 2. Alocar tarefas flutuantes e fatiadas respeitando o TETO RÍGIDO DE 6.0H (360 min)
-            const hojeStr = dataISO(agora);
+            // 2. Alocar tarefas flutuantes e fatiadas respeitando o TETO RÍGIDO
             const diasUteisFuturosOuHoje = diasUteisMes.filter(dStr => dStr >= hojeStr);
-
             tarefasCliente.forEach(t => {
                 if (t.data_alvo) return;
                 const f = (t.frequencia || '').toLowerCase();
@@ -846,28 +1168,25 @@
                 if (!isFlutuante) return;
 
                 const minTotalMes = Number(t.duracao_minutos) || 60;
-                const execsDestaTarefa = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade.startsWith(t.atividade))));
+                const execsDestaTarefa = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && e.status_execucao === 'CONCLUIDO' && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade.startsWith(t.atividade))));
                 const minJaRealizados = execsDestaTarefa.reduce((acc, cur) => acc + (Number(cur.duracao_real_min) || 0), 0);
                 let minRestantes = Math.max(0, minTotalMes - minJaRealizados);
-
                 if (minRestantes === 0) return;
 
                 const fatiaIdeal = minTotalMes > 240 ? 120 : minRestantes;
-                let segurançaLoop = 0;
+                let guard = 0;
+                while (minRestantes > 0 && diasUteisFuturosOuHoje.length > 0 && guard < 45) {
+                    guard++;
+                    const candidatos = diasUteisFuturosOuHoje.filter(dStr => (LIMITE_DIARIO - window.agendaProjetada[dStr].minutos) >= 15);
+                    if (candidatos.length === 0) break;
 
-                while (minRestantes > 0 && diasUteisFuturosOuHoje.length > 0 && segurançaLoop < 45) {
-                    segurançaLoop++;
-                    // Procura o dia útil com mais espaço livre abaixo do teto de 360 min
-                    let candidatosComFolga = diasUteisFuturosOuHoje.filter(dStr => (LIMITE_DIARIO - window.agendaProjetada[dStr].minutos) >= 15);
-                    if (candidatosComFolga.length === 0) break; // Todos os dias úteis do mês já cravaram 6.0h!
-
-                    let melhorDia = candidatosComFolga[0];
-                    candidatosComFolga.forEach(dStr => {
+                    let melhorDia = candidatos[0];
+                    candidatos.forEach(dStr => {
                         if (window.agendaProjetada[dStr].minutos < window.agendaProjetada[melhorDia].minutos) melhorDia = dStr;
                     });
 
-                    const espacoLivreNoDia = LIMITE_DIARIO - window.agendaProjetada[melhorDia].minutos;
-                    const alocar = Math.min(minRestantes, fatiaIdeal, espacoLivreNoDia);
+                    const espacoLivre = LIMITE_DIARIO - window.agendaProjetada[melhorDia].minutos;
+                    const alocar = Math.min(minRestantes, fatiaIdeal, espacoLivre);
 
                     window.agendaProjetada[melhorDia].tarefas.push({
                         ...t,
@@ -881,13 +1200,34 @@
                 }
             });
 
-            // 3. Ordenar por Prioridade (1 = VIP Manhã) e aplicar Modo Chuva
+            // 3. Garantir que qualquer tarefa iniciada em dias anteriores e ainda EM_ANDAMENTO / PAUSADO apareça hoje
+            const abertasAntigas = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && ['EM_ANDAMENTO', 'PAUSADO'].includes(e.status_execucao));
+            abertasAntigas.forEach(execAberta => {
+                if (!window.agendaProjetada[hojeStr]) return;
+                const jaEstaNaListaHoje = window.agendaProjetada[hojeStr].tarefas.some(t => t.id === execAberta.tarefa_id || (t.setor === execAberta.setor && t.atividade === execAberta.atividade));
+                if (!jaEstaNaListaHoje) {
+                    window.agendaProjetada[hojeStr].tarefas.unshift({
+                        id: execAberta.tarefa_id,
+                        cliente: clienteAtivo,
+                        setor: execAberta.setor,
+                        atividade: execAberta.atividade,
+                        frequencia: 'Em Curso',
+                        duracao_minutos: execAberta.duracao_estimada_min || 45,
+                        duracao_str: formatarMinutosStr(execAberta.duracao_estimada_min || 45),
+                        permite_chuva: true,
+                        prioridade: 0,
+                        is_transbordo: true
+                    });
+                }
+            });
+
+            // 4. Ordenar por Prioridade e aplicar filtro de Chuva
             Object.keys(window.agendaProjetada).forEach(dStr => {
                 let lista = window.agendaProjetada[dStr].tarefas;
                 if (dStr === hojeStr && modoChuvaAtivo) {
-                    lista = lista.filter(t => t.permite_chuva !== false);
+                    lista = lista.filter(t => t.permite_chuva !== false || t.is_transbordo);
                 }
-                lista.sort((a, b) => (a.prioridade || 2) - (b.prioridade || 2));
+                lista.sort((a, b) => (a.prioridade ?? 2) - (b.prioridade ?? 2));
                 window.agendaProjetada[dStr].tarefas = lista;
                 window.agendaProjetada[dStr].minutos = lista.reduce((acc, cur) => acc + (Number(cur.duracao_minutos) || 0), 0);
             });
@@ -903,7 +1243,7 @@
         }
 
         // =========================================================================
-        // 5. RENDERIZAÇÃO DOS CARTÕES E MÁQUINA DE ESTADOS
+        // 5. RENDERIZAÇÃO DOS CARTÕES (COM PAUSA / RETOMADA / TRANSBORDO AO VIVO)
         // =========================================================================
         function renderizarTarefasHoje() {
             const container = document.getElementById('task-container');
@@ -915,19 +1255,22 @@
             const diaAgenda = window.agendaProjetada[hojeStr] || { tarefas: [], minutos: 0 };
             const tarefasHoje = bloqueado ? [] : diaAgenda.tarefas;
 
-            const execsHoje = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && e.data_referencia === hojeStr);
+            const execsCliente = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo);
             const totalDia = tarefasHoje.length;
             let concluidasCount = 0;
 
             let html = '';
             tarefasHoje.forEach((t, idx) => {
                 const chaveUnica = `${t.id || idx}_${t.setor}_${t.atividade}`;
-                const jaConcluida = execsHoje.find(e => e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade));
-                const emAndamento = tarefasEmAndamento[chaveUnica];
 
-                if (jaConcluida) concluidasCount++;
+                // Procura registro no banco (Em Andamento, Pausado ou Concluído hoje)
+                const regAtivoBanco = execsCliente.find(e => ['EM_ANDAMENTO', 'PAUSADO'].includes(e.status_execucao) && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade)));
+                const regConcluidoHoje = execsCliente.find(e => e.status_execucao === 'CONCLUIDO' && e.data_referencia === hojeStr && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade)));
+                const emAndamentoLocal = tarefasEmAndamentoLocal[chaveUnica];
 
-                const bordaPrio = t.prioridade === 1 ? 'border-l-4 border-l-orange-500' : '';
+                if (regConcluidoHoje) concluidasCount++;
+
+                const badgeTransbordo = t.is_transbordo ? `<span class="text-[9px] font-extrabold bg-red-100 text-red-800 px-1.5 py-0.5 rounded uppercase border border-red-200">🔄 Em Curso / Transbordo</span>` : '';
                 const badgePrio = t.prioridade === 1 ? `<span class="text-[9px] font-extrabold bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded uppercase">Prioridade Manhã</span>` : '';
                 const badgeChuva = t.permite_chuva === false ? `<span class="text-[9px] font-bold bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded border border-sky-200">☀️ Tempo Seco</span>` : '';
 
@@ -946,40 +1289,87 @@
                         </div>`;
                 }
 
-                if (jaConcluida) {
+                // ESTADO 1: CONCLUÍDA HOJE
+                if (regConcluidoHoje) {
+                    const tagParcial = regConcluidoHoje.entrega_parcial ? `<span class="text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">Entrega Parcial</span>` : '';
                     html += `
                     <div class="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200 shadow-sm opacity-90">
                         <div class="flex justify-between items-start mb-1.5">
-                            <span class="text-xs font-extrabold text-emerald-900 bg-emerald-200/70 px-2 py-0.5 rounded-lg">${t.setor}</span>
-                            <span class="text-[10px] font-extrabold text-emerald-800 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Concluído (${jaConcluida.duracao_real_min}m)</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-extrabold text-emerald-900 bg-emerald-200/70 px-2 py-0.5 rounded-lg">${t.setor}</span>
+                                ${tagParcial}
+                            </div>
+                            <span class="text-[10px] font-extrabold text-emerald-800 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Concluído (${regConcluidoHoje.duracao_real_min}m líq.)</span>
                         </div>
                         <h3 class="text-sm font-bold text-slate-600 line-through">${t.atividade}</h3>
-                        <p class="text-[11px] text-slate-500 mt-1 italic">"${jaConcluida.observacao}"</p>
+                        <p class="text-[11px] text-slate-500 mt-1 italic">"${regConcluidoHoje.observacao}"</p>
                     </div>`;
-                } else if (emAndamento) {
-                    const horaIni = new Date(emAndamento.dh_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                }
+                // ESTADO 2: PAUSADA (ALMOÇO / ALTO FLUXO / CHUVA)
+                else if (regAtivoBanco && regAtivoBanco.status_execucao === 'PAUSADO') {
+                    const horaPausa = regAtivoBanco.dh_inicio_pausa ? new Date(regAtivoBanco.dh_inicio_pausa).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
                     html += `
-                    <div class="bg-orange-50/90 rounded-2xl p-4 border-2 border-orange-300 shadow-sm">
+                    <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-300 shadow-sm">
                         <div class="flex justify-between items-start mb-1.5">
-                            <span class="text-xs font-extrabold text-orange-900 bg-orange-200/80 px-2 py-0.5 rounded-lg">${t.setor}</span>
-                            <span class="text-[10px] font-extrabold bg-orange-500 text-white px-2 py-0.5 rounded-full animate-pulse">Em Andamento (${horaIni})</span>
+                            <span class="text-xs font-extrabold text-amber-950 bg-amber-200 px-2 py-0.5 rounded-lg">${t.setor}</span>
+                            <span class="text-[10px] font-extrabold bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                ⏸️ Pausado (${horaPausa})
+                            </span>
                         </div>
                         <h3 class="text-sm font-extrabold text-slate-900">${t.atividade}</h3>
-                        ${barraFatiadaHtml}
-                        <div class="flex items-center gap-3 mt-3">
-                            <img src="${emAndamento.foto_antes}" class="w-14 h-14 rounded-xl object-cover border border-orange-300 flex-shrink-0">
-                            <button onclick='abrirModalConclusao(${JSON.stringify(t).replace(/'/g, "&apos;")}, "${chaveUnica}")' class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm">
-                                <i data-lucide="check-square" class="w-4 h-4"></i> Concluir Atividade
+                        <p class="text-[11px] font-semibold text-amber-800 mt-1">Motivo: ${regAtivoBanco.motivo_pausa || 'Intervalo'}</p>
+                        <div class="flex items-center gap-2 mt-3">
+                            ${regAtivoBanco.foto_antes_url ? `<img src="${regAtivoBanco.foto_antes_url}" class="w-12 h-12 rounded-xl object-cover border border-amber-300 flex-shrink-0">` : ''}
+                            <button onclick="retomarTarefaPausada(${regAtivoBanco.id})" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                                <i data-lucide="play" class="w-4 h-4 text-emerald-400"></i> Retomar Atividade
+                            </button>
+                            <button onclick='abrirModalConclusao(${JSON.stringify(t).replace(/'/g, "&apos;")}, "${chaveUnica}", ${regAtivoBanco.id})' class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl text-xs">
+                                Concluir
                             </button>
                         </div>
                     </div>`;
-                } else {
+                }
+                // ESTADO 3: EM ANDAMENTO (NO BANCO OU LOCAL)
+                else if (regAtivoBanco || emAndamentoLocal) {
+                    const dhIni = regAtivoBanco ? regAtivoBanco.dh_inicio_tarefa : emAndamentoLocal.dh_inicio;
+                    const fotoA = regAtivoBanco ? regAtivoBanco.foto_antes_url : emAndamentoLocal.foto_antes;
+                    const idBanco = regAtivoBanco ? regAtivoBanco.id : 'null';
+                    const minPausaAcum = regAtivoBanco ? (Number(regAtivoBanco.minutos_pausa_descontados) || 0) : 0;
+                    const horaIni = new Date(dhIni).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                    html += `
+                    <div class="bg-orange-50/90 rounded-2xl p-4 border-2 border-orange-300 shadow-sm">
+                        <div class="flex justify-between items-start mb-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-extrabold text-orange-900 bg-orange-200/80 px-2 py-0.5 rounded-lg">${t.setor}</span>
+                                ${badgeTransbordo}
+                            </div>
+                            <span class="text-[10px] font-extrabold bg-orange-500 text-white px-2 py-0.5 rounded-full animate-pulse">🟠 Em Execução (${horaIni})</span>
+                        </div>
+                        <h3 class="text-sm font-extrabold text-slate-900">${t.atividade}</h3>
+                        ${minPausaAcum > 0 ? `<p class="text-[10px] font-bold text-slate-500 mt-0.5">⏱️ Pausa já descontada: ${minPausaAcum}m</p>` : ''}
+                        ${barraFatiadaHtml}
+                        <div class="flex items-center gap-2 mt-3">
+                            ${fotoA ? `<img src="${fotoA}" class="w-12 h-12 rounded-xl object-cover border border-orange-300 flex-shrink-0">` : ''}
+                            ${regAtivoBanco ? `
+                            <button onclick="abrirModalPausa(${regAtivoBanco.id})" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold py-2.5 px-3 rounded-xl text-xs flex items-center gap-1">
+                                <i data-lucide="pause" class="w-3.5 h-3.5"></i> Pausar
+                            </button>` : ''}
+                            <button onclick='abrirModalConclusao(${JSON.stringify(t).replace(/'/g, "&apos;")}, "${chaveUnica}", ${idBanco})' class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                                <i data-lucide="check-square" class="w-4 h-4"></i> Concluir
+                            </button>
+                        </div>
+                    </div>`;
+                }
+                // ESTADO 4: PENDENTE PARA INICIAR
+                else {
+                    const bordaPrio = t.prioridade === 1 ? 'border-l-4 border-l-orange-500' : '';
                     html += `
                     <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm ${bordaPrio}">
                         <div class="flex justify-between items-start mb-1.5">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-xs font-extrabold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-lg">${t.setor}</span>
-                                ${badgePrio} ${badgeChuva}
+                                ${badgeTransbordo} ${badgePrio} ${badgeChuva}
                             </div>
                             <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${t.duracao_str}</span>
                         </div>
@@ -998,11 +1388,13 @@
                 }
             });
 
+            const cliObj = window.clientesDB.find(c => c.nome === clienteAtivo);
+            const tetoH = cliObj ? Number(cliObj.teto_diario_horas) : 6;
             const pctDia = totalDia > 0 ? Math.round((concluidasCount / totalDia) * 100) : 0;
             document.getElementById('progresso-texto').textContent = `${concluidasCount} de ${totalDia} atividades concluídas`;
             document.getElementById('progresso-barra').style.width = `${pctDia}%`;
             const horasAlocadas = (diaAgenda.minutos / 60).toFixed(1).replace('.0', '');
-            document.getElementById('carga-hoje-badge').textContent = `${horasAlocadas}h / 6h`;
+            document.getElementById('carga-hoje-badge').textContent = `${horasAlocadas}h / ${tetoH}h`;
 
             if (totalDia === 0) {
                 container.classList.add('hidden');
@@ -1018,10 +1410,53 @@
         }
 
         // =========================================================================
-        // 6. CÂMERA TÁTICA, MARCA D'ÁGUA NOS PIXELS E VALIDADOR EXIF + CAIXA-PRETA
+        // 6. PAUSAR / RETOMAR TAREFA E GRAVAÇÃO AO VIVO NO SUPABASE
+        // =========================================================================
+        let idExecucaoParaPausa = null;
+        function abrirModalPausa(execId) {
+            idExecucaoParaPausa = execId;
+            document.getElementById('pause-modal').classList.remove('hidden');
+            initIcons();
+        }
+        function fecharModalPausa() {
+            idExecucaoParaPausa = null;
+            document.getElementById('pause-modal').classList.add('hidden');
+        }
+        async function confirmarPausaTarefa() {
+            if (!idExecucaoParaPausa) return;
+            const motivo = document.getElementById('select-motivo-pausa').value;
+            const agoraISO = new Date().toISOString();
+            await sb.from('execucoes_auditoria').update({
+                status_execucao: 'PAUSADO',
+                motivo_pausa: motivo,
+                dh_inicio_pausa: agoraISO
+            }).eq('id', idExecucaoParaPausa);
+            fecharModalPausa();
+            carregarDadosSupabase();
+        }
+
+        async function retomarTarefaPausada(execId) {
+            const reg = window.execucoesMesDB.find(e => e.id === execId);
+            let minPausaSomar = 0;
+            if (reg && reg.dh_inicio_pausa) {
+                minPausaSomar = Math.max(1, Math.round((Date.now() - new Date(reg.dh_inicio_pausa).getTime()) / 60000));
+            }
+            const novoTotalPausa = (Number(reg?.minutos_pausa_descontados) || 0) + minPausaSomar;
+            await sb.from('execucoes_auditoria').update({
+                status_execucao: 'EM_ANDAMENTO',
+                motivo_pausa: null,
+                dh_inicio_pausa: null,
+                minutos_pausa_descontados: novoTotalPausa
+            }).eq('id', execId);
+            carregarDadosSupabase();
+        }
+
+        // =========================================================================
+        // 7. CÂMERA TÁTICA, MARCA D'ÁGUA, EXIF E FECHAMENTO (PARCIAL OU TOTAL)
         // =========================================================================
         let tarefaSelecionadaObj = null;
         let chaveTarefaAtiva = null;
+        let idExecucaoBancoAtiva = null;
         let etapaCaptura = 'antes';
         let origemCaptura = 'CAMERA_APP';
         let dadosFotoDepois = null;
@@ -1096,6 +1531,16 @@
             });
         }
 
+        async function uploadBase64Storage(base64Str, prefixo) {
+            const res = await fetch(base64Str);
+            const blob = await res.blob();
+            const fileName = `${clienteAtivo.replace(/\s+/g, '_')}/${dataISO()}_${prefixo}_${Date.now()}.jpg`;
+            const { error } = await sb.storage.from('auditoria-fotos').upload(fileName, blob, { contentType: 'image/jpeg' });
+            if (error) throw error;
+            const { data } = sb.storage.from('auditoria-fotos').getPublicUrl(fileName);
+            return data.publicUrl;
+        }
+
         async function processarArquivoImagem(file, origem) {
             if (!file) return;
             const hash = await calcularHashSHA256(file);
@@ -1113,7 +1558,7 @@
                 try { exif = await exifr.parse(file); } catch (e) {}
 
                 if (!exif || (!exif.DateTimeOriginal && !exif.CreateDate)) {
-                    await registrarRejeicaoSilenciosa('METADADO_AUSENTE_WHATSAPP', `Arquivo: ${file.name} (${file.size} bytes) sem cabeçalho EXIF DateTimeOriginal`, null);
+                    await registrarRejeicaoSilenciosa('METADADO_AUSENTE_WHATSAPP', `Arquivo: ${file.name} sem cabeçalho EXIF DateTimeOriginal`, null);
                     return;
                 }
 
@@ -1134,14 +1579,42 @@
             const base64Carimbado = await estamparMarcaDagua(file, rodapeWatermark);
 
             if (etapaCaptura === 'antes') {
-                tarefasEmAndamento[chaveTarefaAtiva] = {
+                hashesConhecidos.add(hash);
+                localStorage.setItem('novaera_hashes_fotos', JSON.stringify(Array.from(hashesConhecidos)));
+
+                // Grava IMEDIATAMENTE como EM_ANDAMENTO no Supabase para aparecer ao vivo na tela da Joelma!
+                if (navigator.onLine) {
+                    try {
+                        const urlAntes = await uploadBase64Storage(base64Carimbado, 'ANTES');
+                        const payloadInicio = {
+                            tarefa_id: tarefaSelecionadaObj.id || null,
+                            data_referencia: dataISO(),
+                            cliente: clienteAtivo,
+                            setor: tarefaSelecionadaObj.setor,
+                            atividade: tarefaSelecionadaObj.atividade,
+                            equipe_executora: equipeLogada.join(', '),
+                            registrado_por: equipeLogada[0] || 'Operador',
+                            observacao: 'Atividade em andamento...',
+                            foto_antes_url: urlAntes,
+                            dh_inicio_tarefa: dhCapturaExif.toISOString(),
+                            duracao_estimada_min: Number(tarefaSelecionadaObj.duracao_minutos) || 30,
+                            status_execucao: 'EM_ANDAMENTO',
+                            minutos_pausa_descontados: 0,
+                            flag_auditoria: 'CONFORME'
+                        };
+                        await sb.from('execucoes_auditoria').insert([payloadInicio]);
+                        await carregarDadosSupabase();
+                        return;
+                    } catch (e) { console.warn("Fallback local ativado no Antes:", e); }
+                }
+
+                // Fallback caso esteja no Subsolo -2 sem sinal na hora do Antes
+                tarefasEmAndamentoLocal[chaveTarefaAtiva] = {
                     dh_inicio: dhCapturaExif.toISOString(),
                     foto_antes: base64Carimbado,
                     origem_antes: origem
                 };
-                localStorage.setItem('novaera_tarefas_andamento', JSON.stringify(tarefasEmAndamento));
-                hashesConhecidos.add(hash);
-                localStorage.setItem('novaera_hashes_fotos', JSON.stringify(Array.from(hashesConhecidos)));
+                localStorage.setItem('novaera_tarefas_andamento', JSON.stringify(tarefasEmAndamentoLocal));
                 renderizarTarefasHoje();
             } else {
                 dadosFotoDepois = {
@@ -1153,7 +1626,7 @@
                 };
                 document.getElementById('preview-container').classList.remove('hidden');
                 document.getElementById('foto-preview').src = base64Carimbado;
-                document.getElementById('badge-origem-foto').textContent = origem === 'CAMERA_APP' ? 'CÂMERA AO VIVO' : `EXIF: ${ dhCapturaExif.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) }`;
+                document.getElementById('badge-origem-foto').textContent = origem === 'CAMERA_APP' ? 'CÂMERA AO VIVO' : `EXIF: ${dhCapturaExif.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
                 if (origem === 'GALERIA_EXIF') document.getElementById('box-contingencia').classList.remove('hidden');
                 else document.getElementById('box-contingencia').classList.add('hidden');
             }
@@ -1162,14 +1635,16 @@
         document.getElementById('camera-live-input').addEventListener('change', e => { processarArquivoImagem(e.target.files[0], 'CAMERA_APP'); e.target.value = ''; });
         document.getElementById('gallery-exif-input').addEventListener('change', e => { processarArquivoImagem(e.target.files[0], 'GALERIA_EXIF'); e.target.value = ''; });
 
-        function abrirModalConclusao(tarefaObj, chave) {
+        function abrirModalConclusao(tarefaObj, chave, idBanco) {
             tarefaSelecionadaObj = tarefaObj;
             chaveTarefaAtiva = chave;
+            idExecucaoBancoAtiva = idBanco || null;
             dadosFotoDepois = null;
             document.getElementById('modal-task-title').textContent = tarefaObj.atividade;
             document.getElementById('modal-setor-title').textContent = `${tarefaObj.setor} • Estimado: ${tarefaObj.duracao_str}`;
             document.getElementById('preview-container').classList.add('hidden');
             document.getElementById('box-contingencia').classList.add('hidden');
+            document.getElementById('chk-entrega-parcial').checked = false;
             document.getElementById('obs-input').value = '';
 
             if (tarefaObj.total_mes_min && tarefaObj.total_mes_min > 180) {
@@ -1186,19 +1661,6 @@
         function setMinutosParciais(m) { document.getElementById('input-minutos-parciais').value = m; }
         function closeConclusionModal() { document.getElementById('conclusion-modal').classList.add('hidden'); }
 
-        // =========================================================================
-        // 7. UPLOAD SUPABASE STORAGE E GRAVAÇÃO DE AUDITORIA
-        // =========================================================================
-        async function uploadBase64Storage(base64Str, prefixo) {
-            const res = await fetch(base64Str);
-            const blob = await res.blob();
-            const fileName = `${clienteAtivo.replace(/\s+/g, '_')}/${dataISO()}_${prefixo}_${Date.now()}.jpg`;
-            const { error } = await sb.storage.from('auditoria-fotos').upload(fileName, blob, { contentType: 'image/jpeg' });
-            if (error) throw error;
-            const { data } = sb.storage.from('auditoria-fotos').getPublicUrl(fileName);
-            return data.publicUrl;
-        }
-
         async function finalizarProcesso() {
             if (!dadosFotoDepois) { alert("Capture a foto de conclusão."); return; }
             const execs = Array.from(document.querySelectorAll('#executors-checkboxes input:checked')).map(c => c.value);
@@ -1213,12 +1675,22 @@
             const btn = document.getElementById('btn-salvar');
             btn.disabled = true; btn.textContent = "Auditando e Sincronizando...";
 
-            const dadosAndamento = tarefasEmAndamento[chaveTarefaAtiva];
-            const dhInicio = new Date(dadosAndamento.dh_inicio);
+            const regBanco = idExecucaoBancoAtiva ? window.execucoesMesDB.find(e => e.id === idExecucaoBancoAtiva) : null;
+            const dadosLocal = tarefasEmAndamentoLocal[chaveTarefaAtiva];
+
+            const dhInicio = new Date(regBanco ? regBanco.dh_inicio_tarefa : (dadosLocal ? dadosLocal.dh_inicio : Date.now() - 1800000));
             const dhFimExif = new Date(dadosFotoDepois.dh_exif);
             const dhAgora = new Date();
 
-            let duracaoRealMin = Math.max(1, Math.round((dhFimExif - dhInicio) / 60000));
+            // Calcula pausas descontadas (incluindo se estava pausado no momento de concluir)
+            let minPausas = Number(regBanco?.minutos_pausa_descontados) || 0;
+            if (regBanco && regBanco.status_execucao === 'PAUSADO' && regBanco.dh_inicio_pausa) {
+                minPausas += Math.max(0, Math.round((Date.now() - new Date(regBanco.dh_inicio_pausa).getTime()) / 60000));
+            }
+
+            const duracaoBrutaMin = Math.max(1, Math.round((dhFimExif - dhInicio) / 60000));
+            let duracaoRealMin = Math.max(1, duracaoBrutaMin - minPausas);
+
             if (tarefaSelecionadaObj.total_mes_min && tarefaSelecionadaObj.total_mes_min > 180) {
                 const informado = parseInt(document.getElementById('input-minutos-parciais').value, 10);
                 if (informado > 0) duracaoRealMin = informado;
@@ -1226,29 +1698,26 @@
 
             const duracaoEstMin = Number(tarefaSelecionadaObj.duracao_minutos) || 30;
             const deltaEnvioMin = Math.max(0, Math.round((dhAgora - dhFimExif) / 60000));
+            const isParcial = document.getElementById('chk-entrega-parcial').checked;
 
             let flag = 'CONFORME';
             if (gpsAtual.suspeitoFake) flag = 'SINAL_GPS_ATIPICO';
             else if (gpsAtual.distCliente !== null && gpsAtual.distCliente > 450) flag = 'FORA_PERIMETRO';
             else if (deltaEnvioMin > 15 || dadosFotoDepois.origem === 'GALERIA_EXIF') flag = 'ENVIO_DEFASADO';
-            else if (duracaoEstMin >= 30 && duracaoRealMin < Math.round(duracaoEstMin * 0.2)) flag = 'DIVERGENCIA_SLA';
+            else if (!isParcial && duracaoEstMin >= 30 && duracaoRealMin < Math.round(duracaoEstMin * 0.2)) flag = 'DIVERGENCIA_SLA';
 
-            const payload = {
-                tarefa_id: tarefaSelecionadaObj.id || null,
+            const dadosFinais = {
                 data_referencia: dataISO(),
-                cliente: clienteAtivo,
-                setor: tarefaSelecionadaObj.setor,
-                atividade: tarefaSelecionadaObj.atividade,
                 equipe_executora: execs.join(', '),
                 registrado_por: equipeLogada[0] || execs[0],
-                observacao: obs,
+                observacao: isParcial ? `[ENTREGA PARCIAL] ${obs}` : obs,
                 justificativa_contingencia: dadosFotoDepois.origem === 'GALERIA_EXIF' ? document.getElementById('select-contingencia').value : null,
                 hash_foto_depois: dadosFotoDepois.hash,
-                dh_inicio_tarefa: dhInicio.toISOString(),
                 dh_captura_exif: dhFimExif.toISOString(),
                 dh_envio_servidor: dhAgora.toISOString(),
                 duracao_estimada_min: duracaoEstMin,
                 duracao_real_min: duracaoRealMin,
+                minutos_pausa_descontados: minPausas,
                 delta_envio_min: deltaEnvioMin,
                 origem_midia: dadosFotoDepois.origem,
                 aparelho_modelo: dadosFotoDepois.modelo,
@@ -1256,36 +1725,77 @@
                 lng_captura: gpsAtual.lng,
                 precisao_gps_m: gpsAtual.acc,
                 distancia_cliente_m: gpsAtual.distCliente,
-                flag_auditoria: flag
+                flag_auditoria: flag,
+                status_execucao: 'CONCLUIDO',
+                entrega_parcial: isParcial,
+                motivo_pausa: null,
+                dh_inicio_pausa: null
             };
 
             try {
                 if (!navigator.onLine) throw new Error("OFFLINE");
-                const [urlAntes, urlDepois] = await Promise.all([
-                    uploadBase64Storage(dadosAndamento.foto_antes, 'ANTES'),
-                    uploadBase64Storage(dadosFotoDepois.base64, 'DEPOIS')
-                ]);
-                payload.foto_antes_url = urlAntes;
-                payload.foto_depois_url = urlDepois;
+                const urlDepois = await uploadBase64Storage(dadosFotoDepois.base64, 'DEPOIS');
+                dadosFinais.foto_depois_url = urlDepois;
 
-                const { error } = await sb.from('execucoes_auditoria').insert([payload]);
-                if (error) throw error;
+                if (regBanco && regBanco.id) {
+                    await sb.from('execucoes_auditoria').update(dadosFinais).eq('id', regBanco.id);
+                } else {
+                    const urlAntes = dadosLocal ? await uploadBase64Storage(dadosLocal.foto_antes, 'ANTES') : null;
+                    await sb.from('execucoes_auditoria').insert([{
+                        ...dadosFinais,
+                        tarefa_id: tarefaSelecionadaObj.id || null,
+                        cliente: clienteAtivo,
+                        setor: tarefaSelecionadaObj.setor,
+                        atividade: tarefaSelecionadaObj.atividade,
+                        foto_antes_url: urlAntes,
+                        dh_inicio_tarefa: dhInicio.toISOString()
+                    }]);
+                }
 
-                window.execucoesMesDB.unshift(payload);
+                // Se marcou Entrega Parcial e não é tarefa mensal fatiada automática, agenda a continuação para o próximo dia útil!
+                if (isParcial && (!tarefaSelecionadaObj.total_mes_min || tarefaSelecionadaObj.total_mes_min <= 180)) {
+                    const saldoMin = Math.max(15, duracaoEstMin - duracaoRealMin);
+                    const nomeCont = tarefaSelecionadaObj.atividade.startsWith('Continuação:')
+                        ? tarefaSelecionadaObj.atividade
+                        : `Continuação: ${tarefaSelecionadaObj.atividade}`;
+                    await sb.from('cronograma_mestre').insert([{
+                        cliente: clienteAtivo,
+                        setor: tarefaSelecionadaObj.setor,
+                        ambiente: 'Transbordo',
+                        atividade: nomeCont,
+                        frequencia: 'Transbordo',
+                        duracao_str: formatarMinutosStr(saldoMin),
+                        duracao_minutos: saldoMin,
+                        especie: tarefaSelecionadaObj.especie || 'Geral',
+                        permite_chuva: tarefaSelecionadaObj.permite_chuva !== false,
+                        prioridade: 1,
+                        data_alvo: proximoDiaUtilISO()
+                    }]);
+                }
             } catch (err) {
-                filaOffline.push({ payload, fotoAntesB64: dadosAndamento.foto_antes, fotoDepoisB64: dadosFotoDepois.base64 });
+                filaOffline.push({
+                    payload: {
+                        ...dadosFinais,
+                        tarefa_id: tarefaSelecionadaObj.id || null,
+                        cliente: clienteAtivo,
+                        setor: tarefaSelecionadaObj.setor,
+                        atividade: tarefaSelecionadaObj.atividade,
+                        dh_inicio_tarefa: dhInicio.toISOString()
+                    },
+                    fotoAntesB64: dadosLocal?.foto_antes || null,
+                    fotoDepoisB64: dadosFotoDepois.base64
+                });
                 localStorage.setItem('novaera_fila_offline', JSON.stringify(filaOffline));
-                window.execucoesMesDB.unshift(payload);
             }
 
             hashesConhecidos.add(dadosFotoDepois.hash);
             localStorage.setItem('novaera_hashes_fotos', JSON.stringify(Array.from(hashesConhecidos)));
-            delete tarefasEmAndamento[chaveTarefaAtiva];
-            localStorage.setItem('novaera_tarefas_andamento', JSON.stringify(tarefasEmAndamento));
+            delete tarefasEmAndamentoLocal[chaveTarefaAtiva];
+            localStorage.setItem('novaera_tarefas_andamento', JSON.stringify(tarefasEmAndamentoLocal));
 
             btn.disabled = false; btn.textContent = "Salvar e Sincronizar Auditoria";
             closeConclusionModal();
-            recalcularTudo();
+            carregarDadosSupabase();
         }
 
         async function sincronizarFilaOffline() {
@@ -1295,16 +1805,10 @@
             const restante = [];
             for (const item of filaOffline) {
                 try {
-                    const [urlA, urlD] = await Promise.all([
-                        uploadBase64Storage(item.fotoAntesB64, 'ANTES_OFF'),
-                        uploadBase64Storage(item.fotoDepoisB64, 'DEPOIS_OFF')
-                    ]);
-                    item.payload.foto_antes_url = urlA;
-                    item.payload.foto_depois_url = urlD;
+                    if (item.fotoAntesB64) item.payload.foto_antes_url = await uploadBase64Storage(item.fotoAntesB64, 'ANTES_OFF');
+                    item.payload.foto_depois_url = await uploadBase64Storage(item.fotoDepoisB64, 'DEPOIS_OFF');
                     await sb.from('execucoes_auditoria').insert([item.payload]);
-                } catch (e) {
-                    restante.push(item);
-                }
+                } catch (e) { restante.push(item); }
             }
             filaOffline = restante;
             localStorage.setItem('novaera_fila_offline', JSON.stringify(filaOffline));
@@ -1323,7 +1827,7 @@
         }
 
         // =========================================================================
-        // 8. COMUNICADOR INSTANTÂNEO (3 CANAIS + REALTIME)
+        // 8. COMUNICADOR INSTANTÂNEO (3 CANAIS)
         // =========================================================================
         async function carregarMensagensChat() {
             const { data } = await sb.from('mensagens_chat')
@@ -1397,24 +1901,20 @@
         }
 
         function iniciarRealtimeSupabase() {
-            sb.channel('novaera-realtime')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'presenca_posto' }, () => {
-                    carregarDadosSupabase();
-                })
+            sb.channel('novaera-realtime-v82')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'presenca_posto' }, () => carregarDadosSupabase())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'execucoes_auditoria' }, () => carregarDadosSupabase())
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens_chat' }, payload => {
                     if (payload.new.cliente === clienteAtivo) {
                         document.getElementById('chat-unread-dot').classList.remove('hidden');
                         carregarMensagensChat();
                     }
                 })
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'execucoes_auditoria' }, () => {
-                    carregarDadosSupabase();
-                })
                 .subscribe();
         }
 
         // =========================================================================
-        // 9. PAINEL DO GESTOR (FTE, PLANTÃO, CAIXA-PRETA, WHATSAPP & CSV)
+        // 9. PAINEL DO GESTOR (4 SUB-ABAS: AUDITORIA, TAREFAS, EQUIPE, CONTRATOS)
         // =========================================================================
         function desbloquearGestao() {
             const pin = document.getElementById('pin-input').value.trim();
@@ -1429,23 +1929,31 @@
             }
         }
 
+        function selecionarSubAbaGestao(subAba) {
+            subAbaGestaoAtual = subAba;
+            ['auditoria', 'tarefas', 'equipe', 'contratos'].forEach(s => {
+                document.getElementById(`subtab-${s}`).classList.toggle('hidden', s !== subAba);
+                document.getElementById(`subtab-btn-${s}`).className = (s === subAba)
+                    ? "py-2 px-1 rounded-xl text-[10px] font-extrabold bg-slate-900 text-white shadow-sm transition-all"
+                    : "py-2 px-1 rounded-xl text-[10px] font-extrabold text-slate-700 hover:text-slate-900 transition-all";
+            });
+            atualizarPainelGestao();
+        }
+
         async function atualizarPainelGestao() {
             if (document.getElementById('gestao-content').classList.contains('hidden')) return;
 
-            // Atualizar Status do Controle de Plantão / Fim de Semana
+            // 1. Sub-Aba Auditoria
             const stPlantao = document.getElementById('gestao-status-plantao');
-            if (postoBloqueadoHoje()) {
-                stPlantao.textContent = "🔒 Posto Bloqueado Hoje (Fim de Semana / Feriado)";
-            } else if (window.presencaHojeDB) {
-                stPlantao.textContent = `🟢 Posto Liberado / Ativo (${window.presencaHojeDB.equipe_presente})`;
-            } else {
-                stPlantao.textContent = "🔓 Dia Útil Normal (Aguardando Check-in da Equipe)";
-            }
+            if (postoBloqueadoHoje()) stPlantao.textContent = "🔒 Posto Bloqueado Hoje (Fim de Semana / Feriado)";
+            else if (window.presencaHojeDB) stPlantao.textContent = `🟢 Posto Ativo (${window.presencaHojeDB.equipe_presente})`;
+            else stPlantao.textContent = "🔓 Dia Útil Normal (Aguardando Check-in)";
 
             let minPlanejadosMes = 0;
             Object.values(window.agendaProjetada).forEach(d => { minPlanejadosMes += d.minutos; });
             const execsCli = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo);
-            const minRealizadosMes = execsCli.reduce((acc, cur) => acc + (Number(cur.duracao_real_min) || 0), 0);
+            const execsConcluidas = execsCli.filter(e => e.status_execucao === 'CONCLUIDO');
+            const minRealizadosMes = execsConcluidas.reduce((acc, cur) => acc + (Number(cur.duracao_real_min) || 0), 0);
 
             const hPlan = Math.round((minPlanejadosMes + minRealizadosMes) / 60);
             const hReal = (minRealizadosMes / 60).toFixed(1);
@@ -1454,22 +1962,27 @@
             document.getElementById('kpi-fte-horas').textContent = `${hReal}h / ${hPlan}h`;
             document.getElementById('kpi-fte-pessoas').textContent = `FTE Técnico: ${fteCalculado} op.`;
 
-            const divergentes = execsCli.filter(e => e.flag_auditoria !== 'CONFORME');
-            const pctConf = execsCli.length > 0 ? Math.round(((execsCli.length - divergentes.length) / execsCli.length) * 100) : 100;
-            document.getElementById('kpi-conformidade').textContent = `${pctConf}%`;
-            document.getElementById('kpi-alertas-count').textContent = `${divergentes.length} registros c/ flag`;
+            const divergentes = execsConcluidas.filter(e => e.flag_auditoria !== 'CONFORME');
+            const pctConf = execsConcluidas.length > 0 ? Math.round(((execsConcluidas.length - divergentes.length) / execsConcluidas.length) * 100) : 100;
+            document.getElementById('kpi-conformidade').textContent = `${pctConf}% (${divergentes.length} flags)`;
+            document.getElementById('kpi-chuva-resumo').textContent = `Chuva hoje: ${formatarMinutosStr(calcularMinutosChuvaHoje()).replace('1m', '0m')}`;
 
             const listEl = document.getElementById('gestao-execucoes-list');
             listEl.innerHTML = execsCli.slice(0, 25).map(e => {
-                const corFlag = e.flag_auditoria === 'CONFORME' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900';
-                const linkFotos = e.foto_depois_url ? `<a href="${e.foto_depois_url}" target="_blank" class="text-[10px] font-bold text-orange-600 underline">Ver Foto</a>` : '';
+                const stBadge = e.status_execucao === 'PAUSADO'
+                    ? `<span class="text-[9px] font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-900">PAUSADO</span>`
+                    : (e.status_execucao === 'EM_ANDAMENTO'
+                        ? `<span class="text-[9px] font-extrabold px-2 py-0.5 rounded bg-orange-500 text-white">EM CURSO</span>`
+                        : `<span class="text-[9px] font-extrabold px-2 py-0.5 rounded ${e.flag_auditoria === 'CONFORME' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${e.flag_auditoria}</span>`);
+                const linkFotos = e.foto_depois_url ? `<a href="${e.foto_depois_url}" target="_blank" class="text-[10px] font-bold text-orange-600 underline">Foto Depois</a>` : (e.foto_antes_url ? `<a href="${e.foto_antes_url}" target="_blank" class="text-[10px] font-bold text-blue-600 underline">Foto Antes</a>` : '');
+                const pausaTxt = e.minutos_pausa_descontados > 0 ? ` (Pausa: -${e.minutos_pausa_descontados}m)` : '';
                 return `
                 <div class="p-3 text-xs flex justify-between items-start">
                     <div>
                         <p class="font-bold text-slate-800">${e.setor} • ${e.atividade}</p>
-                        <p class="text-[10px] text-slate-500">${e.equipe_executora} • Real: <b>${e.duracao_real_min}m</b> (Est: ${e.duracao_estimada_min}m) ${linkFotos}</p>
+                        <p class="text-[10px] text-slate-500">${e.equipe_executora} • Líq: <b>${e.duracao_real_min || 0}m</b>${pausaTxt} / SLA: ${e.duracao_estimada_min}m ${linkFotos}</p>
                     </div>
-                    <span class="text-[9px] font-extrabold px-2 py-0.5 rounded ${corFlag}">${e.flag_auditoria}</span>
+                    ${stBadge}
                 </div>`;
             }).join('') || `<p class="p-4 text-xs text-slate-400 text-center">Nenhuma execução registrada no mês.</p>`;
 
@@ -1486,14 +1999,219 @@
                     <p class="text-[10px] text-slate-600 mt-0.5">${l.setor} (${l.atividade}) — ${l.detalhes_exif || ''}</p>
                 </div>`;
             }).join('') || `<p class="p-4 text-xs text-slate-400 text-center">Nenhuma tentativa rejeitada.</p>`;
+
+            // 2. Sub-Aba Tarefas & Recorrência
+            renderizarCrudTarefas();
+
+            // 3. Sub-Aba Equipe
+            renderizarCrudEquipe();
+
+            // 4. Sub-Aba Contratos
+            renderizarCrudContratos();
+        }
+
+        // --- CRUD DE TAREFAS (ABA 2 DA GESTÃO) ---
+        function renderizarCrudTarefas() {
+            const lista = window.cronogramaTodosDB.filter(t => t.cliente === clienteAtivo);
+            const el = document.getElementById('gestao-lista-tarefas-crud');
+            el.innerHTML = lista.map(t => `
+                <div class="p-3 flex justify-between items-center ${t.ativo === false ? 'bg-slate-100 opacity-60' : ''}">
+                    <div class="pr-2">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-extrabold bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded">${t.setor}</span>
+                            <span class="text-[10px] font-bold text-orange-600">${t.frequencia} • ${t.duracao_str}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-900 mt-0.5">${t.atividade}</p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button onclick='carregarTarefaNoForm(${JSON.stringify(t).replace(/'/g, "&apos;")})' class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-300">Editar</button>
+                        <button onclick="alternarAtivoTarefa(${t.id}, ${t.ativo === false ? 'true' : 'false'})" class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg ${t.ativo === false ? 'bg-emerald-100 text-emerald-800' : 'bg-red-50 text-red-700'}">
+                            ${t.ativo === false ? 'Ativar' : 'Pausar'}
+                        </button>
+                    </div>
+                </div>
+            `).join('') || `<p class="p-4 text-xs text-slate-400 text-center">Nenhuma tarefa neste contrato.</p>`;
+        }
+
+        function carregarTarefaNoForm(t) {
+            document.getElementById('edit-tarefa-id').value = t.id;
+            document.getElementById('edit-tarefa-setor').value = t.setor;
+            document.getElementById('edit-tarefa-especie').value = t.especie || '';
+            document.getElementById('edit-tarefa-nome').value = t.atividade;
+            document.getElementById('edit-tarefa-freq').value = t.frequencia;
+            document.getElementById('edit-tarefa-min').value = t.duracao_minutos || 30;
+            document.getElementById('edit-tarefa-prio').value = t.prioridade || 2;
+            document.getElementById('edit-tarefa-chuva').checked = t.permite_chuva !== false;
+            document.getElementById('form-tarefa-titulo').textContent = `Editando Tarefa #${t.id}`;
+        }
+
+        function limparFormTarefaGestao() {
+            document.getElementById('edit-tarefa-id').value = '';
+            document.getElementById('edit-tarefa-setor').value = '';
+            document.getElementById('edit-tarefa-especie').value = '';
+            document.getElementById('edit-tarefa-nome').value = '';
+            document.getElementById('edit-tarefa-min').value = 45;
+            document.getElementById('form-tarefa-titulo').textContent = 'Cadastrar Nova Tarefa no Contrato';
+        }
+
+        async function salvarTarefaGestao() {
+            const id = document.getElementById('edit-tarefa-id').value;
+            const setor = document.getElementById('edit-tarefa-setor').value.trim();
+            const nome = document.getElementById('edit-tarefa-nome').value.trim();
+            const freq = document.getElementById('edit-tarefa-freq').value;
+            const min = parseInt(document.getElementById('edit-tarefa-min').value, 10) || 30;
+            const prio = parseInt(document.getElementById('edit-tarefa-prio').value, 10) || 2;
+            const especie = document.getElementById('edit-tarefa-especie').value.trim() || 'Diversas';
+            const chuva = document.getElementById('edit-tarefa-chuva').checked;
+
+            if (!setor || !nome) { alert("Preencha o Setor e a Atividade."); return; }
+
+            const payload = {
+                cliente: clienteAtivo,
+                setor: setor,
+                atividade: nome,
+                frequencia: freq,
+                duracao_minutos: min,
+                duracao_str: formatarMinutosStr(min),
+                especie: especie,
+                prioridade: prio,
+                permite_chuva: chuva,
+                ativo: true
+            };
+
+            if (id) await sb.from('cronograma_mestre').update(payload).eq('id', id);
+            else await sb.from('cronograma_mestre').insert([payload]);
+
+            limparFormTarefaGestao();
+            carregarDadosSupabase();
+        }
+
+        async function alternarAtivoTarefa(id, novoAtivo) {
+            await sb.from('cronograma_mestre').update({ ativo: novoAtivo }).eq('id', id);
+            carregarDadosSupabase();
+        }
+
+        // --- CRUD DE EQUIPE (ABA 3 DA GESTÃO) ---
+        function renderizarCrudEquipe() {
+            const el = document.getElementById('gestao-lista-equipe-crud');
+            const opcoesClientes = window.clientesDB.map(c => c.nome);
+            el.innerHTML = window.colaboradoresTodosDB.map(c => {
+                const selectPosto = `
+                    <select onchange="realocarColaboradorGestao(${c.id}, this.value)" class="bg-slate-100 border border-slate-300 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-800">
+                        ${opcoesClientes.map(nomeCli => `<option value="${nomeCli}" ${c.cliente_padrao === nomeCli ? 'selected' : ''}>${nomeCli}</option>`).join('')}
+                    </select>`;
+                return `
+                <div class="p-3 flex justify-between items-center ${c.ativo === false ? 'bg-slate-100 opacity-50' : ''}">
+                    <div>
+                        <p class="text-xs font-extrabold text-slate-900">${c.nome} <span class="text-[10px] font-semibold text-slate-500">(${c.perfil})</span></p>
+                        <p class="text-[10px] font-bold ${c.ativo === false ? 'text-red-600' : 'text-emerald-600'}">${c.ativo === false ? '🔴 Inativo / Desligado' : '🟢 Ativo na Operação'}</p>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        ${c.ativo !== false ? selectPosto : ''}
+                        <button onclick="alternarStatusColaboradorGestao(${c.id}, ${c.ativo === false ? 'true' : 'false'})" class="text-[10px] font-extrabold px-2.5 py-1.5 rounded-lg ${c.ativo === false ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                            ${c.ativo === false ? 'Reativar' : 'Inativar'}
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function adicionarColaboradorGestao() {
+            const nome = document.getElementById('novo-colab-nome').value.trim();
+            const posto = document.getElementById('novo-colab-posto').value || clienteAtivo;
+            const perfil = document.getElementById('novo-colab-perfil').value;
+            if (!nome) { alert("Digite o nome do colaborador."); return; }
+            await sb.from('colaboradores').insert([{ nome, cliente_padrao: posto, perfil, ativo: true }]);
+            document.getElementById('novo-colab-nome').value = '';
+            carregarDadosSupabase();
+        }
+
+        async function realocarColaboradorGestao(id, novoPosto) {
+            await sb.from('colaboradores').update({ cliente_padrao: novoPosto }).eq('id', id);
+            carregarDadosSupabase();
+        }
+
+        async function alternarStatusColaboradorGestao(id, novoStatus) {
+            await sb.from('colaboradores').update({ ativo: novoStatus }).eq('id', id);
+            carregarDadosSupabase();
+        }
+
+        // --- CRUD DE CONTRATOS / CLIENTES (ABA 4 DA GESTÃO) ---
+        function renderizarCrudContratos() {
+            const el = document.getElementById('gestao-lista-contratos-crud');
+            el.innerHTML = window.clientesDB.map(c => `
+                <div class="p-3 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-extrabold text-slate-900">${c.nome}</p>
+                        <p class="text-[10px] text-slate-500">Teto: <b>${c.teto_diario_horas}h/dia</b> • Raio GPS: ${c.raio_metros}m • PIN: ${c.pin_gestor}</p>
+                    </div>
+                    <button onclick='carregarContratoNoForm(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 rounded-lg border border-slate-300">
+                        Configurar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function carregarContratoNoForm(c) {
+            document.getElementById('edit-cli-id').value = c.id;
+            document.getElementById('edit-cli-nome').value = c.nome;
+            document.getElementById('edit-cli-end').value = c.endereco || '';
+            document.getElementById('edit-cli-teto').value = c.teto_diario_horas || 6;
+            document.getElementById('edit-cli-raio').value = c.raio_metros || 300;
+            document.getElementById('edit-cli-pin').value = c.pin_gestor || '2026';
+            document.getElementById('edit-cli-lat').value = c.latitude;
+            document.getElementById('edit-cli-lng').value = c.longitude;
+        }
+
+        function limparFormContratoGestao() {
+            document.getElementById('edit-cli-id').value = '';
+            document.getElementById('edit-cli-nome').value = '';
+            document.getElementById('edit-cli-end').value = '';
+            document.getElementById('edit-cli-teto').value = 6;
+            document.getElementById('edit-cli-raio').value = 300;
+            document.getElementById('edit-cli-pin').value = '2026';
+            document.getElementById('edit-cli-lat').value = '';
+            document.getElementById('edit-cli-lng').value = '';
+        }
+
+        function usarGpsAtualNoContrato() {
+            if (!gpsAtual.lat || !gpsAtual.lng) { alert("Aguarde o sinal de GPS do aparelho estabilizar."); return; }
+            document.getElementById('edit-cli-lat').value = gpsAtual.lat.toFixed(6);
+            document.getElementById('edit-cli-lng').value = gpsAtual.lng.toFixed(6);
+        }
+
+        async function salvarContratoGestao() {
+            const id = document.getElementById('edit-cli-id').value;
+            const nome = document.getElementById('edit-cli-nome').value.trim();
+            const end = document.getElementById('edit-cli-end').value.trim();
+            const teto = parseFloat(document.getElementById('edit-cli-teto').value) || 6;
+            const raio = parseInt(document.getElementById('edit-cli-raio').value, 10) || 300;
+            const pin = document.getElementById('edit-cli-pin').value.trim() || '2026';
+            const lat = parseFloat(document.getElementById('edit-cli-lat').value) || -23.5888;
+            const lng = parseFloat(document.getElementById('edit-cli-lng').value) || -46.6819;
+
+            if (!nome) { alert("Informe o nome do cliente/posto."); return; }
+            const codigo = nome.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+
+            const payload = { codigo, nome, endereco: end, latitude: lat, longitude: lng, raio_metros: raio, teto_diario_horas: teto, pin_gestor: pin, ativo: true };
+            if (id) await sb.from('clientes').update(payload).eq('id', id);
+            else await sb.from('clientes').insert([payload]);
+
+            limparFormContratoGestao();
+            carregarDadosSupabase();
+            alert("Contrato salvo com sucesso!");
         }
 
         function copiarResumoWhatsApp() {
             const hojeStr = dataISO();
-            const execsHoje = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && e.data_referencia === hojeStr);
+            const execsHoje = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && e.data_referencia === hojeStr && e.status_execucao === 'CONCLUIDO');
+            const emCurso = window.execucoesMesDB.filter(e => e.cliente === clienteAtivo && ['EM_ANDAMENTO', 'PAUSADO'].includes(e.status_execucao));
             const totalHoje = (window.agendaProjetada[hojeStr]?.tarefas || []).length;
             const minHoje = execsHoje.reduce((a, b) => a + (Number(b.duracao_real_min) || 0), 0);
-            const texto = `📋 *RELATÓRIO DE TURNO — NOVA ERA*\n📍 *Posto:* ${clienteAtivo}\n📅 *Data:* ${new Date().toLocaleDateString('pt-BR')}\n👷 *Equipe:* ${equipeLogada.join(', ')}\n✅ *Concluídas:* ${execsHoje.length} de ${totalHoje} tarefas\n⏱️ *Tempo Auditado:* ${Math.floor(minHoje / 60)}h ${minHoje % 60}m\n🌧️ *Clima:* ${modoChuvaAtivo ? 'Chuvoso' : 'Tempo Seco'}`;
+            const minChuva = calcularMinutosChuvaHoje();
+            const txtClima = minChuva > 0 ? `Instável (${formatarMinutosStr(minChuva)} de chuva acumulada)` : (modoChuvaAtivo ? 'Chovendo no momento' : 'Tempo Seco (0m chuva)');
+
+            const texto = `📋 *RELATÓRIO DE TURNO — NOVA ERA*\n📍 *Posto:* ${clienteAtivo}\n📅 *Data:* ${new Date().toLocaleDateString('pt-BR')}\n👷 *Equipe:* ${equipeLogada.join(', ')}\n✅ *Concluídas:* ${execsHoje.length} de ${totalHoje} tarefas\n🔄 *Em Curso/Transbordo:* ${emCurso.length}\n⏱️ *Tempo Líquido Auditado:* ${formatarMinutosStr(minHoje)}\n🌦️ *Clima no Turno:* ${txtClima}`;
             navigator.clipboard.writeText(texto);
             alert("Relatório copiado! Basta colar no WhatsApp.");
         }
@@ -1607,7 +2325,7 @@
             }
             const setor = document.getElementById('input-modal-setor').value.trim();
             const ativ = document.getElementById('input-modal-tarefa').value.trim();
-            const dur = document.getElementById('input-modal-duracao').value.trim() || '30m';
+            const min = parseInt(document.getElementById('input-modal-duracao').value, 10) || 45;
             if (!setor || !ativ) { alert("Preencha o Setor e a Atividade."); return; }
 
             const nova = {
@@ -1615,9 +2333,9 @@
                 setor: setor,
                 ambiente: 'Extra',
                 atividade: ativ,
-                frequencia: 'Emergência',
-                duracao_str: dur,
-                duracao_minutos: parseInt(dur) || 30,
+                frequencia: 'Extraordinária',
+                duracao_str: formatarMinutosStr(min),
+                duracao_minutos: min,
                 especie: 'Personalizada',
                 permite_chuva: true,
                 prioridade: 1,
@@ -1641,27 +2359,13 @@
             document.getElementById('gestao-view').classList.toggle('hidden', tab !== 'gestao');
             document.getElementById('fab-add').classList.toggle('hidden', tab !== 'hoje' || postoBloqueadoHoje());
 
-            const titulos = { hoje: 'Cronograma de Hoje', calendario: 'Matriz Mensal', chat: 'Comunicador Interno', gestao: 'Governança & FTE' };
+            const titulos = { hoje: 'Cronograma de Hoje', calendario: 'Matriz Mensal', chat: 'Comunicador Interno', gestao: 'Governança & Contratos' };
             document.getElementById('view-title').textContent = titulos[tab];
             if (tab === 'chat') {
                 document.getElementById('chat-unread-dot').classList.add('hidden');
                 carregarMensagensChat();
             }
             if (tab === 'gestao') atualizarPainelGestao();
-        }
-
-        function toggleChuva() {
-            modoChuvaAtivo = !modoChuvaAtivo;
-            const btn = document.getElementById('btn-chuva');
-            const txt = document.getElementById('txt-chuva');
-            if (modoChuvaAtivo) {
-                btn.className = "bg-blue-600 text-white px-2.5 py-2 rounded-xl transition-all flex items-center gap-1 text-xs font-bold shadow-sm";
-                txt.textContent = "Chuva";
-            } else {
-                btn.className = "bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-xl text-slate-500 transition-all flex items-center gap-1 text-xs font-bold";
-                txt.textContent = "Seco";
-            }
-            recalcularTudo();
         }
 
         function trocarClienteManual(novoCli) {
