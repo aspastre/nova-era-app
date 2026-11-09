@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>Miss Silvia • Portal de Paisagismo Nova Era</title>
+    <title>Miss Silvia • Portal de Paisagismo Nova Era v8.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -57,18 +57,18 @@
 
     <main class="max-w-md mx-auto pb-safe pt-3.5 px-3.5">
 
-        <!-- STATUS DA EQUIPE NO LOCAL E CLIMA -->
-        <div id="status-posto-card" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
+        <!-- STATUS DA EQUIPE NO LOCAL E CLIMA ACUMULADO -->
+        <div id="status-posto-card" class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm mb-3.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
                 <div id="posto-badge-icon" class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
                     <i data-lucide="shield-check" class="w-5 h-5"></i>
                 </div>
-                <div>
-                    <p id="posto-status-titulo" class="text-xs font-extrabold text-slate-900">Verificando status da equipe...</p>
-                    <p id="posto-status-sub" class="text-[11px] text-slate-500">Sincronizando dados do turno de hoje</p>
+                <div class="truncate">
+                    <p id="posto-status-titulo" class="text-xs font-extrabold text-slate-900 truncate">Verificando status da equipe...</p>
+                    <p id="posto-status-sub" class="text-[11px] text-slate-500 truncate">Sincronizando dados do turno de hoje</p>
                 </div>
             </div>
-            <span id="clima-badge" class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1">
+            <span id="clima-badge" class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1 flex-shrink-0">
                 ☀️ Tempo Seco
             </span>
         </div>
@@ -77,7 +77,7 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-4">
             <div class="flex justify-between items-end mb-2">
                 <div>
-                    <p class="text-[10px] font-extrabold text-orange-600 uppercase tracking-wider">Acompanhamento Diário</p>
+                    <p class="text-[10px] font-extrabold text-orange-600 uppercase tracking-wider">Acompanhamento em Tempo Real</p>
                     <h2 class="text-lg font-extrabold text-slate-900" id="view-title">Entregas & Auditoria</h2>
                     <p class="text-xs text-slate-500 capitalize" id="current-date"></p>
                 </div>
@@ -94,22 +94,22 @@
         <!-- ========================================== -->
         <!-- ABA 1: GALERIA DE ENTREGAS (ANTES/DEPOIS)  -->
         <!-- ========================================== -->
-        <div id="tab-view-entregas" class="space-y-3">
-            <!-- Pendências / Em Execução Hoje -->
+        <div id="tab-view-entregas" class="space-y-3.5">
+            <!-- Cronograma do Dia + Status Ao Vivo (Em Execução / Pausado / Concluído) -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex justify-between items-center">
                     <h3 class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="clock" class="w-4 h-4 text-orange-500"></i> Programadas para Hoje
+                        <i data-lucide="activity" class="w-4 h-4 text-orange-500"></i> Painel de Atividades de Hoje
                     </h3>
-                    <span class="text-[10px] font-bold text-slate-500">Status em tempo real</span>
+                    <span class="text-[10px] font-bold text-slate-500">Atualização automática</span>
                 </div>
                 <div id="lista-programadas-hoje" class="divide-y divide-slate-100 p-2"></div>
             </div>
 
-            <!-- Feed Fotográfico de Atividades Concluídas -->
+            <!-- Feed Fotográfico (Em Andamento + Concluídas) -->
             <div>
                 <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider px-1 mb-2 flex items-center gap-1.5">
-                    <i data-lucide="camera" class="w-4 h-4 text-emerald-600"></i> Histórico Recente (Antes e Depois)
+                    <i data-lucide="camera" class="w-4 h-4 text-emerald-600"></i> Evidências Fotográficas (Antes e Depois)
                 </h3>
                 <div id="feed-auditoria-fotos" class="space-y-3"></div>
             </div>
@@ -155,7 +155,7 @@
 
                 <div class="p-3 bg-white border-t border-slate-200 space-y-2">
                     <div class="flex items-center justify-between">
-                        <input type="text" id="input-nome-cliente" value="Joelma (Supervisão Miss Silvia)" class="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 outline-none w-2/3">
+                        <input type="text" id="input-nome-cliente" value="Joelma (Miss Silvia)" class="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 outline-none w-2/3">
                         <label class="flex items-center gap-1 text-[10px] font-extrabold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200 cursor-pointer">
                             <input type="checkbox" id="chk-prioridade-cliente" class="rounded text-red-600"> Prioridade / Evento
                         </label>
@@ -191,7 +191,7 @@
                 <span class="text-[10px] font-bold">Cronograma</span>
             </button>
             <button onclick="trocarAbaCliente('solicitacoes')" id="nav-solicitacoes" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-emerald-600 transition-colors relative">
-                <i data-lucide="message-Square-plus" class="w-5 h-5 mb-0.5"></i>
+                <i data-lucide="message-square-plus" class="w-5 h-5 mb-0.5"></i>
                 <span class="text-[10px] font-bold">Solicitações</span>
                 <span id="dot-msg-cliente" class="hidden w-2 h-2 rounded-full bg-red-500 absolute top-1.5 right-10"></span>
             </button>
@@ -200,13 +200,14 @@
 
     <script>
         // =========================================================================
-        // CONFIGURAÇÃO TRAVADA PARA O CONDOMÍNIO MISS SILVIA
+        // CONFIGURAÇÃO TRAVADA PARA O CONDOMÍNIO MISS SILVIA (v8.2)
         // =========================================================================
         const CLIENTE_FIXO = "Miss Silvia";
         const SUPABASE_URL = "https://vocrljiimyknofyhdatg.supabase.co";
         const SUPABASE_KEY = "sb_publishable_o0WnhKjaTBmvfO7Joh6QJA_VzzW_2Zc";
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let tetoHorasCliente = 6;
         let cronogramaDB = [];
         let execucoesDB = [];
         let feriadosDB = [];
@@ -214,18 +215,27 @@
 
         function initIcons() { try { if (typeof lucide !== 'undefined') lucide.createIcons(); } catch (e) {} }
         function dataISO(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+        function formatarMinutosStr(min) {
+            const mTotal = Math.max(1, Math.round(Number(min) || 0));
+            const h = Math.floor(mTotal / 60), m = mTotal % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
+        }
 
         async function carregarPortalCliente() {
             const inicioMes = dataISO(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
             const hojeStr = dataISO();
 
-            const [resCrono, resExec, resFer, resPres] = await Promise.all([
+            const [resCli, resCrono, resExec, resFer, resPres] = await Promise.all([
+                sb.from('clientes').select('teto_diario_horas').eq('nome', CLIENTE_FIXO).limit(1),
                 sb.from('cronograma_mestre').select('*').eq('cliente', CLIENTE_FIXO).eq('ativo', true),
                 sb.from('execucoes_auditoria').select('*').eq('cliente', CLIENTE_FIXO).gte('data_referencia', inicioMes).order('dh_envio_servidor', { ascending: false }),
                 sb.from('feriados_config').select('*'),
                 sb.from('presenca_posto').select('*').eq('cliente', CLIENTE_FIXO).eq('data_turno', hojeStr).order('dh_checkin_aparelho', { ascending: false }).limit(1)
             ]);
 
+            if (resCli.data?.[0]) tetoHorasCliente = Number(resCli.data[0].teto_diario_horas) || 6;
             cronogramaDB = resCrono.data || [];
             execucoesDB = resExec.data || [];
             feriadosDB = (resFer.data || []).map(f => f.data_feriado);
@@ -241,24 +251,48 @@
             const titulo = document.getElementById('posto-status-titulo');
             const sub = document.getElementById('posto-status-sub');
             const clima = document.getElementById('clima-badge');
+            const iconBox = document.getElementById('posto-badge-icon');
+
+            // Cálculo de chuva acumulada hoje
+            let minChuva = Number(presenca?.minutos_chuva_acumulados) || 0;
+            if (presenca?.modo_chuva_ativo && presenca?.dh_inicio_chuva_atual) {
+                minChuva += Math.max(0, Math.round((Date.now() - new Date(presenca.dh_inicio_chuva_atual).getTime()) / 60000));
+            }
+
+            if (presenca?.modo_chuva_ativo) {
+                clima.textContent = `🌧️ Chovendo (${formatarMinutosStr(minChuva)})`;
+                clima.className = "text-[10px] font-bold bg-blue-600 text-white px-2.5 py-1.5 rounded-xl shadow-sm animate-pulse flex-shrink-0";
+            } else if (minChuva > 0) {
+                clima.textContent = `🌦️ Instável (${formatarMinutosStr(minChuva)} chuva)`;
+                clima.className = "text-[10px] font-bold bg-blue-50 text-blue-800 px-2.5 py-1.5 rounded-xl border border-blue-200 flex-shrink-0";
+            } else {
+                clima.textContent = "☀️ Tempo Seco";
+                clima.className = "text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-xl border border-slate-200 flex-shrink-0";
+            }
 
             if (presenca) {
-                const h = new Date(presenca.dh_checkin_aparelho).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                titulo.textContent = `🟢 Equipe em Operação (desde ${h})`;
-                sub.textContent = `Profissionais no local: ${presenca.equipe_presente}`;
-                if (presenca.modo_chuva_ativo) {
-                    clima.textContent = "🌧️ Modo Chuva";
-                    clima.className = "text-[10px] font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-lg border border-blue-200";
+                const hIn = new Date(presenca.dh_checkin_aparelho).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                if (presenca.status_validacao === 'TURNO_ENCERRADO') {
+                    const hOut = presenca.dh_checkout_posto ? new Date(presenca.dh_checkout_posto).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+                    iconBox.className = "w-10 h-10 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center flex-shrink-0";
+                    titulo.textContent = `☑️ Expediente Concluído (${hIn} às ${hOut})`;
+                    sub.textContent = `Equipe: ${presenca.equipe_presente}`;
+                } else {
+                    iconBox.className = "w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0";
+                    titulo.textContent = `🟢 Equipe em Operação (desde ${hIn})`;
+                    sub.textContent = `Profissionais no local: ${presenca.equipe_presente}`;
                 }
             } else {
                 titulo.textContent = "Cronograma Programado Ativo";
-                sub.textContent = "Acompanhe as entregas e evidências abaixo";
+                sub.textContent = "Acompanhe o andamento e fotos em tempo real";
             }
         }
 
         function diaCorrespondeFrequencia(freqStr, diaSemana) {
             const f = (freqStr || '').toLowerCase();
             if (f.includes('diári') || f.includes('diari') || f.includes('seg a sex') || f.includes('5x')) return diaSemana >= 1 && diaSemana <= 5;
+            if (f.includes('3x/semana')) return diaSemana === 1 || diaSemana === 3 || diaSemana === 5;
+            if (f.includes('2x/semana')) return diaSemana === 2 || diaSemana === 4;
             if (f.includes('seg') && diaSemana === 1) return true;
             if (f.includes('ter') && diaSemana === 2) return true;
             if (f.includes('qua') && diaSemana === 3) return true;
@@ -270,9 +304,11 @@
         function calcularAgendaCliente() {
             agendaMensal = {};
             const agora = new Date();
+            const hojeStr = dataISO(agora);
             const ano = agora.getFullYear(), mes = agora.getMonth();
             const totalDias = new Date(ano, mes + 1, 0).getDate();
             const diasUteis = [];
+            const LIMITE_DIARIO = tetoHorasCliente * 60;
 
             for (let dia = 1; dia <= totalDias; dia++) {
                 const d = new Date(ano, mes, dia);
@@ -282,15 +318,26 @@
                 if (util) diasUteis.push(dStr);
             }
 
+            // Transbordo de dias anteriores
+            cronogramaDB.forEach(t => {
+                if (t.data_alvo && t.data_alvo < hojeStr) {
+                    const foiConcluida = execucoesDB.some(e => e.status_execucao === 'CONCLUIDO' && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade)));
+                    if (!foiConcluida && agendaMensal[hojeStr]) {
+                        agendaMensal[hojeStr].tarefas.push({ ...t, is_transbordo: true });
+                        agendaMensal[hojeStr].minutos += (Number(t.duracao_minutos) || 30);
+                    }
+                }
+            });
+
             cronogramaDB.forEach(t => {
                 const f = (t.frequencia || '').toLowerCase();
                 const isFlutuante = f.includes('mês') || f.includes('mensal') || f.includes('quinzenal') || f.includes('quadrimestral');
                 const minT = Number(t.duracao_minutos) || 30;
 
-                if (t.data_alvo && agendaMensal[t.data_alvo]) {
+                if (t.data_alvo && t.data_alvo >= hojeStr && agendaMensal[t.data_alvo]) {
                     agendaMensal[t.data_alvo].tarefas.push({ ...t });
                     agendaMensal[t.data_alvo].minutos += minT;
-                } else if (!isFlutuante) {
+                } else if (!t.data_alvo && !isFlutuante) {
                     diasUteis.forEach(dStr => {
                         if (diaCorrespondeFrequencia(f, agendaMensal[dStr].data.getDay())) {
                             agendaMensal[dStr].tarefas.push({ ...t });
@@ -300,9 +347,7 @@
                 }
             });
 
-            const hojeStr = dataISO(agora);
             const diasFuturos = diasUteis.filter(d => d >= hojeStr);
-
             cronogramaDB.forEach(t => {
                 if (t.data_alvo) return;
                 const f = (t.frequencia || '').toLowerCase();
@@ -310,21 +355,40 @@
                 if (!isFlutuante) return;
 
                 const minTotal = Number(t.duracao_minutos) || 60;
-                const jaFeito = execucoesDB.filter(e => e.tarefa_id === t.id || (e.setor === t.setor && e.atividade.startsWith(t.atividade)))
+                const jaFeito = execucoesDB.filter(e => e.status_execucao === 'CONCLUIDO' && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade.startsWith(t.atividade))))
                     .reduce((a, b) => a + (Number(b.duracao_real_min) || 0), 0);
                 let rest = Math.max(0, minTotal - jaFeito);
                 if (rest === 0) return;
 
-                const fatia = minTotal > 240 ? 120 : rest;
+                const fatiaIdeal = minTotal > 240 ? 120 : rest;
                 let guard = 0;
-                while (rest > 0 && diasFuturos.length > 0 && guard < 30) {
+                while (rest > 0 && diasFuturos.length > 0 && guard < 45) {
                     guard++;
-                    let melhor = diasFuturos[0];
-                    diasFuturos.forEach(d => { if (agendaMensal[d].minutos < agendaMensal[melhor].minutos) melhor = d; });
-                    const alocar = Math.min(rest, fatia);
+                    const candidatos = diasFuturos.filter(dStr => (LIMITE_DIARIO - agendaMensal[dStr].minutos) >= 15);
+                    if (candidatos.length === 0) break;
+                    let melhor = candidatos[0];
+                    candidatos.forEach(d => { if (agendaMensal[d].minutos < agendaMensal[melhor].minutos) melhor = d; });
+                    const espacoLivre = LIMITE_DIARIO - agendaMensal[melhor].minutos;
+                    const alocar = Math.min(rest, fatiaIdeal, espacoLivre);
                     agendaMensal[melhor].tarefas.push({ ...t, duracao_minutos: alocar });
                     agendaMensal[melhor].minutos += alocar;
                     rest -= alocar;
+                }
+            });
+
+            // Garantir que tarefas abertas (EM_ANDAMENTO / PAUSADO) apareçam no topo de hoje
+            const abertas = execucoesDB.filter(e => ['EM_ANDAMENTO', 'PAUSADO'].includes(e.status_execucao));
+            abertas.forEach(execAberta => {
+                if (!agendaMensal[hojeStr]) return;
+                const jaExiste = agendaMensal[hojeStr].tarefas.some(t => t.id === execAberta.tarefa_id || (t.setor === execAberta.setor && t.atividade === execAberta.atividade));
+                if (!jaExiste) {
+                    agendaMensal[hojeStr].tarefas.unshift({
+                        id: execAberta.tarefa_id,
+                        setor: execAberta.setor,
+                        atividade: execAberta.atividade,
+                        especie: 'Em Curso',
+                        prioridade: 0
+                    });
                 }
             });
         }
@@ -332,8 +396,6 @@
         function renderizarEntregasCliente() {
             const hojeStr = dataISO();
             const tarefasHoje = agendaMensal[hojeStr]?.tarefas || [];
-            const execsHoje = execucoesDB.filter(e => e.data_referencia === hojeStr);
-
             let concluidasHoje = 0;
             const listaHojeEl = document.getElementById('lista-programadas-hoje');
 
@@ -341,61 +403,89 @@
                 listaHojeEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhuma rotina fixa prevista para a data de hoje.</p>`;
             } else {
                 listaHojeEl.innerHTML = tarefasHoje.map(t => {
-                    const feita = execsHoje.find(e => e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade));
-                    if (feita) concluidasHoje++;
+                    const regAtivo = execucoesDB.find(e => ['EM_ANDAMENTO', 'PAUSADO'].includes(e.status_execucao) && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade)));
+                    const regFeito = execucoesDB.find(e => e.status_execucao === 'CONCLUIDO' && e.data_referencia === hojeStr && (e.tarefa_id === t.id || (e.setor === t.setor && e.atividade === t.atividade)));
+                    if (regFeito) concluidasHoje++;
+
+                    let corBolinha = 'bg-slate-300';
+                    let badgeStatus = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Programado</span>`;
+                    let infoExtra = '';
+
+                    if (regFeito) {
+                        corBolinha = 'bg-emerald-500';
+                        badgeStatus = `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">${regFeito.entrega_parcial ? 'Parcial Concluída' : 'Concluído'}</span>`;
+                    } else if (regAtivo && regAtivo.status_execucao === 'PAUSADO') {
+                        corBolinha = 'bg-amber-500';
+                        badgeStatus = `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">⏸️ Pausado</span>`;
+                        infoExtra = `<p class="text-[10px] font-semibold text-amber-700 mt-0.5">Motivo: ${regAtivo.motivo_pausa || 'Intervalo'}</p>`;
+                    } else if (regAtivo && regAtivo.status_execucao === 'EM_ANDAMENTO') {
+                        const hIni = new Date(regAtivo.dh_inicio_tarefa).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        corBolinha = 'bg-orange-500 animate-ping';
+                        badgeStatus = `<span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-orange-500 text-white animate-pulse">🟠 Em Execução (${hIni})</span>`;
+                    }
+
                     return `
-                    <div class="flex items-center justify-between p-2.5 rounded-xl ${feita ? 'bg-emerald-50/60' : ''}">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-2.5 h-2.5 rounded-full ${feita ? 'bg-emerald-500' : 'bg-amber-400'}"></span>
+                    <div class="flex items-center justify-between p-2.5 rounded-xl ${regFeito ? 'bg-emerald-50/50' : (regAtivo ? 'bg-orange-50/60' : '')}">
+                        <div class="flex items-center gap-2.5 pr-2">
+                            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${corBolinha}"></span>
                             <div>
-                                <p class="text-xs font-bold ${feita ? 'text-slate-500 line-through' : 'text-slate-800'}">${t.atividade}</p>
+                                <p class="text-xs font-bold ${regFeito ? 'text-slate-500 line-through' : 'text-slate-900'}">${t.atividade}</p>
                                 <p class="text-[10px] text-slate-500">${t.setor} • ${t.especie || 'Geral'}</p>
+                                ${infoExtra}
                             </div>
                         </div>
-                        <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${feita ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
-                            ${feita ? 'Concluído' : 'Programado'}
-                        </span>
+                        <div class="flex-shrink-0">${badgeStatus}</div>
                     </div>`;
                 }).join('');
             }
 
-            const pct = tarefasHoje.length > 0 ? Math.round((concluidasHoje / tarefasHoje.length) * 100) : (execsHoje.length > 0 ? 100 : 0);
+            const pct = tarefasHoje.length > 0 ? Math.round((concluidasHoje / tarefasHoje.length) * 100) : 0;
             document.getElementById('pct-numero').textContent = `${pct}%`;
             document.getElementById('contagem-tarefas').textContent = `${concluidasHoje} de ${tarefasHoje.length} hoje`;
             document.getElementById('barra-progresso-cliente').style.width = `${pct}%`;
 
-            // Feed de Fotos Antes e Depois
+            // Feed de Evidências (Mostra tanto as EM_ANDAMENTO/PAUSADO com Foto Antes quanto as CONCLUÍDAS)
             const feedEl = document.getElementById('feed-auditoria-fotos');
             if (execucoesDB.length === 0) {
-                feedEl.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center border border-slate-200 text-xs text-slate-400">As fotos de Antes e Depois aparecerão aqui assim que as atividades forem concluídas.</div>`;
+                feedEl.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center border border-slate-200 text-xs text-slate-400">As fotos de Antes e Depois aparecerão aqui assim que as atividades forem iniciadas.</div>`;
                 return;
             }
 
-            feedEl.innerHTML = execucoesDB.slice(0, 20).map(e => {
-                const dataFmt = new Date(e.dh_envio_servidor).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            feedEl.innerHTML = execucoesDB.slice(0, 25).map(e => {
+                const emCurso = e.status_execucao !== 'CONCLUIDO';
+                const dataFmt = new Date(e.dh_inicio_tarefa || e.dh_envio_servidor).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+                const badgeTopo = e.status_execucao === 'PAUSADO'
+                    ? `<span class="text-[10px] font-extrabold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">⏸️ Pausado (${e.motivo_pausa || 'Intervalo'})</span>`
+                    : (e.status_execucao === 'EM_ANDAMENTO'
+                        ? `<span class="text-[10px] font-extrabold bg-orange-500 text-white px-2 py-0.5 rounded-full animate-pulse">🟠 Em Execução Agora</span>`
+                        : `<span class="text-[10px] font-semibold text-slate-400">${dataFmt}</span>`);
+
                 return `
-                <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
+                <div class="bg-white rounded-2xl p-4 border ${emCurso ? 'border-2 border-orange-300' : 'border-slate-200'} shadow-sm">
+                    <div class="flex justify-between items-start mb-2 gap-2">
                         <div>
                             <span class="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">${e.setor}</span>
                             <h4 class="text-sm font-extrabold text-slate-900 mt-1">${e.atividade}</h4>
                         </div>
-                        <span class="text-[10px] font-semibold text-slate-400">${dataFmt}</span>
+                        ${badgeTopo}
                     </div>
-                    <p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-3">"${e.observacao}"</p>
+                    <p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-3">"${e.observacao || 'Atividade em andamento...'}"</p>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div onclick="abrirZoomFoto('${e.foto_antes_url || ''}', 'ANTES • ${e.setor}')" class="relative h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 cursor-pointer">
                             ${e.foto_antes_url ? `<img src="${e.foto_antes_url}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-[10px] text-slate-400">Sem foto</div>`}
                             <span class="absolute bottom-1.5 left-1.5 bg-slate-900/80 text-white text-[9px] font-extrabold px-2 py-0.5 rounded">ANTES</span>
                         </div>
-                        <div onclick="abrirZoomFoto('${e.foto_depois_url || ''}', 'DEPOIS • ${e.setor}')" class="relative h-32 bg-slate-100 rounded-xl overflow-hidden border-2 border-emerald-400 cursor-pointer">
-                            ${e.foto_depois_url ? `<img src="${e.foto_depois_url}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-[10px] text-slate-400">Sem foto</div>`}
+                        <div onclick="abrirZoomFoto('${e.foto_depois_url || ''}', 'DEPOIS • ${e.setor}')" class="relative h-32 bg-slate-100 rounded-xl overflow-hidden border-2 ${emCurso ? 'border-dashed border-orange-300' : 'border-emerald-400'} cursor-pointer">
+                            ${e.foto_depois_url
+                                ? `<img src="${e.foto_depois_url}" class="w-full h-full object-cover">`
+                                : `<div class="flex flex-col items-center justify-center h-full text-[10px] font-bold text-orange-600 bg-orange-50/50 p-2 text-center">⏳ Em execução...<br><span class="font-normal text-slate-400">Foto final ao concluir</span></div>`}
                             <span class="absolute bottom-1.5 left-1.5 bg-emerald-700 text-white text-[9px] font-extrabold px-2 py-0.5 rounded">DEPOIS</span>
                         </div>
                     </div>
                     <div class="mt-2.5 pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
                         <span>👷 Equipe: ${e.equipe_executora}</span>
-                        <span class="text-emerald-700 font-bold">✓ Verificado</span>
+                        <span class="${emCurso ? 'text-orange-600' : 'text-emerald-700'} font-bold">${emCurso ? '🔄 Ao Vivo no Local' : '✓ Verificado'}</span>
                     </div>
                 </div>`;
             }).join('');
@@ -525,8 +615,10 @@
             }
         }
 
-        sb.channel('portal-miss-silvia')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'execucoes_auditoria' }, () => carregarPortalCliente())
+        // Escuta qualquer atualização de início, pausa, conclusão ou clima em tempo real
+        sb.channel('portal-miss-silvia-v82')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'execucoes_auditoria' }, () => carregarPortalCliente())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'presenca_posto' }, () => carregarPortalCliente())
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens_chat' }, payload => {
                 if (payload.new.cliente === CLIENTE_FIXO && payload.new.canal === 'CLIENTE') {
                     document.getElementById('dot-msg-cliente').classList.remove('hidden');
